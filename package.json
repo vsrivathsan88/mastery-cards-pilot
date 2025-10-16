@@ -1,0 +1,16 @@
+{
+  "name": "simili-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --filter tutor-app dev",
+    "build": "pnpm -r build",
+    "preview": "pnpm --filter tutor-app preview",
+    "clean": "pnpm -r exec rm -rf node_modules dist .turbo"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2"
+  }
+}
