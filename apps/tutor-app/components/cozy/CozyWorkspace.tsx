@@ -100,13 +100,13 @@ export function CozyWorkspace({
         completedMilestones={completedMilestones} 
       />
 
-      {/* TOP 80%: WORKSPACE - Image + Canvas on Desk */}
+      {/* TOP 84%: WORKSPACE - Image + Canvas on Desk */}
       <div className="cozy-desk-surface" style={{
-        flex: '0 0 80%',
+        flex: '0 0 79.8%',
         display: 'grid',
         gridTemplateColumns: '45% 55%',
-        gap: '24px',
-        padding: '32px 32px 24px 32px',
+        gap: '20px',
+        padding: '24px 28px 20px 28px',
         overflow: 'hidden',
       }}>
         {/* Image - "The Problem" */}
@@ -119,22 +119,22 @@ export function CozyWorkspace({
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            padding: '0 8px',
+            gap: '6px',
+            padding: '0 4px',
           }}>
-            <span style={{ fontSize: '28px' }}>🔍</span>
+            <span style={{ fontSize: '22px' }}>🔍</span>
             <div>
-              <div className="cozy-text-heading" style={{ fontSize: '20px', marginBottom: '2px', color: 'var(--text-warm)' }}>
+              <div className="cozy-text-heading" style={{ fontSize: '16px', marginBottom: '1px', color: 'var(--text-warm)' }}>
                 Today's Mystery
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '500' }}>
                 Let's figure this out together
               </div>
             </div>
           </div>
           <div className="cozy-paper-panel" style={{
             flex: 1,
-            padding: '32px',
+            padding: '20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -167,15 +167,15 @@ export function CozyWorkspace({
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            padding: '0 8px',
+            gap: '6px',
+            padding: '0 4px',
           }}>
-            <span style={{ fontSize: '28px' }}>✨</span>
+            <span style={{ fontSize: '22px' }}>✨</span>
             <div>
-              <div className="cozy-text-heading" style={{ fontSize: '20px', marginBottom: '2px', color: 'var(--text-warm)' }}>
+              <div className="cozy-text-heading" style={{ fontSize: '16px', marginBottom: '1px', color: 'var(--text-warm)' }}>
                 Adventure Journal
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '500' }}>
                 Draw, doodle, discover
               </div>
             </div>
@@ -203,42 +203,38 @@ export function CozyWorkspace({
         </div>
       </div>
 
-      {/* BOTTOM 20%: CONVERSATIONAL ELEMENTS - Floating Glass Panels */}
+      {/* BOTTOM 16%: SINGLE ROW - All in One Container */}
       <div style={{
-        flex: '0 0 20%',
+        flex: '0 0 13.6%',
         display: 'flex',
-        flexDirection: 'column',
         background: 'transparent',
-        padding: '12px 32px 16px 32px',
-        gap: '10px',
+        padding: '16px 32px 20px 32px',
         minHeight: 0,
       }}>
-        {/* Row 1: Pi and Student Avatars - Glassmorphic */}
+        {/* Single Combined Glassmorphic Container - Everything in One Row */}
         <div style={{
-          flex: '1 1 0',
-          minHeight: 0,
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '12px',
-          padding: '12px 20px',
+          flex: 1,
+          display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '24px',
+          padding: '16px 24px',
           background: 'rgba(45, 50, 80, 0.4)',
           backdropFilter: 'blur(20px)',
           borderRadius: '16px',
           border: '2px solid rgba(255, 229, 180, 0.2)',
           boxShadow: '0 8px 32px rgba(26, 29, 46, 0.6)',
         }}>
-          {/* Pi - Compact */}
+          {/* LEFT: Pi Avatar + Info */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
+            gap: '12px',
           }}>
-            {/* Pi Blob - Smaller */}
             <div style={{ position: 'relative' }}>
               <div className={`cozy-pi-blob ${piSpeaking ? 'speaking' : ''}`} style={{
-                width: '80px',
-                height: '80px',
+                width: '64px',
+                height: '64px',
               }}>
                 <img 
                   src="/illustrations/pi-blob.svg" 
@@ -254,98 +250,38 @@ export function CozyWorkspace({
                   className="fallback-blob"
                   style={{
                     display: 'none',
-                    width: '80px',
-                    height: '80px',
+                    width: '64px',
+                    height: '64px',
                     borderRadius: '50%',
                     background: 'linear-gradient(135deg, #7EB5E8, #5A9BD5)',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '40px',
+                    fontSize: '32px',
                     border: '3px solid #4A4035',
                   }}
                 >
                   🤖
                 </div>
               </div>
-              {/* Expression emoji */}
-              <div style={{
-                position: 'absolute',
-                bottom: -5,
-                right: -5,
-                fontSize: '28px',
-                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))',
-              }}>
-                {!isConnected ? '😴' : piSpeaking ? '💬' : '👂'}
-              </div>
             </div>
-            
-            {/* Pi Info */}
             <div>
-              <div className="cozy-text-heading" style={{ fontSize: '18px', marginBottom: '2px', color: 'var(--text-warm)' }}>
+              <div style={{ fontSize: '14px', marginBottom: '1px', color: 'var(--text-warm)', fontWeight: '600' }}>
                 Pi
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                {!isConnected ? 'Sleeping' : piSpeaking ? 'Sharing ideas!' : 'Curious'}
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                {!isConnected ? 'Sleeping' : piSpeaking ? 'Sharing!' : 'Curious'}
               </div>
-            </div>
-
-            {/* Connection Status Badge */}
-            <div className="cozy-status-badge" style={{ 
-              marginLeft: 'auto', 
-              fontSize: '13px', 
-              padding: '8px 16px',
-              fontWeight: '700',
-              background: isConnected 
-                ? 'linear-gradient(135deg, rgba(136, 212, 171, 0.3), rgba(136, 212, 171, 0.2))' 
-                : 'linear-gradient(135deg, rgba(107, 93, 82, 0.3), rgba(74, 63, 53, 0.3))',
-              borderColor: isConnected ? 'rgba(136, 212, 171, 0.6)' : 'var(--sketch-dark)',
-            }}>
-              <div className={`cozy-status-dot ${isConnected ? 'connected' : 'offline'}`} style={{ width: '10px', height: '10px' }} />
-              <span style={{ color: isConnected ? 'var(--student-green)' : 'var(--text-secondary)' }}>
-                {isConnected ? 'Ready to Explore' : 'Offline'}
-              </span>
             </div>
           </div>
 
-          {/* Student (You) - Compact */}
+          {/* CENTER: All Controls */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
+            justifyContent: 'center',
+            gap: '10px',
+            flexWrap: 'wrap',
           }}>
-            <div className={`cozy-student-emoji ${studentSpeaking ? 'speaking' : ''}`} style={{
-              width: '80px',
-              height: '80px',
-              fontSize: '50px',
-            }}>
-              👦
-            </div>
-            <div>
-              <div className="cozy-text-heading" style={{ fontSize: '18px', marginBottom: '2px', color: 'var(--text-warm)' }}>
-                You
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                {studentSpeaking ? 'Exploring!' : 'Ready'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2: Controls - Glassmorphic */}
-        <div style={{
-          flex: '1 1 0',
-          minHeight: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          padding: '10px 20px',
-          background: 'rgba(45, 50, 80, 0.4)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '16px',
-          border: '2px solid rgba(255, 229, 180, 0.2)',
-          boxShadow: '0 8px 32px rgba(26, 29, 46, 0.6)',
-        }}>
           {/* Primary Action */}
           {!isConnected ? (
             <button
@@ -420,6 +356,31 @@ export function CozyWorkspace({
           >
             🔄
           </button>
+          </div>
+
+          {/* RIGHT: Student Avatar + Info */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            justifyContent: 'flex-end',
+          }}>
+            <div>
+              <div style={{ fontSize: '14px', marginBottom: '1px', color: 'var(--text-warm)', fontWeight: '600', textAlign: 'right' }}>
+                You
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', textAlign: 'right' }}>
+                {studentSpeaking ? 'Exploring!' : 'Ready'}
+              </div>
+            </div>
+            <div className={`cozy-student-emoji ${studentSpeaking ? 'speaking' : ''}`} style={{
+              width: '64px',
+              height: '64px',
+              fontSize: '42px',
+            }}>
+              👦
+            </div>
+          </div>
         </div>
       </div>
     </div>
