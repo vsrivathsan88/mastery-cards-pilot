@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dicebear/collection": "^9.2.4",
+    "@dicebear/core": "^9.2.4",
     "@google/genai": "^1.4.0",
     "@simili/agents": "workspace:*",
     "@simili/core-engine": "workspace:*",

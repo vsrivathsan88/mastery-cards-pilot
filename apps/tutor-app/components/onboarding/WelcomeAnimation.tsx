@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { createAvatar } from '@dicebear/core';
+import { avataaars } from '@dicebear/collection';
 
 interface WelcomeAnimationProps {
   name: string;
@@ -10,34 +12,56 @@ export function WelcomeAnimation({ name, avatar, onComplete }: WelcomeAnimationP
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
-    }, 3000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
 
+  const getAvatarSvg = () => {
+    const [type, seed] = avatar.split('-');
+    const skinColor = seed === '1' ? 'light' : seed === '2' ? 'brown' : seed === '3' ? 'dark' : 'pale';
+    const avatarData = createAvatar(avataaars, {
+      seed: seed,
+      skinColor: [skinColor],
+      backgroundColor: ['transparent'],
+      size: 200,
+    });
+    return avatarData.toDataUri();
+  };
+
   return (
     <div className="onboarding-screen welcome-animation">
-      <div className="content">
+      <div className="onboarding-glass-panel welcome-panel">
+        <div className="welcome-stars">
+          <span className="star">✨</span>
+          <span className="star">⭐</span>
+          <span className="star">🌟</span>
+        </div>
+
         <div className="welcome-characters">
-          <div className="character-avatar student-avatar">{avatar}</div>
-          <div className="plus-sign">+</div>
-          <div className="character-avatar pi-avatar">
+          <div className="welcome-avatar student-welcome">
+            <img src={getAvatarSvg()} alt={name} />
+          </div>
+          <div className="welcome-plus">+</div>
+          <div className="welcome-avatar pi-welcome">
             <img src="/illustrations/pi.png" alt="Pi" />
           </div>
         </div>
 
-        <h1 className="welcome-message">
-          {name}, I'm Pi! 🌟
+        <h1 className="welcome-title">
+          Hello, {name}! 👋
         </h1>
-        <h2 className="welcome-subtitle">
-          Let's explore and learn together!
-        </h2>
+        <p className="welcome-message">
+          I'm <span className="pi-name">Pi</span>, your learning companion.
+          <br />
+          Let's go on amazing adventures together!
+        </p>
 
         <button
-          className="onboarding-button primary skip-animation"
+          className="cozy-button cozy-button-primary onboarding-button-large pulse-button"
           onClick={onComplete}
         >
-          Let's Go! 🚀
+          Start Learning! 🚀
         </button>
       </div>
     </div>

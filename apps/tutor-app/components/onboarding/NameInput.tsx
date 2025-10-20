@@ -21,25 +21,31 @@ export function NameInput({ onSubmit }: NameInputProps) {
 
   return (
     <div className="onboarding-screen name-input">
-      <div className="content">
-        <h1>What should we call you? ✨</h1>
+      <div className="onboarding-glass-panel">
+        <h1 className="onboarding-title">What's Your Name? ✨</h1>
+        <h2 className="onboarding-subtitle">This is how Pi will know you</h2>
 
-        <input
-          type="text"
-          className="name-field"
-          placeholder="Super Learner"
-          value={name}
-          onChange={(e) => setName(e.target.value.slice(0, 20))}
-          onKeyPress={handleKeyPress}
-          autoFocus
-        />
+        <div className="name-input-container">
+          <input
+            type="text"
+            className="cozy-name-field"
+            placeholder="Adventure Explorer"
+            value={name}
+            onChange={(e) => setName(e.target.value.slice(0, 20))}
+            onKeyPress={handleKeyPress}
+            autoFocus
+          />
+          <div className="name-length-indicator">
+            {name.length}/20
+          </div>
+        </div>
 
         <button
-          className="onboarding-button primary"
+          className="cozy-button cozy-button-primary onboarding-button-large"
           onClick={handleSubmit}
           disabled={!name.trim()}
         >
-          That's me!
+          That's Me! 🎉
         </button>
       </div>
     </div>
