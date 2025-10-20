@@ -9,22 +9,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@simili/shared": "workspace:*",
-    "@simili/core-engine": "workspace:*",
-    "@simili/agents": "workspace:*",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
     "@google/genai": "^1.4.0",
+    "@simili/agents": "workspace:*",
+    "@simili/core-engine": "workspace:*",
+    "@simili/lessons": "workspace:*",
+    "@simili/shared": "workspace:*",
+    "@tldraw/tldraw": "^4.1.1",
+    "classnames": "^2.5.1",
     "eventemitter3": "^5.0.1",
     "lodash": "^4.17.21",
-    "classnames": "^2.5.1",
-    "zustand": "^5.0.5",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "react": "^19.1.0",
+    "react-confetti": "^6.4.0",
+    "react-dom": "^19.1.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
     "@types/lodash": "^4.17.13",
+    "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "empty-module": "^0.0.2",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   },

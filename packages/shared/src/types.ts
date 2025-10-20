@@ -51,7 +51,16 @@ export interface LessonData {
   objectives: string[];
   milestones: Milestone[];
   assets?: LessonAsset[];
+  canvasInstructions?: CanvasDescription; // Canvas drawing context
+  standards?: LessonStandard[];
   metadata?: Record<string, any>;
+}
+
+export interface LessonStandard {
+  framework: 'CCSS' | 'NGSS' | 'state' | 'custom';
+  code: string;
+  description: string;
+  coverage?: 'full' | 'partial' | 'introduction';
 }
 
 export interface Milestone {
@@ -67,7 +76,14 @@ export interface LessonAsset {
   type: 'image' | 'video' | 'audio' | 'interactive';
   url: string;
   alt?: string;
+  description?: string; // Full text description for accessibility & vision agent
   metadata?: Record<string, any>;
+}
+
+export interface CanvasDescription {
+  currentContext: string; // What student should be drawing/working on
+  expectedElements?: string[]; // What we expect to see
+  visualGuidance?: string; // Hints about what to draw
 }
 
 export interface EmotionalState {

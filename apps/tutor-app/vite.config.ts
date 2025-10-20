@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+          // Proxy API requests to backend
+          '/api': {
+            target: 'http://localhost:4000',
+            changeOrigin: true,
+          },
+        },
       },
       plugins: [react()],
       define: {
@@ -17,7 +24,28 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
+          // Polyfill Node.js modules for browser (LangChain compatibility)
+          'node:async_hooks': 'empty-module',
+          'async_hooks': 'empty-module',
+          'fs': 'empty-module',
+          'os': 'empty-module',
+          'zlib': 'empty-module',
+          'https': 'empty-module',
         }
-      }
+      },
+      optimizeDeps: {
+        include: ['eventemitter3'],
+        exclude: ['@langchain/langgraph', '@langchain/core', '@langchain/google-genai'],
+        esbuildOptions: {
+          target: 'esnext',
+        },
+        force: true,
+      },
+      build: {
+        commonjsOptions: {
+          transformMixedEsModules: true,
+        },
+        target: 'esnext',
+      },
     };
 });

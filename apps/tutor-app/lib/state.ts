@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { create } from 'zustand';
+import { LessonData, Milestone } from '@simili/shared';
+import { LessonProgress, SIMILI_SYSTEM_PROMPT } from '@simili/agents';
 import { customerSupportTools } from './tools/customer-support';
 import { personalAssistantTools } from './tools/personal-assistant';
 import { navigationSystemTools } from './tools/navigation-system';
@@ -38,7 +40,7 @@ export const useSettings = create<{
   setModel: (model: string) => void;
   setVoice: (voice: string) => void;
 }>(set => ({
-  systemPrompt: `You are a helpful and friendly AI assistant. Be conversational and concise.`,
+  systemPrompt: SIMILI_SYSTEM_PROMPT, // Static Simili tutor prompt - never changes
   model: DEFAULT_LIVE_API_MODEL,
   voice: DEFAULT_VOICE,
   setSystemPrompt: prompt => set({ systemPrompt: prompt }),
@@ -183,4 +185,30 @@ export const useLogStore = create<{
     });
   },
   clearTurns: () => set({ turns: [] }),
+}));
+
+/**
+ * Lesson State
+ */
+export const useLessonStore = create<{
+  currentLesson?: LessonData;
+  progress?: LessonProgress;
+  celebrationMessage?: string;
+  setLesson: (lesson: LessonData) => void;
+  updateProgress: (progress: LessonProgress) => void;
+  celebrate: (message: string) => void;
+  clearCelebration: () => void;
+  clearLesson: () => void;
+}>((set) => ({
+  currentLesson: undefined,
+  progress: undefined,
+  celebrationMessage: undefined,
+  setLesson: (lesson: LessonData) => set({ currentLesson: lesson }),
+  updateProgress: (progress: LessonProgress) => set({ progress }),
+  celebrate: (message: string) => {
+    set({ celebrationMessage: message });
+    setTimeout(() => set({ celebrationMessage: undefined }), 3000);
+  },
+  clearCelebration: () => set({ celebrationMessage: undefined }),
+  clearLesson: () => set({ currentLesson: undefined, progress: undefined }),
 }));

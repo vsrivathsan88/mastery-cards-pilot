@@ -9,7 +9,8 @@ simili-monorepo-v1/
 ├── packages/
 │   ├── shared/           # Shared TypeScript types and utilities
 │   ├── core-engine/      # Gemini Live client and audio handling
-│   └── agents/           # Pedagogy agent orchestration
+│   ├── agents/           # Pedagogy agent orchestration + prompt management
+│   └── lessons/          # Lesson content, schema, and loader
 ├── apps/
 │   └── tutor-app/        # Main tutoring application (React + Vite)
 ├── docs/
@@ -33,8 +34,15 @@ Core Gemini Live integration:
 ### @simili/agents
 Agent orchestration layer:
 - `AgentOrchestrator` - Manages session state and event handling
-- Subscribes to core-engine events
-- Future: Pedagogy logic, milestone detection
+- `PedagogyEngine` - Milestone detection and progress tracking
+- `PromptManager` - System prompt generation with lesson context
+- Subscribes to core-engine events and emits pedagogy events
+
+### @simili/lessons
+Lesson content management:
+- `LessonLoader` - Load lessons by ID or subject
+- Lesson schema with objectives, milestones, scaffolding
+- First lesson: Understanding One Half with Chocolate (fractions)
 
 ### tutor-app
 Main React application with:
@@ -107,14 +115,23 @@ VITE_GEMINI_API_KEY=your_api_key_here
 - [x] Agents package with orchestrator stub
 - [x] Tutor app migrated and working
 
-## Next Steps (Phase 2)
+## Phase 2 Complete ✅
 
-See `docs/development-plan.md` for the full roadmap:
-- Create lesson structure and schema
-- Implement pedagogy logic in agents package
-- Add milestone detection
-- Create system prompt management
-- Update UI for lesson progress
+- [x] Lesson structure package with schema and first lesson (fractions)
+- [x] PedagogyEngine with automatic milestone detection
+- [x] PromptManager with YAML templates and context injection
+- [x] LessonProgress UI component
+- [x] AgentOrchestrator integrated with pedagogy logic
+
+**See `apps/tutor-app/README-PHASE2.md` for usage examples and integration guide.**
+
+## Next Steps (Phase 3)
+
+See `docs/development-plan.md` for Phase 3:
+- Event logging and session replay
+- State snapshots to localStorage/Supabase
+- Latency metrics tracking
+- Session replay viewer
 
 ## Scripts
 

@@ -15,8 +15,17 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.23",
+    "@langchain/core": "^0.3.78",
+    "@langchain/google-genai": "^0.2.18",
+    "@langchain/langgraph": "^0.4.9",
+    "@simili/core-engine": "workspace:*",
+    "@simili/lessons": "workspace:*",
     "@simili/shared": "workspace:*",
-    "@simili/core-engine": "workspace:*"
+    "ai": "^5.0.72",
+    "eventemitter3": "^5.0.1",
+    "p-retry": "^7.1.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
     "typescript": "~5.8.2"

@@ -1,0 +1,615 @@
+/* Midnight Treehouse Adventure Theme */
+
+:root {
+  /* Night Sky Palette */
+  --night-deep: #1A1D2E;
+  --night-mid: #2D3250;
+  --night-horizon: #424769;
+  
+  /* Warm Wood & Lamp Light */
+  --wood-dark: #4A3F35;
+  --wood-light: #6B5D52;
+  --lamp-glow: #FFB366;
+  --lamp-soft: rgba(255, 179, 102, 0.15);
+  
+  /* Papers & Workspace */
+  --paper-cream: #FFF9E8;
+  --paper-shadow: rgba(26, 29, 46, 0.3);
+  
+  /* Adventure Accents */
+  --star-color: #FFE5B4;
+  --firefly-glow: #FFD700;
+  --constellation-line: #FFE5B4;
+  
+  /* Pi & Student */
+  --pi-blue: #7EB5E8;
+  --pi-glow: rgba(126, 181, 232, 0.4);
+  --student-green: #88D4AB;
+  --student-glow: rgba(136, 212, 171, 0.4);
+  
+  /* Text (lighter for dark bg) */
+  --text-primary: #E8E6E3;
+  --text-secondary: #B8B5B0;
+  --text-warm: #FFE5B4;
+  
+  /* Sketch borders (lighter) */
+  --sketch-dark: #8B7E74;
+  --sketch-light: #6B5D52;
+}
+
+/* Night Sky Background */
+.cozy-background {
+  background: linear-gradient(
+    180deg,
+    var(--night-deep) 0%,
+    var(--night-mid) 60%,
+    var(--night-horizon) 100%
+  );
+  width: 100%;
+  height: 100%;
+}
+
+/* Stars overlay - static stars scattered across sky */
+.cozy-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20% 30%, var(--star-color), transparent),
+    radial-gradient(2px 2px at 60% 70%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 50% 50%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 80% 10%, var(--star-color), transparent),
+    radial-gradient(2px 2px at 90% 60%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 33% 80%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 15% 55%, var(--star-color), transparent),
+    radial-gradient(2px 2px at 70% 25%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 40% 15%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 85% 85%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 25% 5%, var(--star-color), transparent),
+    radial-gradient(2px 2px at 95% 40%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 45% 90%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 10% 20%, var(--star-color), transparent),
+    radial-gradient(1px 1px at 75% 65%, var(--star-color), transparent);
+  background-size: 100% 100%;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Subtle noise for depth */
+.cozy-background::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  mix-blend-mode: overlay;
+}
+
+/* Twinkling stars animation */
+@keyframes twinkle {
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.3);
+  }
+}
+
+.twinkling-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--star-color);
+  border-radius: 50%;
+  box-shadow: 0 0 4px var(--star-color);
+  animation: twinkle 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Desk Surface - Warm wood lit by lamp */
+.cozy-desk-surface {
+  position: relative;
+  background: 
+    radial-gradient(ellipse 80% 60% at 50% 0%, var(--lamp-soft) 0%, transparent 60%),
+    linear-gradient(180deg, var(--wood-light) 0%, var(--wood-dark) 100%);
+  border-radius: 24px;
+  box-shadow: 
+    inset 0 4px 20px rgba(255, 179, 102, 0.2),
+    0 12px 40px rgba(26, 29, 46, 0.5),
+    0 4px 16px rgba(26, 29, 46, 0.4);
+  border: 2px solid rgba(107, 93, 82, 0.5);
+}
+
+/* Wood grain pattern (SVG) */
+.cozy-desk-surface::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      rgba(93, 78, 55, 0.05) 1px,
+      transparent 2px,
+      transparent 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      rgba(93, 78, 55, 0.03) 20px,
+      transparent 25px,
+      transparent 100px
+    );
+  border-radius: 20px 20px 0 0;
+  opacity: 0.6;
+}
+
+/* Paper panels - Glowing in lamplight */
+.cozy-paper-panel {
+  background: 
+    radial-gradient(ellipse at 50% 0%, rgba(255, 179, 102, 0.12) 0%, transparent 50%),
+    linear-gradient(135deg, var(--paper-cream) 0%, #FFF5DC 100%);
+  border-radius: 16px;
+  box-shadow: 
+    0 16px 40px var(--paper-shadow),
+    0 6px 16px rgba(26, 29, 46, 0.3),
+    inset 0 3px 6px rgba(255, 179, 102, 0.15);
+  position: relative;
+  border: 2px solid rgba(255, 229, 180, 0.4);
+  transform: translateZ(0);
+}
+
+/* Subtle paper texture */
+.cozy-paper-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.05'/%3E%3C/svg%3E");
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* Sketch-style border (hand-drawn look) */
+.cozy-sketch-border {
+  border: 2px solid var(--sketch-dark);
+  border-radius: 12px;
+  position: relative;
+}
+
+/* Imperfect border effect using box-shadow */
+.cozy-sketch-border::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid var(--sketch-dark);
+  border-radius: 12px;
+  opacity: 0.3;
+  transform: translate(1px, 1px);
+  pointer-events: none;
+}
+
+/* Pi Avatar Container */
+.cozy-pi-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pi blob glow effect */
+.cozy-pi-blob {
+  width: 160px;
+  height: 160px;
+  animation: cozyBreathe 4s ease-in-out infinite;
+  filter: 
+    drop-shadow(0 10px 30px var(--pi-glow)) 
+    drop-shadow(0 4px 12px rgba(126, 181, 232, 0.2));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.cozy-pi-blob.speaking {
+  animation: cozyBreathe 1s ease-in-out infinite;
+  filter: 
+    drop-shadow(0 12px 40px var(--pi-glow)) 
+    drop-shadow(0 4px 16px rgba(126, 181, 232, 0.4))
+    drop-shadow(0 0 50px var(--pi-glow));
+}
+
+@keyframes cozyBreathe {
+  0%, 100% { 
+    transform: scale(1) translateY(0px); 
+  }
+  50% { 
+    transform: scale(1.03) translateY(-4px); 
+  }
+}
+
+/* Emoji expression overlay */
+.cozy-pi-expression {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 48px;
+  animation: cozyExpressionPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes cozyExpressionPop {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Adventure buttons - Warm and inviting */
+.cozy-button {
+  background: linear-gradient(135deg, rgba(107, 93, 82, 0.4), rgba(74, 63, 53, 0.5));
+  border: 3px solid var(--sketch-dark);
+  border-radius: 18px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-warm);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 
+    0 6px 16px rgba(26, 29, 46, 0.4),
+    0 2px 4px rgba(26, 29, 46, 0.3),
+    inset 0 2px 0 rgba(255, 179, 102, 0.2);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+/* Imperfect double border for hand-drawn look */
+.cozy-button::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 2px solid var(--sketch-dark);
+  border-radius: 16px;
+  opacity: 0.2;
+  transform: translate(1px, 1px);
+  pointer-events: none;
+}
+
+.cozy-button:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 12px 32px rgba(139, 99, 74, 0.3),
+    0 4px 12px rgba(139, 99, 74, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 1);
+}
+
+.cozy-button:active {
+  transform: translateY(-1px) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* Primary button - Start Adventure! */
+.cozy-button-primary {
+  background: linear-gradient(135deg, var(--lamp-glow) 0%, #FFC080 100%);
+  color: var(--night-deep);
+  border-color: rgba(255, 179, 102, 0.6);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 10px 24px rgba(255, 179, 102, 0.5),
+    0 4px 12px rgba(255, 179, 102, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.cozy-button-primary:hover {
+  background: linear-gradient(135deg, #FFC080 0%, #FFD4A0 100%);
+  box-shadow: 
+    0 16px 40px rgba(255, 179, 102, 0.6),
+    0 6px 20px rgba(255, 179, 102, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+/* Success button - Mic active */
+.cozy-button-success {
+  background: linear-gradient(135deg, var(--student-green) 0%, #98E4BB 100%);
+  color: var(--night-deep);
+  border-color: rgba(136, 212, 171, 0.6);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 20px var(--student-glow),
+    0 3px 8px rgba(136, 212, 171, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.cozy-button-success:hover {
+  background: linear-gradient(135deg, #98E4BB 0%, #A8F4CB 100%);
+  box-shadow: 
+    0 14px 32px var(--student-glow),
+    0 5px 16px rgba(136, 212, 171, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+/* Help button - Ask Pi */
+.cozy-button-help {
+  background: linear-gradient(135deg, rgba(255, 229, 180, 0.3), rgba(255, 179, 102, 0.3));
+  color: var(--text-warm);
+  border-color: rgba(255, 229, 180, 0.5);
+  box-shadow: 
+    0 6px 16px rgba(26, 29, 46, 0.35),
+    0 2px 4px rgba(26, 29, 46, 0.25),
+    inset 0 2px 0 rgba(255, 229, 180, 0.2);
+}
+
+.cozy-button-help:hover {
+  background: linear-gradient(135deg, rgba(255, 229, 180, 0.4), rgba(255, 179, 102, 0.4));
+  box-shadow: 
+    0 12px 32px rgba(255, 179, 102, 0.4),
+    0 4px 12px rgba(255, 179, 102, 0.3),
+    inset 0 2px 0 rgba(255, 229, 180, 0.3);
+}
+
+/* Connection badge with warm glow */
+.cozy-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 24px;
+  border: 3px solid var(--sketch-dark);
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 
+    0 4px 12px rgba(26, 29, 46, 0.4),
+    0 2px 4px rgba(26, 29, 46, 0.3);
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+.cozy-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: cozyPulse 2s ease-in-out infinite;
+}
+
+.cozy-status-dot.connected {
+  background: #78D97E;
+  box-shadow: 0 0 12px rgba(120, 217, 126, 0.6);
+}
+
+.cozy-status-dot.offline {
+  background: #CCCCCC;
+  animation: none;
+}
+
+@keyframes cozyPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* Ambient floating sparkles */
+.cozy-sparkle {
+  position: fixed;
+  pointer-events: none;
+  font-size: 24px;
+  opacity: 0;
+  animation: cozySparkleFloat 4s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes cozySparkleFloat {
+  0%, 100% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg) scale(0.5);
+  }
+  10% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-40px) rotate(180deg) scale(1);
+  }
+  90% {
+    opacity: 0.4;
+  }
+}
+
+/* Header with warm styling */
+.cozy-header {
+  background: white;
+  border-bottom: 3px solid var(--sketch-dark);
+  box-shadow: 0 4px 12px var(--shadow-warm);
+  position: relative;
+}
+
+/* Sketch line underneath header */
+.cozy-header::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--sketch-light);
+  opacity: 0.3;
+  transform: translateY(1px);
+}
+
+/* Text with sketch feel */
+.cozy-text {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+.cozy-text-heading {
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.cozy-text-label {
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+/* Warm shadow for depth */
+.cozy-shadow-soft {
+  box-shadow: 0 4px 12px var(--shadow-warm);
+}
+
+.cozy-shadow-medium {
+  box-shadow: 0 8px 24px var(--shadow-warm);
+}
+
+/* Student emoji - Adventure companion */
+.cozy-student-emoji {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  background: linear-gradient(135deg, var(--student-green) 0%, #98E4BB 100%);
+  border-radius: 50%;
+  border: 4px solid rgba(136, 212, 171, 0.6);
+  box-shadow: 
+    0 10px 30px var(--student-glow),
+    0 4px 12px rgba(136, 212, 171, 0.3),
+    inset 0 2px 8px rgba(255, 255, 255, 0.3);
+  animation: cozyBreathe 4s ease-in-out infinite 0.5s;
+  position: relative;
+}
+
+.cozy-student-emoji.speaking {
+  animation: cozyBreathe 1s ease-in-out infinite;
+  box-shadow: 
+    0 14px 48px var(--student-glow),
+    0 6px 20px rgba(136, 212, 171, 0.6),
+    0 0 60px var(--student-glow),
+    inset 0 2px 8px rgba(255, 255, 255, 0.4);
+}
+
+/* Encouragement particle effect */
+.cozy-encouragement-particle {
+  position: fixed;
+  pointer-events: none;
+  font-size: 40px;
+  z-index: 1000;
+  animation: cozyParticleFloat 3s ease-out forwards;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes cozyParticleFloat {
+  0% {
+    transform: translateY(0) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-30px) scale(1) rotate(15deg);
+  }
+  100% {
+    transform: translateY(-250px) scale(1.3) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Celebration overlay */
+.cozy-celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 248, 237, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: cozyCelebrationFadeIn 0.4s ease;
+}
+
+@keyframes cozyCelebrationFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cozy-celebration-content {
+  text-align: center;
+  animation: cozyCelebrationBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes cozyCelebrationBounce {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.cozy-celebration-emoji {
+  font-size: 120px;
+  margin-bottom: 24px;
+}
+
+.cozy-celebration-text {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--cozy-coral);
+  text-shadow: 
+    3px 3px 0 var(--cozy-peach),
+    -2px -2px 0 var(--sketch-light);
+  margin-bottom: 16px;
+}
+
+.cozy-celebration-subtext {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}

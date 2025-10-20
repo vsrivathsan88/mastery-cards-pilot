@@ -1,18 +1,21 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
 import { useEffect, useRef, useState } from 'react';
 import PopUp from '../popup/PopUp';
 import WelcomeScreen from '../welcome-screen/WelcomeScreen';
-// FIX: Import LiveServerContent to correctly type the content handler.
+import { LessonProgress } from '../../LessonProgress';
+import { LessonCanvas } from '../../LessonCanvas';
+import { LessonImage } from '../../LessonImage';
+import { CozyWorkspace } from '../../cozy/CozyWorkspace';
+import { CozyCelebration } from '../../cozy/CozyCelebration';
+import { CozyEncouragementParticles } from '../../cozy/CozyEncouragementParticles';
 import { LiveConnectConfig, Modality, LiveServerContent } from '@google/genai';
+import { AudioRecorder } from '../../../lib/audio-recorder';
 
 import { useLiveAPIContext } from '../../../contexts/LiveAPIContext';
 import {
   useSettings,
   useLogStore,
   useTools,
+  useLessonStore,
   ConversationTurn,
 } from '@/lib/state';
 
@@ -52,18 +55,126 @@ const renderContent = (text: string) => {
 
 
 export default function StreamingConsole() {
-  const { client, setConfig } = useLiveAPIContext();
+  const { client, setConfig, connected, connect, disconnect } = useLiveAPIContext();
   const { systemPrompt, voice } = useSettings();
   const { tools } = useTools();
+  const { currentLesson, progress, celebrationMessage } = useLessonStore();
   const turns = useLogStore(state => state.turns);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [showPopUp, setShowPopUp] = useState(true);
+  const [showPopUp, setShowPopUp] = useState(false);
+  
+  // Audio controls
+  const [audioRecorder] = useState(() => new AudioRecorder());
+  const [muted, setMuted] = useState(false);
+  
+  // Track speaking state for kid-friendly UI
+  const [piSpeaking, setPiSpeaking] = useState(false);
+  const [studentSpeaking, setStudentSpeaking] = useState(false);
+  
+  // Track milestone completions for particles
+  const [particleTrigger, setParticleTrigger] = useState(0);
+  const prevMilestonesRef = useRef(progress?.completedMilestones.length || 0);
+  
+  // Get last messages for soundwave display
+  const lastPiMessage = turns.filter(t => t.role === 'agent').slice(-1)[0]?.text || '';
+  const lastStudentMessage = turns.filter(t => t.role === 'user').slice(-1)[0]?.text || '';
+  const isConnected = client.status === 'connected';
 
   const handleClosePopUp = () => {
     setShowPopUp(false);
   };
 
+  // Granular control handlers
+  const handleConnect = () => {
+    connect();
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+  };
+
+  const handleMuteToggle = () => {
+    setMuted(!muted);
+  };
+
+  const handleHelp = () => {
+    setShowPopUp(true);
+  };
+
+  const handleExport = () => {
+    const { systemPrompt, model } = useSettings.getState();
+    const { tools } = useTools.getState();
+    const { turns } = useLogStore.getState();
+
+    const logData = {
+      configuration: {
+        model,
+        systemPrompt,
+      },
+      tools,
+      conversation: turns.map(turn => ({
+        ...turn,
+        timestamp: turn.timestamp.toISOString(),
+      })),
+    };
+
+    const jsonString = JSON.stringify(logData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.href = url;
+    a.download = `live-api-logs-${timestamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleReset = () => {
+    useLogStore.getState().clearTurns();
+  };
+
+  // Audio recorder effect
+  useEffect(() => {
+    if (!connected) {
+      setMuted(false);
+    }
+  }, [connected]);
+
+  useEffect(() => {
+    const onData = (base64: string) => {
+      client.sendRealtimeInput([
+        {
+          mimeType: 'audio/pcm;rate=16000',
+          data: base64,
+        },
+      ]);
+    };
+    if (connected && !muted && audioRecorder) {
+      audioRecorder.on('data', onData);
+      audioRecorder.start();
+    } else {
+      audioRecorder.stop();
+    }
+    return () => {
+      audioRecorder.off('data', onData);
+    };
+  }, [connected, client, muted, audioRecorder]);
+
+  // Detect milestone completions and trigger particles
+  useEffect(() => {
+    if (progress) {
+      const currentMilestones = progress.completedMilestones.length;
+      if (currentMilestones > prevMilestonesRef.current) {
+        setParticleTrigger(prev => prev + 1);
+        prevMilestonesRef.current = currentMilestones;
+      }
+    }
+  }, [progress]);
+
   // Set the configuration for the Live API
+  // Update when systemPrompt changes (e.g., when lesson loads) but only if not connected
   useEffect(() => {
     const enabledTools = tools
       .filter(tool => tool.isEnabled)
@@ -88,8 +199,9 @@ export default function StreamingConsole() {
           },
         },
       },
-      inputAudioTranscription: {},
-      outputAudioTranscription: {},
+      // Enable transcription (language auto-detected, no languageCode field)
+      inputAudioTranscription: {},   // Enable input transcription
+      outputAudioTranscription: {},  // Enable output transcription
       systemInstruction: {
         parts: [
           {
@@ -100,8 +212,12 @@ export default function StreamingConsole() {
       tools: enabledTools,
     };
 
+    console.log('[StreamingConsole] 🔍 SYSTEM PROMPT FROM STATE:', systemPrompt.substring(0, 100) + '...');
+    console.log('[StreamingConsole] 🔍 Setting config with prompt length:', systemPrompt.length);
     setConfig(config);
-  }, [setConfig, systemPrompt, tools, voice]);
+    console.log('[StreamingConsole] ✅ Config set');
+    
+  }, [setConfig, systemPrompt]); // Update when system prompt changes (lesson load)
 
   useEffect(() => {
     const { addTurn, updateLastTurn } = useLogStore.getState();
@@ -117,6 +233,9 @@ export default function StreamingConsole() {
       } else {
         addTurn({ role: 'user', text, isFinal });
       }
+      
+      // Update speaking state
+      setStudentSpeaking(!isFinal);
     };
 
     const handleOutputTranscription = (text: string, isFinal: boolean) => {
@@ -130,6 +249,9 @@ export default function StreamingConsole() {
       } else {
         addTurn({ role: 'agent', text, isFinal });
       }
+      
+      // Update speaking state
+      setPiSpeaking(!isFinal);
     };
 
     // FIX: The 'content' event provides a single LiveServerContent object.
@@ -189,57 +311,156 @@ export default function StreamingConsole() {
     }
   }, [turns]);
 
+  // Create tab content
+  const progressTab = (
+    <div>
+      {currentLesson && progress ? (
+        <LessonProgress lesson={currentLesson} progress={progress} />
+      ) : (
+        <div style={{ color: '#9ca3af', textAlign: 'center', padding: '20px' }}>
+          No active lesson
+        </div>
+      )}
+    </div>
+  );
+
+  const chatTab = (
+    <div 
+      ref={scrollRef}
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '12px',
+        maxHeight: '100%',
+        overflow: 'auto'
+      }}
+    >
+      {turns.length === 0 ? (
+        <div style={{ color: '#94a3b8', textAlign: 'center', padding: '40px 20px' }}>
+          Start chatting to see conversation history
+        </div>
+      ) : (
+        turns.map((t, i) => (
+          <div
+            key={i}
+            style={{
+              backgroundColor: t.role === 'agent' ? '#f1f5f9' : '#eef2ff',
+              padding: '14px 16px',
+              borderRadius: '12px',
+              borderLeft: `3px solid ${t.role === 'agent' ? '#6366f1' : '#10b981'}`
+            }}
+          >
+            <div style={{
+              fontSize: '12px',
+              color: '#64748b',
+              marginBottom: '6px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ fontWeight: '600', color: '#334155' }}>
+                {t.role === 'user' ? 'You' : t.role === 'agent' ? 'Pi' : 'System'}
+              </span>
+              <span>{formatTimestamp(t.timestamp)}</span>
+            </div>
+            <div style={{ color: '#1e293b', fontSize: '14px', lineHeight: '1.6' }}>
+              {renderContent(t.text)}
+            </div>
+            {!t.isFinal && (
+              <div style={{ 
+                fontSize: '11px', 
+                color: '#94a3b8', 
+                marginTop: '6px',
+                fontStyle: 'italic'
+              }}>
+                typing...
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  const helpTab = (
+    <div style={{ color: '#334155', fontSize: '14px', lineHeight: '1.8' }}>
+      <h3 style={{ color: '#6366f1', marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>
+        🎮 How to Play
+      </h3>
+      <ul style={{ paddingLeft: '20px', margin: '0 0 24px 0' }}>
+        <li>Click "Connect" to start your session with Pi</li>
+        <li>Speak naturally - Pi will help you learn</li>
+        <li>Use the canvas to draw and show your work</li>
+        <li>Complete milestones to progress through the lesson</li>
+        <li>Check the Progress tab to see how you're doing</li>
+      </ul>
+      
+      <h3 style={{ color: '#6366f1', marginTop: '24px', marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>
+        🎤 Voice Commands
+      </h3>
+      <ul style={{ paddingLeft: '20px', margin: 0 }}>
+        <li>"I need help" - Ask Pi for hints</li>
+        <li>"Repeat that" - Hear the last instruction again</li>
+        <li>"I'm done" - Submit your answer</li>
+      </ul>
+    </div>
+  );
+
+  const tabs = [
+    { id: 'progress', label: 'Progress', icon: '📊', content: progressTab },
+    { id: 'chat', label: 'Chat Log', icon: '💬', content: chatTab },
+    { id: 'help', label: 'Help', icon: '❓', content: helpTab }
+  ];
+
   return (
-    <div className="transcription-container">
+    <div className="transcription-container" style={{ height: '100%' }}>
       {showPopUp && <PopUp onClose={handleClosePopUp} />}
+      
+      {/* Floating encouragement particles */}
+      <CozyEncouragementParticles trigger={particleTrigger} />
+      
+      {/* Celebration overlay */}
+      {celebrationMessage && (
+        <CozyCelebration
+          message={celebrationMessage}
+          onComplete={() => {
+            // Optional: clear celebration message after animation
+          }}
+          duration={5000}
+        />
+      )}
+      
       {turns.length === 0 ? (
         <WelcomeScreen />
       ) : (
-        <div className="transcription-view" ref={scrollRef}>
-          {turns.map((t, i) => (
-            <div
-              key={i}
-              className={`transcription-entry ${t.role} ${!t.isFinal ? 'interim' : ''
-                }`}
-            >
-              <div className="transcription-header">
-                <div className="transcription-source">
-                  {t.role === 'user'
-                    ? 'You'
-                    : t.role === 'agent'
-                      ? 'Agent'
-                      : 'System'}
-                </div>
-                <div className="transcription-timestamp">
-                  {formatTimestamp(t.timestamp)}
-                </div>
-              </div>
-              <div className="transcription-text-content">
-                {renderContent(t.text)}
-              </div>
-              {t.groundingChunks && t.groundingChunks.length > 0 && (
-                <div className="grounding-chunks">
-                  <strong>Sources:</strong>
-                  <ul>
-                    {t.groundingChunks
-                      .filter(chunk => chunk.web)
-                      .map((chunk, index) => (
-                        <li key={index}>
-                          <a
-                            href={chunk.web!.uri}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {chunk.web!.title || chunk.web!.uri}
-                          </a>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <CozyWorkspace
+          isConnected={isConnected}
+          piSpeaking={piSpeaking}
+          studentSpeaking={studentSpeaking}
+          piLastMessage={lastPiMessage}
+          studentLastMessage={lastStudentMessage}
+          totalMilestones={currentLesson?.milestones?.length || 0}
+          completedMilestones={progress?.completedMilestones?.length || 0}
+          lessonImage={
+            <LessonImage 
+              lessonId={currentLesson?.id}
+              milestoneIndex={progress?.currentMilestoneIndex}
+            />
+          }
+          canvas={
+            <LessonCanvas 
+              lessonId={currentLesson?.id}
+              milestoneIndex={progress?.currentMilestoneIndex}
+            />
+          }
+          onConnect={handleConnect}
+          onDisconnect={handleDisconnect}
+          onMuteToggle={handleMuteToggle}
+          onHelp={handleHelp}
+          onExport={handleExport}
+          onReset={handleReset}
+          isMuted={muted}
+        />
       )}
     </div>
   );

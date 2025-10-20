@@ -5,12 +5,15 @@
   "type": "module",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "dev": "pnpm --filter tutor-app dev",
+    "dev": "concurrently \"pnpm dev:api\" \"pnpm dev:app\" --names \"API,APP\" --prefix-colors \"blue,green\"",
+    "dev:api": "pnpm --filter api-server dev",
+    "dev:app": "pnpm --filter tutor-app dev",
     "build": "pnpm -r build",
     "preview": "pnpm --filter tutor-app preview",
     "clean": "pnpm -r exec rm -rf node_modules dist .turbo"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "typescript": "~5.8.2"
   }
 }

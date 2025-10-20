@@ -1,0 +1,252 @@
+{
+  "id": "fractions-3-nf-a-1",
+  "title": "Understanding Fractions: Unit Fractions and Building Up",
+  "description": "Complete coverage of CCSS 3.NF.A.1: Understand unit fractions 1/b as 1 part when a whole is partitioned into b equal parts, and understand fractions a/b as 'a' parts of size 1/b. Uses concrete examples (chocolate bars, pizza, paper strips) to build conceptual understanding.",
+  "subject": "fractions",
+  "gradeLevel": "3",
+  "estimatedDuration": 20,
+  "standards": [
+    {
+      "framework": "CCSS",
+      "code": "3.NF.A.1",
+      "description": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts; understand a fraction a/b as the quantity formed by a parts of size 1/b.",
+      "coverage": "full"
+    }
+  ],
+  "objectives": [
+    "Understand that a unit fraction 1/b represents 1 part when a whole is divided into b EQUAL parts",
+    "Recognize that the denominator (bottom number) tells how many equal parts the whole is divided into",
+    "Understand that a fraction a/b represents 'a' parts, each of size 1/b",
+    "Identify and create examples of both unit fractions (1/2, 1/3, 1/4) and non-unit fractions (2/3, 3/4)",
+    "Recognize and correct common misconceptions about equal partitioning and fraction size"
+  ],
+  "milestones": [
+    {
+      "id": "milestone-1",
+      "order": 1,
+      "title": "Understanding Unit Fractions (1/b)",
+      "description": "Student understands that 1/b means 1 part when a whole is divided into b equal parts",
+      "keywords": [
+        "one half",
+        "1/2",
+        "one third",
+        "1/3",
+        "one fourth",
+        "1/4",
+        "equal parts",
+        "same size",
+        "unit fraction",
+        "one part"
+      ],
+      "prompt": "Let's start with a chocolate bar. If we break it into 2 equal pieces, what do we call each piece? What if we broke it into 3 equal pieces? Or 4?",
+      "expectedConcepts": [
+        "When we divide into b equal parts, each part is 1/b",
+        "The bottom number (denominator) tells how many equal parts",
+        "1/2, 1/3, 1/4 are all unit fractions (just 1 part)"
+      ],
+      "completed": false
+    },
+    {
+      "id": "milestone-2",
+      "order": 2,
+      "title": "Equal Partitioning Requirement",
+      "description": "Student can explain why equal partitioning is essential and identify when partitioning is unequal",
+      "keywords": [
+        "equal",
+        "same size",
+        "fair",
+        "not equal",
+        "unequal",
+        "bigger",
+        "smaller",
+        "identical"
+      ],
+      "prompt": "What if I cut the chocolate bar but one piece is bigger than the other? Can we still call them halves? Why or why not?",
+      "expectedConcepts": [
+        "Fractions REQUIRE equal parts",
+        "Unequal pieces cannot be called fractions",
+        "Fair sharing means equal size"
+      ],
+      "completed": false
+    },
+    {
+      "id": "milestone-3",
+      "order": 3,
+      "title": "Building Non-Unit Fractions (a/b)",
+      "description": "Student understands that a/b means 'a' parts, each of size 1/b",
+      "keywords": [
+        "two thirds",
+        "2/3",
+        "three fourths",
+        "3/4",
+        "multiple parts",
+        "two parts",
+        "three parts",
+        "top number",
+        "numerator"
+      ],
+      "prompt": "If one piece is 1/3 of a pizza, what would two pieces be? What about three pieces out of four?",
+      "expectedConcepts": [
+        "2/3 means 2 parts, each of size 1/3",
+        "The top number (numerator) tells how many parts we have",
+        "a/b is built from unit fractions: a × (1/b)"
+      ],
+      "completed": false
+    },
+    {
+      "id": "milestone-4",
+      "order": 4,
+      "title": "Connecting Notation to Meaning",
+      "description": "Student can explain what the numerator and denominator represent in any fraction a/b",
+      "keywords": [
+        "numerator",
+        "denominator",
+        "top number",
+        "bottom number",
+        "how many parts",
+        "size of parts",
+        "notation",
+        "slash",
+        "fraction bar"
+      ],
+      "prompt": "In the fraction 3/4, what does the 4 tell us? What does the 3 tell us?",
+      "expectedConcepts": [
+        "Denominator = how many equal parts the whole is divided into",
+        "Numerator = how many of those parts we're talking about",
+        "Understanding the structure of fraction notation"
+      ],
+      "completed": false
+    },
+    {
+      "id": "milestone-5",
+      "order": 5,
+      "title": "Apply to Multiple Contexts",
+      "description": "Student can identify and create fractions in various real-world scenarios",
+      "keywords": [
+        "pizza",
+        "chocolate",
+        "paper strip",
+        "rectangle",
+        "circle",
+        "sharing",
+        "dividing",
+        "cutting"
+      ],
+      "prompt": "Show me 2/3 of a pizza. Show me 3/4 of a rectangle. Can you give me other examples?",
+      "expectedConcepts": [
+        "Fractions apply to any whole",
+        "Can represent fractions with different shapes",
+        "Transfer learning to new contexts"
+      ],
+      "completed": false
+    }
+  ],
+  "assets": [
+    {
+      "type": "image",
+      "id": "chocolate-bar-whole",
+      "url": "/assets/fractions/chocolate-bar-whole.svg",
+      "alt": "A whole chocolate bar with 6 segments",
+      "usage": "introduction"
+    },
+    {
+      "type": "image",
+      "id": "chocolate-bar-half",
+      "url": "/assets/fractions/chocolate-bar-half.svg",
+      "alt": "A chocolate bar divided into two equal halves",
+      "usage": "milestone-1"
+    },
+    {
+      "type": "image",
+      "id": "chocolate-bar-unequal",
+      "url": "/assets/fractions/chocolate-bar-unequal.svg",
+      "alt": "A chocolate bar divided into unequal parts",
+      "usage": "milestone-2"
+    }
+  ],
+  "prerequisites": [
+    "Basic understanding of 'whole' and 'parts'",
+    "Basic counting and number sense"
+  ],
+  "nextLessons": [
+    "fractions-3-nf-a-2",
+    "fractions-3-nf-a-3"
+  ],
+  "scaffolding": {
+    "hints": [
+      "Think about sharing fairly - all pieces must be the exact same size",
+      "The bottom number tells you how many equal parts to make",
+      "The top number tells you how many of those parts you're taking",
+      "Start with unit fractions (1/2, 1/3, 1/4) then build up to 2/3, 3/4",
+      "Use concrete objects: chocolate bars, pizza slices, paper strips"
+    ],
+    "commonMisconceptions": [
+      {
+        "misconception": "unequal-parts-as-fractions",
+        "description": "Thinking any division creates fractions, even if parts are unequal",
+        "evidence": [
+          "Student says 'I divided it into 3 pieces so each is 1/3' without checking if pieces are equal",
+          "Student accepts unequal pieces as valid fractions"
+        ],
+        "correction": "A fraction requires EQUAL partitioning. If parts aren't the same size, we can't use fraction notation. Ask: 'Are all the pieces exactly the same size?'",
+        "detectionKeywords": ["divided", "split", "cut", "pieces"],
+        "alignedToStandard": "3.NF.A.1",
+        "severity": "high"
+      },
+      {
+        "misconception": "numerator-denominator-role-confusion",
+        "description": "Confusing what numerator and denominator represent",
+        "evidence": [
+          "Student thinks 3/4 means 'divide into 3 parts, take 4'",
+          "Student can't explain what the numbers mean"
+        ],
+        "correction": "Bottom number (denominator) = how many equal parts we divide the whole into. Top number (numerator) = how many of those parts we're talking about. In 3/4: divide into 4 equal parts, take 3 of them.",
+        "detectionKeywords": ["top number", "bottom number", "3/4", "2/3"],
+        "alignedToStandard": "3.NF.A.1",
+        "severity": "high"
+      },
+      {
+        "misconception": "larger-denominator-means-larger-fraction",
+        "description": "Thinking 1/8 is bigger than 1/2 because 8 > 2",
+        "evidence": [
+          "Student says '1/8 is more than 1/2 because 8 is bigger than 2'",
+          "Student orders unit fractions incorrectly"
+        ],
+        "correction": "The denominator tells how many pieces the whole is cut into. More pieces means SMALLER pieces. 1/8 is smaller than 1/2 because when you cut something into 8 pieces, each piece is smaller than when you cut it into only 2 pieces.",
+        "detectionKeywords": ["bigger", "more", "larger", "1/8", "1/4", "1/2"],
+        "alignedToStandard": "3.NF.A.1",
+        "severity": "medium"
+      },
+      {
+        "misconception": "unit-fractions-only",
+        "description": "Not understanding that you can have multiple parts (non-unit fractions)",
+        "evidence": [
+          "Student doesn't understand what 2/3 means",
+          "Student thinks you can only have 'one third', not 'two thirds'"
+        ],
+        "correction": "After understanding 1/b (unit fractions), we can have multiple parts: 2/3 means we have 2 pieces, each of size 1/3. It's like having two 1/3 portions.",
+        "detectionKeywords": ["2/3", "3/4", "two pieces", "multiple parts"],
+        "alignedToStandard": "3.NF.A.1",
+        "severity": "medium"
+      },
+      {
+        "misconception": "fractions-are-whole-numbers",
+        "description": "Treating fractions as two separate whole numbers instead of one quantity",
+        "evidence": [
+          "Student treats 3/4 as '3 and 4' instead of one number",
+          "Student tries to add numerators and denominators separately"
+        ],
+        "correction": "A fraction is ONE number that represents a quantity. 3/4 is one amount, not two separate numbers. It means 3 parts, each of size 1/4.",
+        "detectionKeywords": ["two numbers", "separate", "plus"],
+        "alignedToStandard": "3.NF.A.1",
+        "severity": "low"
+      }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z",
+    "author": "Simili Team",
+    "tags": ["fractions", "halves", "division", "equal-parts"]
+  }
+}

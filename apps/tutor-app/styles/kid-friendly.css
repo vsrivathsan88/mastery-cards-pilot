@@ -1,0 +1,278 @@
+/* Kid-Friendly Color Palette - Warm, Calm, Encouraging */
+
+:root {
+  /* Warm Primary Colors */
+  --color-pi-warm: #FF9F66;        /* Warm orange for Pi */
+  --color-student-warm: #66D9A5;   /* Soft mint green for student */
+  --color-canvas-bg: #FFF8E7;      /* Cream/warm white */
+  --color-bg-gradient-1: #FFE4B5;  /* Peach */
+  --color-bg-gradient-2: #FFD4A3;  /* Light orange */
+  --color-bg-gradient-3: #FFB88C;  /* Peachy orange */
+  --color-success: #78D97E;        /* Encouraging green */
+  --color-help: #FFB84D;           /* Warm yellow */
+  
+  /* Soft Neutrals */
+  --color-text-primary: #3D3D3D;   /* Soft black */
+  --color-text-secondary: #7D7D7D; /* Gray */
+  --color-panel-bg: rgba(255, 255, 255, 0.75);
+  --color-border-subtle: rgba(0, 0, 0, 0.1);
+}
+
+/* Warm animated background */
+.kid-friendly-background {
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-gradient-1) 0%,
+    var(--color-bg-gradient-2) 50%,
+    var(--color-bg-gradient-3) 100%
+  );
+  background-size: 400% 400%;
+  animation: warmGradientShift 20s ease infinite;
+}
+
+@keyframes warmGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Soft panel style */
+.kid-panel {
+  background: var(--color-panel-bg);
+  backdrop-filter: blur(15px);
+  border-radius: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Chunky friendly buttons */
+.kid-button {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+  border: 4px solid white;
+  border-radius: 20px;
+  padding: 20px 40px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 1);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.kid-button:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 1);
+}
+
+.kid-button:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* Primary action button (Pi color) */
+.kid-button-primary {
+  background: linear-gradient(135deg, var(--color-pi-warm), #FFAE80);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.kid-button-primary:hover {
+  background: linear-gradient(135deg, #FFAE80, var(--color-pi-warm));
+}
+
+/* Success button (student color) */
+.kid-button-success {
+  background: linear-gradient(135deg, var(--color-student-warm), #80E6B8);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Help button (warm yellow) */
+.kid-button-help {
+  background: linear-gradient(135deg, var(--color-help), #FFC966);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Floating particles for encouragement */
+.encouragement-particle {
+  position: fixed;
+  pointer-events: none;
+  animation: floatUp 3s ease-out forwards;
+  font-size: 32px;
+  z-index: 1000;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1);
+  }
+  100% {
+    transform: translateY(-300px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Gentle pulse for active states */
+@keyframes gentlePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.gentle-pulse {
+  animation: gentlePulse 2s ease-in-out infinite;
+}
+
+/* Soft glow for interactive elements */
+.warm-glow {
+  box-shadow: 
+    0 0 20px rgba(255, 159, 102, 0.3),
+    0 0 40px rgba(255, 159, 102, 0.2);
+}
+
+/* Canvas container with warm border */
+.kid-canvas-container {
+  background: var(--color-canvas-bg);
+  border-radius: 20px;
+  border: 4px solid white;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 2px 8px rgba(255, 159, 102, 0.1);
+  overflow: hidden;
+}
+
+/* Image container */
+.kid-image-container {
+  background: white;
+  border-radius: 20px;
+  border: 4px solid white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* Simple status indicator */
+.kid-status-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.kid-status-dot.connected {
+  background: var(--color-success);
+  animation: gentlePulse 2s ease-in-out infinite;
+}
+
+.kid-status-dot.offline {
+  background: #CCCCCC;
+}
+
+/* Hidden but accessible settings toggle */
+.kid-settings-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border: 2px solid white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.2s ease;
+  opacity: 0.3;
+  z-index: 999;
+}
+
+.kid-settings-toggle:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* Celebration styles */
+.kid-celebration {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  text-align: center;
+}
+
+.kid-celebration-emoji {
+  font-size: 120px;
+  animation: celebrationBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.kid-celebration-text {
+  font-size: 48px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(255, 159, 102, 0.5);
+  margin-top: 16px;
+  animation: celebrationBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+}
+
+@keyframes celebrationBounce {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Smooth, rounded text */
+.kid-text {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Large, friendly fonts */
+.kid-text-xl {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.kid-text-lg {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.kid-text-md {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+}

@@ -191,6 +191,28 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this.log(`client.toolResponse`, { toolResponse });
   }
 
+  /**
+   * Send a text message to the model
+   * Useful for injecting context (like lesson info) without user speech
+   */
+  public sendTextMessage(text: string) {
+    if (this._status !== 'connected' || !this.session) {
+      this.emit('error', new ErrorEvent('Client is not connected'));
+      return;
+    }
+
+    // Use the same method as send() - sendClientContent with proper structure
+    this.session.sendClientContent({
+      turns: [{
+        role: 'user',
+        parts: [{ text }]
+      }],
+      turnComplete: true
+    });
+
+    this.log(`client.textMessage`, { preview: text.substring(0, 100) + '...' });
+  }
+
   protected onMessage(message: LiveServerMessage) {
     if (message.setupComplete) {
       this.emit('setupcomplete');

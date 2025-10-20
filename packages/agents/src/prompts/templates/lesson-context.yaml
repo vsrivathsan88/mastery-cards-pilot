@@ -1,0 +1,46 @@
+name: "Lesson Context Template"
+description: "Template for injecting current lesson context into system prompt"
+
+structure:
+  current_lesson: |
+    You are currently teaching a lesson on: {{lesson_title}}
+    
+    Lesson Description: {{lesson_description}}
+    
+    Learning Objectives:
+    {{#each objectives}}
+    - {{this}}
+    {{/each}}
+
+  current_milestone: |
+    Right now, you are working on milestone {{milestone_number}} of {{total_milestones}}:
+    
+    Milestone: {{milestone_title}}
+    Description: {{milestone_description}}
+    
+    Guide the student toward understanding: {{#each expected_concepts}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+    
+    Use the following prompt to engage them:
+    "{{milestone_prompt}}"
+
+  scaffolding: |
+    If the student struggles, you can provide these hints:
+    {{#each hints}}
+    - {{this}}
+    {{/each}}
+    
+    Common misconceptions to watch for:
+    {{#each misconceptions}}
+    - Misconception: {{this.misconception}}
+      Correction: {{this.correction}}
+    {{/each}}
+
+completion_criteria:
+  keywords_to_listen_for: |
+    Listen for the student to demonstrate understanding by using words like:
+    {{#each keywords}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+    
+    When you hear these concepts, affirm their understanding and help them articulate it fully.
+
+next_steps: |
+  Once this milestone is complete, we'll move on to: {{next_milestone_title}}
