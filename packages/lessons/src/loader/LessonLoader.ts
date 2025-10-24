@@ -1,5 +1,6 @@
 import { LessonData } from '@simili/shared';
 import chocolateBarLesson from '../definitions/fractions/lesson-1-chocolate-bar.json';
+import equalPartsChallenge from '../definitions/fractions/lesson-equal-parts-challenge.json';
 
 export class LessonLoader {
   private static lessons: Map<string, LessonData> = new Map();
@@ -14,6 +15,12 @@ export class LessonLoader {
     this.lessons.set(
       'fractions-chocolate-bar-1',
       chocolateBarLesson as unknown as LessonData
+    );
+    
+    // Equal Parts Challenge lesson
+    this.lessons.set(
+      'equal-parts-challenge',
+      equalPartsChallenge as unknown as LessonData
     );
   }
 

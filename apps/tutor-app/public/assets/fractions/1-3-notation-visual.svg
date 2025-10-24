@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 350" width="400" height="350">
+  <!-- Background -->
+  <rect width="400" height="350" fill="#FAFAFA"/>
+  
+  <!-- Title -->
+  <text x="200" y="30" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="#333">Understanding 1/3</text>
+  
+  <!-- Fraction notation at top -->
+  <g id="notation" transform="translate(200, 80)">
+    <!-- Numerator -->
+    <text x="0" y="-20" font-family="Arial" font-size="48" font-weight="bold" text-anchor="middle" fill="#E74C3C">1</text>
+    <!-- Fraction bar -->
+    <line x1="-30" y1="-5" x2="30" y2="-5" stroke="#333" stroke-width="3"/>
+    <!-- Denominator -->
+    <text x="0" y="35" font-family="Arial" font-size="48" font-weight="bold" text-anchor="middle" fill="#3498DB">3</text>
+  </g>
+  
+  <!-- Visual representation - circle divided into thirds -->
+  <g id="circle" transform="translate(200, 240)">
+    <!-- Circle base -->
+    <circle cx="0" cy="0" r="70" fill="none" stroke="#333" stroke-width="3"/>
+    
+    <!-- Division lines -->
+    <line x1="0" y1="-70" x2="0" y2="70" stroke="#333" stroke-width="2"/>
+    <line x1="0" y1="0" x2="60.6" y2="35" stroke="#333" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-60.6" y2="35" stroke="#333" stroke-width="2"/>
+    
+    <!-- One part shaded -->
+    <path d="M 0,0 L 0,-70 A 70,70 0 0,1 60.6,35 Z" fill="#E74C3C" opacity="0.7"/>
+    
+    <!-- Labels for parts -->
+    <text x="0" y="-40" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#FFF">This part</text>
+    <text x="45" y="25" font-family="Arial" font-size="12" text-anchor="middle" fill="#666">1 part</text>
+    <text x="-45" y="25" font-family="Arial" font-size="12" text-anchor="middle" fill="#666">1 part</text>
+  </g>
+  
+  <!-- Arrow from numerator to shaded part -->
+  <g id="arrow1">
+    <defs>
+      <marker id="arrowhead1" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <polygon points="0 0, 10 3, 0 6" fill="#E74C3C"/>
+      </marker>
+    </defs>
+    <path d="M 180,95 Q 120,140 150,190" stroke="#E74C3C" stroke-width="2" fill="none" marker-end="url(#arrowhead1)"/>
+    <text x="110" y="150" font-family="Arial" font-size="11" fill="#E74C3C" font-weight="bold">How many</text>
+    <text x="110" y="163" font-family="Arial" font-size="11" fill="#E74C3C" font-weight="bold">parts we have</text>
+  </g>
+  
+  <!-- Arrow from denominator to total parts -->
+  <g id="arrow2">
+    <defs>
+      <marker id="arrowhead2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <polygon points="0 0, 10 3, 0 6" fill="#3498DB"/>
+      </marker>
+    </defs>
+    <path d="M 220,115 Q 280,160 250,210" stroke="#3498DB" stroke-width="2" fill="none" marker-end="url(#arrowhead2)"/>
+    <text x="265" y="165" font-family="Arial" font-size="11" fill="#3498DB" font-weight="bold">Total equal</text>
+    <text x="265" y="178" font-family="Arial" font-size="11" fill="#3498DB" font-weight="bold">parts in whole</text>
+  </g>
+  
+  <!-- Summary text -->
+  <text x="200" y="330" font-family="Arial" font-size="12" text-anchor="middle" fill="#666" font-style="italic">1/3 = 1 part out of 3 equal parts</text>
+</svg>
