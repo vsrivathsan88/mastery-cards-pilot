@@ -53,4 +53,13 @@
     <text x="0" y="-10" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#E74C3C">⚠️ NOT EQUAL PARTS!</text>
     <text x="0" y="7" font-family="Arial" font-size="11" text-anchor="middle" fill="#666">Can't call this 1/4</text>
   </g>
+  
+  <!-- Description Box -->
+  <rect x="10" y="245" width="380" height="35" fill="#FEF2F2" stroke="#DC2626" stroke-width="2" rx="5"/>
+  <text x="200" y="263" font-family="Arial" font-size="10" font-weight="bold" text-anchor="middle" fill="#991B1B">
+    PLACEHOLDER - Final: Rectangle with 4 UNEQUAL parts incorrectly labeled as "1/4"
+  </text>
+  <text x="200" y="275" font-family="Arial" font-size="9" text-anchor="middle" fill="#7F1D1D">
+    Critical thinking: Can we call this 1/4 if parts aren't equal? (NO!)
+  </text>
 </svg>

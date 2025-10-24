@@ -5,6 +5,12 @@
   "subject": "fractions",
   "gradeLevel": "3",
   "estimatedDuration": 20,
+  "coverImage": {
+    "id": "cover-birthday-party",
+    "url": "/assets/fractions/cover-birthday-party.svg",
+    "alt": "Luna's birthday party with three friends gathered around a giant whole cookie",
+    "description": "Story hook: Luna, Maya, and Carlos excited around a giant whole cookie at Luna's birthday party - anticipation before the cutting challenge begins"
+  },
   "standards": [
     {
       "framework": "CCSS",
@@ -23,23 +29,23 @@
     {
       "id": "act-1-curiosity",
       "order": 1,
-      "title": "Act 1: What Makes Parts Equal?",
-      "description": "Student recognizes that equal parts means same size, not just same count",
+      "title": "Act 1: Luna's Birthday Cookie Challenge",
+      "description": "Student discovers fairness concept through Luna's cookie-sharing story - same amount matters before introducing 'equal' terminology",
       "keywords": [
-        "equal",
-        "same size",
         "fair",
         "not fair",
+        "same amount",
+        "more",
+        "less",
         "bigger",
         "smaller",
-        "unequal",
-        "same amount"
+        "same size"
       ],
-      "prompt": "Look at this picture of kids sharing a giant cookie. What do you notice about these pieces? Would you want the smallest one? How would you make all the pieces equal in size?",
+      "prompt": "It's Luna's birthday! 🎂 She baked the BIGGEST chocolate chip cookie ever - like, pizza-sized! Her best friends Maya and Carlos are coming over... and they're SO excited.\n\n[Cover image shows: Three friends around whole cookie]\n\nBut then Luna realizes... three friends, ONE giant cookie. Uh oh!\n\nWhat do you think happens next?\n\n[Wait for student response]\n\nLuna tries to cut it! [Call show_image('unequal-cookie-kids') here to reveal the problem]\n\nLook at their faces! See Carlos on the left? Maya in the middle? Look at the pieces they got... what do you notice?",
       "expectedConcepts": [
-        "Equal parts means SAME SIZE, not just same number of pieces",
-        "For fair sharing, everyone gets the exact same amount",
-        "Unequal pieces aren't fair"
+        "Fair sharing means everyone gets the SAME AMOUNT",
+        "When pieces are different sizes, some people get more than others - that's not fair",
+        "Same amount is what matters for fairness (building toward 'equal' concept)"
       ],
       "completed": false
     },
@@ -137,9 +143,10 @@
     {
       "id": "act-3a-naming",
       "order": 6,
-      "title": "Act 3a: Naming Unit Fractions",
-      "description": "Student connects equal parts to fraction language (one-third, one-fourth)",
+      "title": "Act 3a: Naming What We Discovered",
+      "description": "Student connects 'same amount' concept to math terminology - equal parts and fractions",
       "keywords": [
+        "equal",
         "one third",
         "one fourth",
         "one sixth",
@@ -151,11 +158,11 @@
         "name",
         "called"
       ],
-      "prompt": "When we cut something into 3 equal parts, each piece has a special name: 'one-third.' What do you think we call each piece if we cut into 4 equal parts? What about 6?",
+      "prompt": "You've been working with this idea that pieces need to be the SAME AMOUNT to be fair. Guess what? Mathematicians have a special word for 'same amount' - they call it EQUAL.\n\nEqual means same amount. When pieces are equal, everyone gets the same. That's what you've been finding this whole time!\n\nAnd when we cut something into 3 equal parts, each piece has a special name: 'one-third.' What do you think we call each piece if we cut into 4 equal parts? What about 6?",
       "expectedConcepts": [
+        "Equal = same amount (terminology for concept they know)",
         "Equal parts have fraction names",
-        "Pattern: 'one-[number]' for unit fractions",
-        "Connects number of parts to fraction name"
+        "Pattern: 'one-[number]' for unit fractions"
       ],
       "completed": false
     },
@@ -257,7 +264,7 @@
       "id": "unequal-cookie-kids",
       "url": "/assets/fractions/unequal-cookie-share.svg",
       "alt": "Three kids looking at a cookie cut into three unequal pieces - one piece is noticeably larger than the others",
-      "description": "Visual hook showing unfair partitioning. Kids have different expressions - one disappointed with small piece, one happy with large piece. This creates cognitive dissonance about what 'equal' means.",
+      "description": "Story progression: Luna's cutting attempt - shows unfair result. Carlos disappointed (tiny piece), Maya neutral (medium), Luna guilty (large). Use with show_image when revealing 'Look what happened!' moment in Act 1.",
       "usage": "act-1-curiosity"
     },
     {
@@ -265,7 +272,7 @@
       "id": "equal-vs-unequal-shapes",
       "url": "/assets/fractions/equal-unequal-comparison.svg",
       "alt": "Three shapes side by side: Shape A has 4 equal quarters, Shape B has 4 unequal parts, Shape C has 3 equal thirds",
-      "description": "Diagnostic checkpoint showing one correct and two incorrect partitionings. Tests discrimination of equal vs. unequal.",
+      "description": "Checkpoint assessment: Three shapes for comparison - two correct, one incorrect. Use with show_image for Act 2 checkpoint: 'Which shapes show equal parts?' Tests discrimination ability.",
       "usage": "act-2-checkpoint"
     },
     {
@@ -273,7 +280,7 @@
       "id": "fraction-notation-explained",
       "url": "/assets/fractions/1-3-notation-visual.svg",
       "alt": "A circle divided into 3 equal parts with one shaded. Above it shows 1/3 with arrows pointing from the symbol to the visual",
-      "description": "Visual scaffold connecting symbolic notation to concrete representation. Arrow from '3' to the 3 parts, arrow from '1' to the one shaded part.",
+      "description": "Teaching notation: Visual explanation of 1/3 with arrows showing top number = parts we have, bottom = total equal parts. Use with show_image when teaching symbolic notation in Act 3b.",
       "usage": "act-3b-notation"
     },
     {
@@ -281,7 +288,7 @@
       "id": "false-fraction-unequal",
       "url": "/assets/fractions/unequal-labeled-1-4.svg",
       "alt": "A rectangle divided into 4 unequal parts, incorrectly labeled as 1/4",
-      "description": "Intentionally incorrect representation to test student reasoning. Prompts critical thinking: can we call this 1/4 if parts aren't equal?",
+      "description": "Critical thinking challenge: Unequal parts wrongly labeled as 1/4. Use with show_image for Act 3c retrieval check: 'Is this really one-fourth?' Tests conceptual understanding.",
       "usage": "act-3c-retrieval"
     }
   ],

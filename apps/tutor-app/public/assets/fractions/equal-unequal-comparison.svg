@@ -44,4 +44,13 @@
   
   <!-- Instructions -->
   <text x="300" y="245" font-family="Arial" font-size="12" text-anchor="middle" fill="#666" font-style="italic">Hint: Equal parts must be the same SIZE</text>
+  
+  <!-- Description Box -->
+  <rect x="10" y="260" width="580" height="35" fill="#E8F4F8" stroke="#3498DB" stroke-width="2" rx="5"/>
+  <text x="300" y="278" font-family="Arial" font-size="10" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    PLACEHOLDER - Final: Three shapes side-by-side comparison (A: equal 4 parts, B: unequal 4 parts, C: equal 3 parts)
+  </text>
+  <text x="300" y="290" font-family="Arial" font-size="9" text-anchor="middle" fill="#34495E">
+    Student identifies which show true equal partitioning
+  </text>
 </svg>
