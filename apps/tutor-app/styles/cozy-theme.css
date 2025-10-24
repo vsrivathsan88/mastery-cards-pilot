@@ -372,6 +372,16 @@
   filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
 }
 
+/* Micro Celebration - Subtle sparkles for good attempts & understanding ✨ */
+.cozy-micro-particle {
+  position: fixed;
+  font-size: 28px;
+  pointer-events: none;
+  z-index: 9998;
+  animation: microSparkle 2s ease-out forwards;
+  opacity: 0;
+}
+
 @keyframes starBurst {
   0% {
     opacity: 0;
@@ -388,6 +398,25 @@
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.5) rotate(360deg) translateY(-100px);
+  }
+}
+
+@keyframes microSparkle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5) translateY(0);
+  }
+  20% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1) translateY(-10px);
+  }
+  80% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(0.9) translateY(-30px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7) translateY(-50px);
   }
 }
 
@@ -410,5 +439,9 @@
   
   .cozy-encouragement-particle {
     font-size: 36px; /* Smaller on mobile */
+  }
+  
+  .cozy-micro-particle {
+    font-size: 20px; /* Smaller on mobile */
   }
 }

@@ -7,8 +7,10 @@ import { LessonImage } from '../../LessonImage';
 import { CozyWorkspace } from '../../cozy/CozyWorkspace';
 import { CozyCelebration } from '../../cozy/CozyCelebration';
 import { CozyEncouragementParticles } from '../../cozy/CozyEncouragementParticles';
+import { CozyMicroCelebration } from '../../cozy/CozyMicroCelebration';
 import { LiveConnectConfig, Modality, LiveServerContent } from '@google/genai';
 import { AudioRecorder } from '../../../lib/audio-recorder';
+import { useAgentContext } from '../../../hooks/useAgentContext';
 
 import { useLiveAPIContext } from '../../../contexts/LiveAPIContext';
 import {
@@ -56,12 +58,25 @@ const renderContent = (text: string) => {
 
 export default function StreamingConsole() {
   const { client, setConfig, connected, connect, disconnect } = useLiveAPIContext();
-  const { systemPrompt, voice } = useSettings();
+  const { voice } = useSettings();
   const { tools } = useTools();
   const { currentLesson, progress, celebrationMessage } = useLessonStore();
   const turns = useLogStore(state => state.turns);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
+  
+  // 🎯 AGENT INTEGRATION - Use our new agent services!
+  const {
+    systemPrompt,           // Dynamic prompt with agent context
+    currentContext,         // Latest agent insights
+    isAnalyzing,           // Are agents processing?
+    analyzeTranscription,  // Trigger agent analysis
+    analyzeVision,         // Trigger vision analysis
+    initializeLesson,      // Initialize agents with lesson
+    getShouldUseFiller,    // Check if filler needed
+    getFiller,             // Get filler text
+    agentStats,            // Debug stats
+  } = useAgentContext();
   
   // Audio controls
   const [audioRecorder] = useState(() => new AudioRecorder());
@@ -73,7 +88,14 @@ export default function StreamingConsole() {
   
   // Track milestone completions for particles
   const [particleTrigger, setParticleTrigger] = useState(0);
-  const prevMilestonesRef = useRef(progress?.completedMilestones.length || 0);
+  const prevMilestonesRef = useRef(progress?.completedMilestones || 0);
+  
+  // Track positive understanding for micro-celebrations
+  const [microTrigger, setMicroTrigger] = useState(0);
+  
+  // Filler state
+  const [isWaitingForAgents, setIsWaitingForAgents] = useState(false);
+  const agentTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Get last messages for soundwave display
   const lastPiMessage = turns.filter(t => t.role === 'agent').slice(-1)[0]?.text || '';
@@ -135,6 +157,14 @@ export default function StreamingConsole() {
     useLogStore.getState().clearTurns();
   };
 
+  // 🎯 Initialize agents when lesson loads
+  useEffect(() => {
+    if (currentLesson) {
+      console.log('[StreamingConsole] 🚀 Initializing agents for lesson:', currentLesson.title);
+      initializeLesson(currentLesson);
+    }
+  }, [currentLesson, initializeLesson]);
+
   // Audio recorder effect
   useEffect(() => {
     if (!connected) {
@@ -165,7 +195,7 @@ export default function StreamingConsole() {
   // Detect milestone completions and trigger particles
   useEffect(() => {
     if (progress) {
-      const currentMilestones = progress.completedMilestones.length;
+      const currentMilestones = progress.completedMilestones;
       if (currentMilestones > prevMilestonesRef.current) {
         setParticleTrigger(prev => prev + 1);
         prevMilestonesRef.current = currentMilestones;
@@ -236,6 +266,59 @@ export default function StreamingConsole() {
       
       // Update speaking state
       setStudentSpeaking(!isFinal);
+      
+      // 🎯 AGENT ANALYSIS - When student finishes speaking
+      if (isFinal && text.trim().length > 0) {
+        console.log('[StreamingConsole] 🧠 Student finished speaking, running agents...');
+        
+        // Start agent analysis in background
+        analyzeTranscription(text).then(insights => {
+          console.log('[StreamingConsole] ✅ Agents complete:', {
+            duration: insights.processingTime,
+            hasEmotional: !!insights.emotional,
+            hasMisconception: !!insights.misconception,
+          });
+          
+          // 🌟 MICRO-CELEBRATION: Trigger subtle encouragement for positive signals
+          const showMicroCelebration = (
+            // No misconception detected (correct understanding)
+            !insights.misconception?.detected ||
+            // OR positive emotional state
+            (insights.emotional?.state === 'confident' || 
+             insights.emotional?.state === 'excited') ||
+            // OR high engagement
+            (insights.emotional?.engagementLevel && insights.emotional.engagementLevel > 0.7)
+          );
+          
+          if (showMicroCelebration) {
+            console.log('[StreamingConsole] ✨ Micro-celebration triggered for positive feedback');
+            setMicroTrigger(prev => prev + 1);
+          }
+          
+          // Clear agent waiting state
+          if (agentTimerRef.current) {
+            clearTimeout(agentTimerRef.current);
+            agentTimerRef.current = null;
+          }
+          setIsWaitingForAgents(false);
+        }).catch(error => {
+          console.error('[StreamingConsole] ❌ Agent analysis failed:', error);
+          setIsWaitingForAgents(false);
+        });
+        
+        // 🎯 FILLER LOGIC - If agents might be slow, use filler
+        agentTimerRef.current = setTimeout(() => {
+          if (getShouldUseFiller()) {
+            const filler = getFiller();
+            if (filler) {
+              console.log('[StreamingConsole] 💬 Using filler:', filler);
+              // TODO: Send filler to Gemini as immediate response
+              // For now, just log it
+              setIsWaitingForAgents(true);
+            }
+          }
+        }, 500); // Wait 500ms before considering filler
+      }
     };
 
     const handleOutputTranscription = (text: string, isFinal: boolean) => {
@@ -274,14 +357,28 @@ export default function StreamingConsole() {
           text: last.text + text,
         };
         if (groundingChunks) {
+          // Map Google's GroundingChunk to our type (make uri and title required)
+          const mappedChunks = groundingChunks.map(chunk => ({
+            web: chunk.web ? {
+              uri: chunk.web.uri || '',
+              title: chunk.web.title || ''
+            } : undefined
+          })).filter(chunk => chunk.web) as any;
           updatedTurn.groundingChunks = [
             ...(last.groundingChunks || []),
-            ...groundingChunks,
+            ...mappedChunks,
           ];
         }
         updateLastTurn(updatedTurn);
       } else {
-        addTurn({ role: 'agent', text, isFinal: false, groundingChunks });
+        // Map Google's GroundingChunk to our type
+        const mappedChunks = groundingChunks?.map(chunk => ({
+          web: chunk.web ? {
+            uri: chunk.web.uri || '',
+            title: chunk.web.title || ''
+          } : undefined
+        })).filter(chunk => chunk.web) as any;
+        addTurn({ role: 'agent', text, isFinal: false, groundingChunks: mappedChunks });
       }
     };
 
@@ -303,7 +400,7 @@ export default function StreamingConsole() {
       client.off('content', handleContent);
       client.off('turncomplete', handleTurnComplete);
     };
-  }, [client]);
+  }, [client, analyzeTranscription, getShouldUseFiller, getFiller]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -418,6 +515,7 @@ export default function StreamingConsole() {
       
       {/* Floating encouragement particles */}
       <CozyEncouragementParticles trigger={particleTrigger} />
+      <CozyMicroCelebration trigger={microTrigger} />
       
       {/* Celebration overlay */}
       {celebrationMessage && (
@@ -434,13 +532,17 @@ export default function StreamingConsole() {
         <WelcomeScreen />
       ) : (
         <CozyWorkspace
+          lessonTitle={currentLesson?.title || 'Learning Session'}
+          onBack={() => {
+            useLogStore.getState().clearTurns();
+          }}
           isConnected={isConnected}
           piSpeaking={piSpeaking}
           studentSpeaking={studentSpeaking}
           piLastMessage={lastPiMessage}
           studentLastMessage={lastStudentMessage}
           totalMilestones={currentLesson?.milestones?.length || 0}
-          completedMilestones={progress?.completedMilestones?.length || 0}
+          completedMilestones={progress?.completedMilestones || 0}
           lessonImage={
             <LessonImage 
               lessonId={currentLesson?.id}

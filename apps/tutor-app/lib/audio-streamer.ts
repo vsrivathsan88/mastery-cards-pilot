@@ -227,16 +227,24 @@ export class AudioStreamer {
       this.checkInterval = null;
     }
 
+    // INSTANT STOP: Immediately fade out and stop all audio
+    // Use very short fade (0.05s) for near-instant cutoff
     this.gainNode.gain.linearRampToValueAtTime(
       0,
-      this.context.currentTime + 0.1
+      this.context.currentTime + 0.05
     );
 
+    // Disconnect and recreate gain node immediately after fade
     setTimeout(() => {
-      this.gainNode.disconnect();
-      this.gainNode = this.context.createGain();
-      this.gainNode.connect(this.context.destination);
-    }, 200);
+      try {
+        this.gainNode.disconnect();
+        this.gainNode = this.context.createGain();
+        this.gainNode.connect(this.context.destination);
+      } catch (e) {
+        // Ignore if already disconnected
+        console.warn('[AudioStreamer] Disconnect error (likely already disconnected):', e);
+      }
+    }, 100); // Shortened from 200ms to 100ms for faster response
   }
 
   async resume() {

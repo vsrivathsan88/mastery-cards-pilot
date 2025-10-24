@@ -214,9 +214,18 @@ export function useLiveApi({
   }, [client, config]);
 
   const disconnect = useCallback(async () => {
-    console.log('[useLiveApi] Disconnecting...');
+    console.log('[useLiveApi] 🛑 Disconnecting and stopping audio immediately...');
+    
+    // INSTANT STOP: Stop audio streamer first for immediate silence
+    if (audioStreamerRef.current) {
+      audioStreamerRef.current.stop();
+    }
+    
+    // Then disconnect the client
     client.disconnect();
     setConnected(false);
+    
+    console.log('[useLiveApi] ✓ Disconnected and audio stopped');
   }, [setConnected, client]);
 
   // Setup transcription analysis (Phase 3D: Backend integration)
