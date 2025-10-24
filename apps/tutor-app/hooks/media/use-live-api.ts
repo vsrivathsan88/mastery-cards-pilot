@@ -25,6 +25,7 @@ import { AudioStreamer } from '../../lib/audio-streamer';
 import { audioContext } from '../../lib/utils';
 import VolMeterWorket from '../../lib/worklets/vol-meter';
 import { useLogStore, useSettings, useLessonStore } from '@/lib/state';
+import { useTeacherPanel } from '@/lib/teacher-panel-store';
 import { AgentOrchestrator, PromptManager, formatLessonContext, formatMilestoneTransition, formatMisconceptionFeedback, formatEmotionalFeedback } from '@simili/agents';
 import { LessonLoader } from '@simili/lessons';
 import { LessonData } from '@simili/shared';
@@ -444,6 +445,10 @@ export function useLiveApi({
       // Set lesson in orchestrator and store
       orchestrator.setLesson(lesson);
       useLessonStore.getState().setLesson(lesson);
+      
+      // Start Teacher Panel session
+      useTeacherPanel.getState().startSession(lesson.id, lesson.title);
+      console.log('[useLiveApi] 📊 Teacher Panel session started');
       
       // Format lesson context as a message (not system prompt)
       const currentMilestone = lesson.milestones[0];
