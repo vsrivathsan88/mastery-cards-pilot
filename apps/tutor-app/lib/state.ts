@@ -10,19 +10,20 @@ import { personalAssistantTools } from './tools/personal-assistant';
 import { navigationSystemTools } from './tools/navigation-system';
 import { lessonTools } from './tools/lesson-tools';
 
-export type Template = 'customer-support' | 'personal-assistant' | 'navigation-system';
+export type Template = 'customer-support' | 'personal-assistant' | 'navigation-system' | 'lesson-tutor';
 
 const toolsets: Record<Template, FunctionCall[]> = {
   'customer-support': customerSupportTools,
   'personal-assistant': personalAssistantTools,
   'navigation-system': navigationSystemTools,
-  'lesson-tutor': lessonTools,  // New: Lesson interaction tools
+  'lesson-tutor': lessonTools,  // Lesson interaction tools (show_image, etc.)
 };
 
 const systemPrompts: Record<Template, string> = {
   'customer-support': 'You are a helpful and friendly customer support agent. Be conversational and concise.',
   'personal-assistant': 'You are a helpful and friendly personal assistant. Be proactive and efficient.',
   'navigation-system': 'You are a helpful and friendly navigation assistant. Provide clear and accurate directions.',
+  'lesson-tutor': SIMILI_SYSTEM_PROMPT,  // Use the static Simili tutor prompt
 };
 import { DEFAULT_LIVE_API_MODEL, DEFAULT_VOICE } from './constants';
 import {
@@ -83,8 +84,8 @@ export const useTools = create<{
   removeTool: (toolName: string) => void;
   updateTool: (oldName: string, updatedTool: FunctionCall) => void;
 }>(set => ({
-  tools: customerSupportTools,
-  template: 'customer-support',
+  tools: lessonTools,  // Default to lesson tools for tutor app
+  template: 'lesson-tutor',
   setTemplate: (template: Template) => {
     set({ tools: toolsets[template], template });
     useSettings.getState().setSystemPrompt(systemPrompts[template]);
