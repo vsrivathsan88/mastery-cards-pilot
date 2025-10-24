@@ -8,6 +8,7 @@ import { LessonProgress, SIMILI_SYSTEM_PROMPT } from '@simili/agents';
 import { customerSupportTools } from './tools/customer-support';
 import { personalAssistantTools } from './tools/personal-assistant';
 import { navigationSystemTools } from './tools/navigation-system';
+import { lessonTools } from './tools/lesson-tools';
 
 export type Template = 'customer-support' | 'personal-assistant' | 'navigation-system';
 
@@ -15,6 +16,7 @@ const toolsets: Record<Template, FunctionCall[]> = {
   'customer-support': customerSupportTools,
   'personal-assistant': personalAssistantTools,
   'navigation-system': navigationSystemTools,
+  'lesson-tutor': lessonTools,  // New: Lesson interaction tools
 };
 
 const systemPrompts: Record<Template, string> = {
@@ -194,15 +196,18 @@ export const useLessonStore = create<{
   currentLesson?: LessonData;
   progress?: LessonProgress;
   celebrationMessage?: string;
+  currentImage?: string;  // NEW: Currently displayed image ID (set by show_image tool)
   setLesson: (lesson: LessonData) => void;
   updateProgress: (progress: LessonProgress) => void;
   celebrate: (message: string) => void;
   clearCelebration: () => void;
   clearLesson: () => void;
+  setCurrentImage: (imageId: string) => void;  // NEW: Set current image
 }>((set) => ({
   currentLesson: undefined,
   progress: undefined,
   celebrationMessage: undefined,
+  currentImage: undefined,  // NEW
   setLesson: (lesson: LessonData) => set({ currentLesson: lesson }),
   updateProgress: (progress: LessonProgress) => set({ progress }),
   celebrate: (message: string) => {
@@ -210,5 +215,9 @@ export const useLessonStore = create<{
     setTimeout(() => set({ celebrationMessage: undefined }), 3000);
   },
   clearCelebration: () => set({ celebrationMessage: undefined }),
-  clearLesson: () => set({ currentLesson: undefined, progress: undefined }),
+  clearLesson: () => set({ currentLesson: undefined, progress: undefined, currentImage: undefined }),  // Clear image too
+  setCurrentImage: (imageId: string) => {
+    console.log('[LessonStore] 🖼️ Setting current image:', imageId);
+    set({ currentImage: imageId });
+  },  // NEW
 }));

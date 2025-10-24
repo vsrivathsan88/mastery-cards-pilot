@@ -126,12 +126,33 @@ export function useLiveApi({
           isFinal: true,
         });
 
-        // Prepare the response
-        functionResponses.push({
-          id: fc.id,
-          name: fc.name,
-          response: { result: 'ok' }, // simple, hard-coded function response
-        });
+        // Handle lesson tools
+        if (fc.name === 'show_image') {
+          const { imageId, context } = fc.args;
+          
+          console.log(`[useLiveApi] 🖼️ Showing image: ${imageId}`, context);
+          
+          // Update lesson store with current image
+          useLessonStore.getState().setCurrentImage(imageId);
+          
+          // Prepare success response
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              imageId,
+              message: `Image "${imageId}" is now displayed to the student.`
+            },
+          });
+        } else {
+          // Default response for other tools
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { result: 'ok' }, // simple, hard-coded function response
+          });
+        }
       }
 
       // Log the function call response

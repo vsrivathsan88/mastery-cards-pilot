@@ -7,13 +7,37 @@ interface LessonImageProps {
 }
 
 export function LessonImage({ lessonId, milestoneIndex }: LessonImageProps) {
-  const { currentLesson } = useLessonStore();
+  const { currentLesson, currentImage } = useLessonStore();  // Add currentImage
   
-  // Get the appropriate image for the current milestone
+  // Get the appropriate image with priority system
   const getCurrentImage = (): { url: string; alt: string; caption: string } | null => {
     if (!currentLesson?.assets) return null;
     
-    // If we have a milestone index, try to find asset specific to that milestone
+    // PRIORITY 1: If Pi explicitly set an image via show_image tool, show that
+    if (currentImage) {
+      const explicitAsset = currentLesson.assets.find((asset: any) => asset.id === currentImage);
+      if (explicitAsset) {
+        console.log('[LessonImage] 🎬 Showing tool-selected image:', currentImage);
+        return {
+          url: explicitAsset.url,
+          alt: explicitAsset.alt || 'Lesson visual',
+          caption: explicitAsset.description || explicitAsset.alt || ''
+        };
+      }
+    }
+    
+    // PRIORITY 2: Cover image (if lesson just started and no milestone yet)
+    if (milestoneIndex === 0 && (currentLesson as any).coverImage) {
+      const coverImage = (currentLesson as any).coverImage;
+      console.log('[LessonImage] 🖼️ Showing cover image');
+      return {
+        url: coverImage.url,
+        alt: coverImage.alt || 'Lesson cover',
+        caption: coverImage.description || coverImage.alt || ''
+      };
+    }
+    
+    // PRIORITY 3: Milestone-based image (existing logic)
     if (milestoneIndex !== undefined && currentLesson.milestones?.[milestoneIndex]) {
       const milestone = currentLesson.milestones[milestoneIndex];
       
@@ -31,7 +55,7 @@ export function LessonImage({ lessonId, milestoneIndex }: LessonImageProps) {
       }
     }
     
-    // Fall back to first available image asset
+    // PRIORITY 4: Fall back to first available image asset
     const imageAsset = currentLesson.assets.find((asset: any) => asset.type === 'image');
     if (imageAsset) {
       return {
