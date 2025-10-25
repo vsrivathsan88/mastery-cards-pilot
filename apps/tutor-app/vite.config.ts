@@ -6,8 +6,12 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 3000,
+        port: 5173,
         host: '0.0.0.0',
+        strictPort: true,
+        hmr: {
+          clientPort: 443, // For Replit's proxy
+        },
         proxy: {
           // Proxy API requests to backend
           '/api': {

@@ -1,0 +1,20 @@
+run = "bash start-replit.sh"
+entrypoint = "apps/tutor-app/index.html"
+modules = ["nodejs-20"]
+
+hidden = [".config", "tsconfig.json", "tsconfig.node.json", "vite.config.ts", ".gitignore"]
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "pnpm install && pnpm --filter tutor-app build && pnpm --filter tutor-app preview"]
+deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 5173
+externalPort = 80
+
+[env]
+PATH = "/home/runner/$REPL_SLUG/.config/npm/node_global/bin:/home/runner/$REPL_SLUG/node_modules/.bin"
+npm_config_prefix = "/home/runner/$REPL_SLUG/.config/npm/node_global"
