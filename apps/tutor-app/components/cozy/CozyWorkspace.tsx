@@ -3,6 +3,8 @@ import { TeacherPanelContainer } from '../teacher-panel';
 import { SpeechBubbles } from './SpeechBubbles';
 import { LessonProgressBar } from './LessonProgressBar';
 import '../../styles/cozy-theme.css';
+import './StartButton.css';
+import './WelcomeAnimations.css';
 
 interface CozyWorkspaceProps {
   // Lesson info
@@ -158,9 +160,27 @@ export function CozyWorkspace({
 
           {/* Primary Actions */}
           {!isConnected ? (
-            <button onClick={onConnect} className="clean-button clean-button-primary">
-              🎮 Start Learning
-            </button>
+            <div className="start-button-container">
+              {/* Call-to-action text */}
+              <div className="start-button-cta">
+                <div className="start-button-cta-text">Click here to begin! ⭐</div>
+              </div>
+              
+              {/* Sparkles around button */}
+              <div className="start-button-sparkles">
+                <span className="sparkle">✨</span>
+                <span className="sparkle">✨</span>
+                <span className="sparkle">✨</span>
+                <span className="sparkle">✨</span>
+              </div>
+              
+              <button 
+                onClick={onConnect} 
+                className="start-learning-button start-learning-button-shimmer"
+              >
+                🎮 Start Learning
+              </button>
+            </div>
           ) : (
             <>
               <button onClick={onDisconnect} className="clean-button clean-button-danger">

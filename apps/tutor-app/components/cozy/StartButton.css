@@ -1,0 +1,254 @@
+/* Start Learning Button - Attention-grabbing animations */
+
+.start-learning-button {
+  position: relative;
+  padding: 16px 32px !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  background: var(--accent-primary) !important;
+  color: var(--text-primary) !important;
+  border: 4px solid var(--border-primary) !important;
+  border-radius: 16px !important;
+  box-shadow: 6px 6px 0 var(--border-primary) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: startButtonPulse 2s ease-in-out infinite;
+}
+
+.start-learning-button::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 3px solid var(--accent-primary);
+  border-radius: 20px;
+  animation: startButtonRing 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.start-learning-button::after {
+  content: '👆';
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  animation: startButtonPoint 1.5s ease-in-out infinite;
+}
+
+.start-learning-button:hover {
+  transform: translate(-3px, -3px) scale(1.05);
+  box-shadow: 9px 9px 0 var(--border-primary) !important;
+  animation: none; /* Stop pulse on hover */
+}
+
+.start-learning-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0 var(--border-primary) !important;
+}
+
+/* Main pulse animation - gentle scale + glow */
+@keyframes startButtonPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 6px 6px 0 var(--border-primary), 0 0 0 0 rgba(255, 184, 77, 0);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 6px 6px 0 var(--border-primary), 0 0 20px 4px rgba(255, 184, 77, 0.4);
+  }
+}
+
+/* Expanding ring animation */
+@keyframes startButtonRing {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+
+/* Pointing hand animation */
+@keyframes startButtonPoint {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(-50%) translateY(-10px);
+    opacity: 0.7;
+  }
+}
+
+/* Shimmer effect across button */
+.start-learning-button-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.start-learning-button-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 3s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Sparkles around button */
+.start-button-sparkles {
+  position: absolute;
+  inset: -20px;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 20px;
+  animation: sparkleFloat 2s ease-in-out infinite;
+  opacity: 0;
+}
+
+.sparkle:nth-child(1) {
+  top: 10%;
+  left: -10px;
+  animation-delay: 0s;
+}
+
+.sparkle:nth-child(2) {
+  top: 10%;
+  right: -10px;
+  animation-delay: 0.4s;
+}
+
+.sparkle:nth-child(3) {
+  bottom: 10%;
+  left: 20%;
+  animation-delay: 0.8s;
+}
+
+.sparkle:nth-child(4) {
+  bottom: 10%;
+  right: 20%;
+  animation-delay: 1.2s;
+}
+
+@keyframes sparkleFloat {
+  0%, 100% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.2);
+  }
+}
+
+/* Call-to-action text above button */
+.start-button-cta {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: ctaFadeIn 2s ease-in-out infinite;
+}
+
+.start-button-cta-text {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-shadow: 2px 2px 0 var(--accent-primary);
+  letter-spacing: 0.5px;
+}
+
+@keyframes ctaFadeIn {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+/* Alternative: Bouncing arrow */
+.start-button-arrow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 40px;
+  animation: arrowBounce 1s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-15px);
+  }
+}
+
+/* Wrapper for button + effects */
+.start-button-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .start-learning-button {
+    padding: 14px 28px !important;
+    font-size: 18px !important;
+  }
+
+  .start-learning-button::after {
+    font-size: 28px;
+    top: -45px;
+  }
+
+  .start-button-cta {
+    top: -70px;
+  }
+
+  .start-button-cta-text {
+    font-size: 16px;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .start-learning-button,
+  .start-learning-button::before,
+  .start-learning-button::after,
+  .sparkle,
+  .start-button-cta {
+    animation: none !important;
+  }
+  
+  .start-learning-button {
+    box-shadow: 6px 6px 0 var(--border-primary), 0 0 20px 4px rgba(255, 184, 77, 0.4) !important;
+  }
+}
