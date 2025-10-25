@@ -62,19 +62,8 @@ export function CozyWorkspace({
   const studentAvatarUrl = generateAvatar('student-' + Date.now(), 'student');
 
   return (
-    <div className="clean-workspace clean-text">
-      {/* Header */}
-      <div className="clean-workspace-header">
-        {onBack && (
-          <button className="clean-icon-button" onClick={onBack}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        )}
-        <h1 className="clean-workspace-title">{lessonTitle}</h1>
-        <div style={{ width: '48px' }} /> {/* Spacer for center alignment */}
-      </div>
+    <div className="clean-workspace clean-text" style={{ paddingTop: '80px' }}>
+      {/* Header removed - info shown in GameHeader instead */}
 
       {/* Main Content: Image + Canvas */}
       <div className="clean-workspace-top">

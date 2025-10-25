@@ -1,10 +1,11 @@
 /**
- * Teacher Panel Container
+ * Teacher Panel Container - Clean Redesign
  * 
- * Minimizable panel showing standards coverage, milestone progress,
- * and misconception tracking for teachers/parents.
+ * Minimalist side panel for tracking student progress.
+ * Single-scroll design with collapsible sections and smart empty states.
  */
 
+import { useState } from 'react';
 import { useTeacherPanel } from '@/lib/teacher-panel-store';
 import { StandardsCoverageView } from './StandardsCoverageView';
 import { MilestoneMasteryView } from './MilestoneMasteryView';
@@ -14,16 +15,54 @@ import './TeacherPanel.css';
 export function TeacherPanelContainer() {
   const {
     isExpanded,
-    activeTab,
     togglePanel,
-    setActiveTab,
     currentSession,
+    standardsCoverage,
+    milestoneLogs,
+    misconceptionLogs,
     exportData,
   } = useTeacherPanel();
   
+  const [expandedSection, setExpandedSection] = useState<string | null>('milestones');
+  
   // Don't show if no active session
   if (!currentSession) {
-    return null;
+    return (
+      <div className={`teacher-panel ${isExpanded ? 'expanded' : 'minimized'}`}>
+        <div className="teacher-panel-tab" onClick={togglePanel}>
+          <span>📊</span>
+          <span>{isExpanded ? 'Close' : 'Teacher Panel'}</span>
+        </div>
+        {isExpanded && (
+          <div className="teacher-panel-content">
+            <div className="panel-body">
+              <div className="empty-state-hero">
+                <div className="empty-icon">📊</div>
+                <h3 className="empty-title">Teacher Panel</h3>
+                <p className="empty-description">
+                  Track student progress in real-time during lessons.
+                </p>
+                <div className="empty-features">
+                  <div className="empty-feature">
+                    <span>🎯</span>
+                    <span>Milestone tracking</span>
+                  </div>
+                  <div className="empty-feature">
+                    <span>📚</span>
+                    <span>Standards coverage</span>
+                  </div>
+                  <div className="empty-feature">
+                    <span>💡</span>
+                    <span>Learning insights</span>
+                  </div>
+                </div>
+                <p className="empty-hint">Start a lesson to begin tracking</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
   
   const handleExport = (format: 'json' | 'csv') => {
@@ -35,88 +74,131 @@ export function TeacherPanelContainer() {
     }
   };
   
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+  
+  const activeMisconceptions = misconceptionLogs.filter(m => m.status !== 'resolved').length;
+  const completedMilestones = milestoneLogs.filter(m => m.status === 'completed').length;
+  
   return (
     <div className={`teacher-panel ${isExpanded ? 'expanded' : 'minimized'}`}>
-      {/* Header with toggle */}
-      <div className="teacher-panel-header" onClick={togglePanel}>
-        <div className="header-content">
-          <span className="panel-icon">📊</span>
-          <span className="panel-title">Teacher Panel</span>
-          <span className="toggle-icon">{isExpanded ? '▼' : '▲'}</span>
-        </div>
-        {!isExpanded && (
-          <div className="header-summary">
-            <span className="summary-badge">
-              {currentSession.milestonesCompleted}/{currentSession.milestonesTotal} milestones
-            </span>
-            {currentSession.misconceptionsDetected > 0 && (
-              <span className="summary-badge warning">
-                {currentSession.misconceptionsDetected} issues
-              </span>
-            )}
-          </div>
-        )}
+      {/* Tab Button - Positioned in header */}
+      <div className="teacher-panel-tab" onClick={togglePanel}>
+        <span>📊</span>
+        <span>{isExpanded ? 'Close' : 'Teacher Panel'}</span>
       </div>
       
-      {/* Expanded content */}
+      {/* Panel Content (only visible when expanded) */}
       {isExpanded && (
         <div className="teacher-panel-content">
-          {/* Tab navigation */}
-          <div className="panel-tabs">
-            <button
-              className={`tab-button ${activeTab === 'standards' ? 'active' : ''}`}
-              onClick={() => setActiveTab('standards')}
-            >
-              📚 Standards
-            </button>
-            <button
-              className={`tab-button ${activeTab === 'milestones' ? 'active' : ''}`}
-              onClick={() => setActiveTab('milestones')}
-            >
-              🎯 Milestones
-            </button>
-            <button
-              className={`tab-button ${activeTab === 'misconceptions' ? 'active' : ''}`}
-              onClick={() => setActiveTab('misconceptions')}
-            >
-              ⚠️ Misconceptions
-              {currentSession.misconceptionsDetected > 0 && (
-                <span className="tab-badge">{currentSession.misconceptionsDetected}</span>
-              )}
-            </button>
-          </div>
-          
-          {/* Tab content */}
-          <div className="panel-body">
-            {activeTab === 'standards' && <StandardsCoverageView />}
-            {activeTab === 'milestones' && <MilestoneMasteryView />}
-            {activeTab === 'misconceptions' && <MisconceptionLogView />}
-          </div>
-          
-          {/* Footer with export */}
-          <div className="panel-footer">
-            <div className="footer-info">
-              <span>Lesson: {currentSession.lessonTitle}</span>
-              <span>•</span>
-              <span>{currentSession.percentComplete}% Complete</span>
-            </div>
-            <div className="footer-actions">
-              <button
-                className="export-button"
-                onClick={() => handleExport('json')}
-                title="Export as JSON"
-              >
-                📥 JSON
-              </button>
-              <button
-                className="export-button"
-                onClick={() => handleExport('csv')}
-                title="Export as CSV"
-              >
-                📥 CSV
-              </button>
+          {/* Header - Key Metrics */}
+          <div className="teacher-panel-header-clean">
+            <div className="lesson-title">{currentSession.lessonTitle}</div>
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <div className="metric-value">{completedMilestones}</div>
+                <div className="metric-label">Milestones</div>
+              </div>
+              <div className="metric-card">
+                <div className="metric-value">{standardsCoverage.length}</div>
+                <div className="metric-label">Standards</div>
+              </div>
+              <div className={`metric-card ${activeMisconceptions > 0 ? 'alert' : ''}`}>
+                <div className="metric-value">{activeMisconceptions}</div>
+                <div className="metric-label">Active Issues</div>
+              </div>
             </div>
           </div>
+          
+          {/* Scrollable Content - Collapsible Sections */}
+          <div className="panel-body-clean">
+            {/* Milestones Section */}
+            <CollapsibleSection
+              title="Milestones"
+              icon="🎯"
+              count={milestoneLogs.length}
+              isExpanded={expandedSection === 'milestones'}
+              onToggle={() => toggleSection('milestones')}
+            >
+              <MilestoneMasteryView />
+            </CollapsibleSection>
+            
+            {/* Issues Section */}
+            {(misconceptionLogs.length > 0 || activeMisconceptions > 0) && (
+              <CollapsibleSection
+                title="Learning Issues"
+                icon="💡"
+                count={activeMisconceptions}
+                isExpanded={expandedSection === 'misconceptions'}
+                onToggle={() => toggleSection('misconceptions')}
+                badge={activeMisconceptions > 0 ? 'needs attention' : undefined}
+              >
+                <MisconceptionLogView />
+              </CollapsibleSection>
+            )}
+            
+            {/* Standards Section */}
+            <CollapsibleSection
+              title="Standards Coverage"
+              icon="📚"
+              count={standardsCoverage.length}
+              isExpanded={expandedSection === 'standards'}
+              onToggle={() => toggleSection('standards')}
+            >
+              <StandardsCoverageView />
+            </CollapsibleSection>
+          </div>
+          
+          {/* Footer - Minimal */}
+          <div className="panel-footer-clean">
+            <button
+              className="export-button-clean"
+              onClick={() => handleExport('json')}
+              title="Export session data"
+            >
+              📥 Export
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface CollapsibleSectionProps {
+  title: string;
+  icon: string;
+  count: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+  badge?: string;
+  children: React.ReactNode;
+}
+
+function CollapsibleSection({ 
+  title, 
+  icon, 
+  count, 
+  isExpanded, 
+  onToggle, 
+  badge,
+  children 
+}: CollapsibleSectionProps) {
+  return (
+    <div className="collapsible-section">
+      <button className="section-toggle" onClick={onToggle}>
+        <div className="section-header-left">
+          <span className="section-icon">{icon}</span>
+          <span className="section-title">{title}</span>
+          {count > 0 && <span className="section-count">{count}</span>}
+          {badge && <span className="section-badge">{badge}</span>}
+        </div>
+        <span className="section-arrow">{isExpanded ? '−' : '+'}</span>
+      </button>
+      {isExpanded && (
+        <div className="section-content">
+          {children}
         </div>
       )}
     </div>

@@ -134,7 +134,7 @@ export function useLiveApi({
           console.log(`[useLiveApi] 🖼️ Showing image: ${imageId}`, context);
           
           // Update lesson store with current image
-          useLessonStore.getState().setCurrentImage(imageId);
+          useLessonStore.getState().setCurrentImage(imageId as string);
           
           // Prepare success response
           functionResponses.push({
@@ -291,14 +291,12 @@ export function useLiveApi({
           console.log('[useLiveApi] ⚠️ Misconception detected:', analysis.misconception.type);
 
           // Format misconception feedback as JSON
-          const feedback = formatMisconceptionFeedback([{
-            misconception: analysis.misconception.type || 'unknown',
-            detected: true,
-            confidence: analysis.misconception.confidence,
+          const feedback = formatMisconceptionFeedback({
+            type: analysis.misconception.type || 'unknown',
             evidence: analysis.misconception.evidence || text,
             intervention: analysis.misconception.intervention || 'Address this misconception gently',
-            correction: analysis.misconception.correctiveConcept || 'Guide toward correct understanding',
-          }]);
+            correctiveConcept: analysis.misconception.correctiveConcept || 'Guide toward correct understanding',
+          });
 
           // Send to agent
           if (client.status === 'connected') {

@@ -1,4 +1,5 @@
 import { LessonData, Milestone } from '@simili/shared';
+import { InstructionFormatter } from './InstructionFormatter';
 
 export interface MisconceptionContext {
   turn: number;
@@ -124,6 +125,24 @@ export class ContextManager {
     return { ...this.sessionContext };
   }
 
+  /**
+   * Format context as structured JSON instructions for Gemini Live
+   * OPTIMIZED for fast parsing and clear instructions
+   */
+  public formatContextAsJSON(): string {
+    return InstructionFormatter.formatForGeminiLive(this.sessionContext);
+  }
+
+  /**
+   * Format context as XML (alternative format)
+   */
+  public formatContextAsXML(): string {
+    return InstructionFormatter.formatAsXML(this.sessionContext);
+  }
+
+  /**
+   * Format context as human-readable text (legacy format)
+   */
   public formatContextForPrompt(): string {
     const ctx = this.sessionContext;
     let formatted = '\n\n# CURRENT CONTEXT (Updated each turn)\n\n';

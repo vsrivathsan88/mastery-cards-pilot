@@ -3,6 +3,8 @@
  * 
  * Zustand store for tracking student progress, standards coverage,
  * and misconceptions in real-time during lessons.
+ * 
+ * Integrates with agent service to capture emotional state and misconception analysis.
  */
 
 import { create } from 'zustand';
@@ -13,11 +15,15 @@ import {
   LessonSession,
   TeacherPanelExport,
 } from './teacher-panel-types';
+import type { 
+  EmotionalContext, 
+  MisconceptionContext 
+} from '@simili/agents';
 
 interface TeacherPanelState {
   // UI State
   isExpanded: boolean;
-  activeTab: 'standards' | 'milestones' | 'misconceptions';
+  activeTab: 'standards' | 'milestones' | 'misconceptions' | 'emotional';
   
   // Session Data
   currentSession: LessonSession | null;
@@ -29,7 +35,7 @@ interface TeacherPanelState {
   
   // Actions
   togglePanel: () => void;
-  setActiveTab: (tab: 'standards' | 'milestones' | 'misconceptions') => void;
+  setActiveTab: (tab: 'standards' | 'milestones' | 'misconceptions' | 'emotional') => void;
   
   // Session Management
   startSession: (lessonId: string, lessonTitle: string) => void;
@@ -48,11 +54,22 @@ interface TeacherPanelState {
   logMisconception: (misconception: Omit<MisconceptionLog, 'id' | 'timestamp' | 'recurrenceCount'>) => void;
   updateMisconceptionStatus: (id: string, status: MisconceptionLog['status'], evidence?: string) => void;
   
+  // Agent Integration
+  syncAgentInsights: (emotional?: EmotionalContext, misconception?: MisconceptionContext, studentSaid?: string) => void;
+  
   // Export
   exportData: (format: 'json' | 'csv') => TeacherPanelExport;
   
   // Reset
   clearPanel: () => void;
+}
+
+// Helper function to map emotional state to severity
+function mapFrustrationToSeverity(frustrationLevel: number, confusionLevel: number): 'low' | 'medium' | 'high' {
+  const combined = (frustrationLevel + confusionLevel) / 2;
+  if (combined > 0.6) return 'high';
+  if (combined > 0.3) return 'medium';
+  return 'low';
 }
 
 export const useTeacherPanel = create<TeacherPanelState>((set, get) => ({
@@ -67,7 +84,7 @@ export const useTeacherPanel = create<TeacherPanelState>((set, get) => ({
   // UI Actions
   togglePanel: () => set(state => ({ isExpanded: !state.isExpanded })),
   
-  setActiveTab: (tab) => set({ activeTab: tab }),
+  setActiveTab: (tab: 'standards' | 'milestones' | 'misconceptions' | 'emotional') => set({ activeTab: tab }),
   
   // Session Management
   startSession: (lessonId, lessonTitle) => {
@@ -292,6 +309,49 @@ export const useTeacherPanel = create<TeacherPanelState>((set, get) => ({
     });
     
     console.log('[TeacherPanel] Misconception status updated:', id, status);
+  },
+  
+  // Agent Integration
+  syncAgentInsights: (emotional, misconception, studentSaid = '') => {
+    const { currentSession } = get();
+    if (!currentSession) return;
+    
+    console.log('[TeacherPanel] Syncing agent insights', { 
+      hasEmotional: !!emotional, 
+      hasMisconception: !!misconception 
+    });
+    
+    // Log misconception if detected
+    if (misconception?.detected && misconception.type) {
+      const severity = mapFrustrationToSeverity(
+        emotional?.frustrationLevel || 0,
+        emotional?.confusionLevel || 0
+      );
+      
+      get().logMisconception({
+        misconceptionType: misconception.type,
+        severity,
+        description: misconception.correctiveConcept || 'Misconception detected by agent',
+        studentSaid: misconception.evidence || studentSaid,
+        trigger: 'Agent analysis',
+        status: 'detected',
+        interventionUsed: misconception.intervention,
+        resolved: misconception.resolved || false,
+        relatedObjectives: [],
+      });
+    }
+    
+    // Track emotional state trends
+    if (emotional) {
+      // You could add emotional state tracking to the session here
+      // For now, we're just using it for misconception severity
+      console.log('[TeacherPanel] Emotional state:', {
+        state: emotional.state,
+        engagement: emotional.engagementLevel,
+        frustration: emotional.frustrationLevel,
+        confusion: emotional.confusionLevel,
+      });
+    }
   },
   
   // Export

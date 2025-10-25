@@ -11,6 +11,9 @@ import { CozyMicroCelebration } from '../../cozy/CozyMicroCelebration';
 import { LiveConnectConfig, Modality, LiveServerContent } from '@google/genai';
 import { AudioRecorder } from '../../../lib/audio-recorder';
 import { useAgentContext } from '../../../hooks/useAgentContext';
+import { useTeacherPanel } from '../../../lib/teacher-panel-store';
+import { useUser } from '../../../contexts/UserContext';
+import { PromptBuilder } from '../../../services/PromptBuilder';
 
 import { useLiveAPIContext } from '../../../contexts/LiveAPIContext';
 import {
@@ -77,6 +80,20 @@ export default function StreamingConsole() {
     getFiller,             // Get filler text
     agentStats,            // Debug stats
   } = useAgentContext();
+  
+  // 📊 TEACHER PANEL - Sync agent insights with teacher panel
+  const { syncAgentInsights, startSession } = useTeacherPanel();
+  
+  // 👤 USER DATA - Get child's name for personalization
+  const { userData } = useUser();
+  
+  // Set student name for personalized prompts
+  useEffect(() => {
+    if (userData?.name) {
+      PromptBuilder.setStudentName(userData.name);
+      console.log('[StreamingConsole] Student name set for prompts:', userData.name);
+    }
+  }, [userData?.name]);
   
   // Audio controls
   const [audioRecorder] = useState(() => new AudioRecorder());
@@ -162,8 +179,12 @@ export default function StreamingConsole() {
     if (currentLesson) {
       console.log('[StreamingConsole] 🚀 Initializing agents for lesson:', currentLesson.title);
       initializeLesson(currentLesson);
+      
+      // 📊 Initialize teacher panel session
+      console.log('[StreamingConsole] 📊 Starting teacher panel session');
+      startSession(currentLesson.id, currentLesson.title);
     }
-  }, [currentLesson, initializeLesson]);
+  }, [currentLesson, initializeLesson, startSession]);
 
   // Audio recorder effect
   useEffect(() => {
@@ -278,6 +299,9 @@ export default function StreamingConsole() {
             hasEmotional: !!insights.emotional,
             hasMisconception: !!insights.misconception,
           });
+          
+          // 📊 TEACHER PANEL: Sync agent insights
+          syncAgentInsights(insights.emotional, insights.misconception, text);
           
           // 🌟 MICRO-CELEBRATION: Trigger subtle encouragement for positive signals
           const showMicroCelebration = (

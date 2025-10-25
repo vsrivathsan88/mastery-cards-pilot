@@ -28,10 +28,8 @@ export class MultiAgentGraph {
     // Node 1: Process transcription
     this.graph.addNode('process_transcription', this.processTranscription.bind(this));
     
-    // Node 2: Analyze for misconceptions
+    // Node 2-3: Parallel analysis nodes
     this.graph.addNode('analyze_misconception', this.analyzeMisconception.bind(this));
-    
-    // Node 3: Analyze emotional state (parallel with misconception)
     this.graph.addNode('analyze_emotional', this.analyzeEmotional.bind(this));
     
     // Node 4: Format context for Main Agent
@@ -40,23 +38,36 @@ export class MultiAgentGraph {
     // Define edges (flow)
     // @ts-ignore - LangGraph types are strict, but this works at runtime
     this.graph.addEdge('__start__' as any, 'process_transcription' as any);
-    // @ts-ignore - Both analyses run in sequence (could be parallel but keep simple for now)
+    
+    // PARALLEL EXECUTION: Both analyses run simultaneously
+    // Fan out: process_transcription → [analyze_misconception, analyze_emotional]
+    // @ts-ignore
     this.graph.addEdge('process_transcription' as any, 'analyze_misconception' as any);
     // @ts-ignore
-    this.graph.addEdge('analyze_misconception' as any, 'analyze_emotional' as any);
+    this.graph.addEdge('process_transcription' as any, 'analyze_emotional' as any);
+    
+    // Fan in: Wait for both to complete before formatting
+    // @ts-ignore
+    this.graph.addEdge('analyze_misconception' as any, 'format_context' as any);
     // @ts-ignore
     this.graph.addEdge('analyze_emotional' as any, 'format_context' as any);
+    
     // @ts-ignore
     this.graph.addEdge('format_context' as any, '__end__' as any);
+    
+    logger.info('Graph built with PARALLEL execution: misconception + emotional run simultaneously');
   }
 
   /**
    * Node: Process incoming transcription
    */
   private async processTranscription(state: AgentStateType): Promise<Partial<AgentStateType>> {
+    const startTime = Date.now();
+    
     logger.info('[MultiAgentGraph] Processing transcription', {
       turn: state.turnNumber,
       isFinal: state.isFinal,
+      transcription: state.transcription.substring(0, 50) + '...',
     });
 
     // Update transcription history
@@ -81,6 +92,9 @@ export class MultiAgentGraph {
       );
     }
 
+    const duration = Date.now() - startTime;
+    logger.info(`[MultiAgentGraph] Processing complete in ${duration}ms, starting parallel analysis...`);
+
     return {
       transcriptionHistory: history,
       timestamp: Date.now(),
@@ -89,31 +103,40 @@ export class MultiAgentGraph {
 
   /**
    * Node: Analyze for misconceptions using sub-agent
+   * PARALLEL EXECUTION: Runs simultaneously with emotional analysis
    */
   private async analyzeMisconception(state: AgentStateType): Promise<Partial<AgentStateType>> {
+    const startTime = Date.now();
+    
     // Only analyze final transcriptions
     if (!state.isFinal) {
-      logger.info('[MultiAgentGraph] Skipping misconception analysis (not final)');
+      logger.info('[Misconception] Skipping (not final transcription)');
       return {};
     }
 
     if (!state.lesson) {
-      logger.warn('[MultiAgentGraph] No lesson context, skipping misconception analysis');
+      logger.warn('[Misconception] No lesson context, skipping');
       return {};
     }
 
-    logger.info('[MultiAgentGraph] Analyzing misconception');
+    logger.info('[Misconception] 🚀 Starting analysis (PARALLEL)...');
 
     try {
       // Extract known misconceptions from lesson
       const scaffolding = (state.lesson as any).scaffolding;
       const knownMisconceptions = scaffolding?.commonMisconceptions || [];
 
-      // Call misconception classifier
+      // Call misconception classifier (Gemini 2.0 Flash)
       const result = await this.misconceptionClassifier.analyze({
         transcription: state.transcription,
         lesson: state.lesson,
         knownMisconceptions,
+      });
+
+      const duration = Date.now() - startTime;
+      logger.info(`[Misconception] ✅ Complete in ${duration}ms - Detected: ${result.detected}`, {
+        type: result.type,
+        confidence: result.confidence,
       });
 
       // Update context manager
@@ -133,9 +156,10 @@ export class MultiAgentGraph {
         misconception: result,
       };
     } catch (error) {
-      logger.error('[MultiAgentGraph] Misconception analysis failed', { error });
+      const duration = Date.now() - startTime;
+      logger.error(`[Misconception] ❌ Failed after ${duration}ms`, { error });
       
-      // Return safe fallback
+      // Return safe fallback (graceful degradation)
       return {
         misconception: { detected: false },
       };
@@ -144,19 +168,25 @@ export class MultiAgentGraph {
 
   /**
    * Node: Analyze emotional state
+   * PARALLEL EXECUTION: Runs simultaneously with misconception analysis
    */
   private async analyzeEmotional(state: AgentStateType): Promise<Partial<AgentStateType>> {
-    logger.info('[MultiAgentGraph] Analyzing emotional state');
+    const startTime = Date.now();
+    
+    logger.info('[Emotional] 🚀 Starting analysis (PARALLEL)...');
 
     try {
+      // Call emotional classifier (Gemini 2.0 Flash)
       const result = await this.emotionalClassifier.analyze(
         state.transcription,
         state.transcriptionHistory
       );
 
-      logger.info('[MultiAgentGraph] Emotional analysis complete', {
-        state: result.state,
+      const duration = Date.now() - startTime;
+      logger.info(`[Emotional] ✅ Complete in ${duration}ms - State: ${result.state}`, {
         engagement: result.engagementLevel,
+        frustration: result.frustrationLevel,
+        confusion: result.confusionLevel,
         confidence: result.confidence,
       });
 
@@ -184,9 +214,10 @@ export class MultiAgentGraph {
         },
       };
     } catch (error) {
-      logger.error('[MultiAgentGraph] Emotional analysis failed', { error });
+      const duration = Date.now() - startTime;
+      logger.error(`[Emotional] ❌ Failed after ${duration}ms`, { error });
       
-      // Return neutral fallback
+      // Return neutral fallback (graceful degradation)
       return {
         emotional: {
           state: 'neutral',

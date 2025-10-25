@@ -37,14 +37,14 @@ export function CozyCelebration({
 
   if (!isVisible) return null;
 
-  // Warm confetti colors only
+  // Warm, playful confetti colors
   const warmColors = [
-    '#FFD4B2', // cozy-peach
-    '#FFB4A2', // cozy-coral
-    '#C8E6C9', // cozy-mint
-    '#E1D5F0', // cozy-lavender
-    '#FFE8D6', // light peach
-    '#FFCC99', // warm orange
+    '#FF8A6D', // accent-coral
+    '#FFB499', // accent-peach
+    '#7DCCB8', // accent-mint
+    '#A8CFBC', // accent-sage
+    '#C5B3E6', // accent-lavender
+    '#D4C5F0', // accent-soft-purple
   ];
 
   return (
@@ -53,10 +53,11 @@ export function CozyCelebration({
       <Confetti
         width={windowSize.width}
         height={windowSize.height}
-        numberOfPieces={300}
+        numberOfPieces={150}
         colors={warmColors}
         recycle={false}
-        gravity={0.15}
+        gravity={0.2}
+        wind={0.01}
       />
 
       {/* Message */}

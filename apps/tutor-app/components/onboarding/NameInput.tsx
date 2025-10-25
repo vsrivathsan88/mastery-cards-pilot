@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, ReactNode, KeyboardEvent } from 'react';
 
 interface NameInputProps {
   onSubmit: (name: string) => void;
@@ -13,7 +13,7 @@ export function NameInput({ onSubmit }: NameInputProps) {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSubmit();
     }

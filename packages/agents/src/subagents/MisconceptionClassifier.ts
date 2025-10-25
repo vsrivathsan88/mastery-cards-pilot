@@ -78,37 +78,37 @@ export class MisconceptionClassifier {
   private async analyzeWithRetry(input: MisconceptionAnalysisInput): Promise<MisconceptionAnalysisResult> {
     const { transcription, lesson, knownMisconceptions } = input;
 
-    const prompt = `You are an expert math education diagnostician. Analyze the student's statement for mathematical misconceptions.
+    // OPTIMIZED PROMPT: Concise, structured, fast for Gemini 2.0 Flash
+    const prompt = `Analyze student's math statement for misconceptions. Return JSON ONLY.
 
-# Context
-Lesson: ${lesson.title}
-Current Topic: ${lesson.description}
+LESSON: ${lesson.title}
+STUDENT SAID: "${transcription}"
 
-# Known Misconceptions for This Lesson
-${knownMisconceptions.map(m => `- Misconception: "${m.misconception}"\n  Correction: "${m.correction}"`).join('\n')}
+KNOWN MISCONCEPTIONS:
+${knownMisconceptions.map((m, i) => `${i + 1}. ${m.misconception}: ${m.correction}`).join('\n')}
 
-# Student Statement
-"${transcription}"
-
-# Task
-Analyze if the student demonstrates any misconceptions. Return JSON with:
+OUTPUT JSON FORMAT:
 {
-  "detected": boolean,
-  "type": string (short identifier like "any_two_pieces_are_halves"),
-  "confidence": number (0.0 to 1.0),
-  "evidence": string (quote from student showing misconception),
-  "intervention": string (how teacher should respond),
-  "correctiveConcept": string (correct concept to teach)
+  "detected": true/false,
+  "type": "identifier-like-this" (if detected),
+  "confidence": 0.0-1.0 (if detected),
+  "evidence": "exact quote showing issue" (if detected),
+  "intervention": "one-sentence guidance for teacher" (if detected),
+  "correctiveConcept": "correct concept in brief" (if detected)
 }
 
-If NO misconception detected, return: {"detected": false}
+RULES:
+- Only flag CLEAR misconceptions (not wording issues)
+- If unsure, return {"detected": false}
+- Be strict and precise
+- Return valid JSON only, no explanations
 
-Be strict: only flag clear misconceptions, not minor wording issues.`;
+JSON:`;
 
     const { text } = await generateText({
       model: this.google(this.modelName),
       prompt,
-      temperature: 0.2, // Low temperature for consistent analysis
+      temperature: 0.1, // Very low for consistent, fast analysis
     });
 
     // Parse JSON response

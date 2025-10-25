@@ -12,8 +12,10 @@ export function StandardsCoverageView() {
   if (standardsCoverage.length === 0) {
     return (
       <div className="empty-state">
-        <p>📚 No standards data yet</p>
-        <p className="empty-subtitle">Standards coverage will appear as the lesson progresses</p>
+        <p>📚 Standards mapping in progress</p>
+        <p className="empty-subtitle">
+          As the lesson progresses, you'll see which learning standards are being addressed and the student's progress toward mastery.
+        </p>
       </div>
     );
   }

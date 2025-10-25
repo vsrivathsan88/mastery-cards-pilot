@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import { LessonData, Milestone } from '@simili/shared';
 import { LessonProgress as LessonProgressType } from '@simili/agents';
 
@@ -8,7 +8,7 @@ interface LessonProgressProps {
   onMilestoneComplete?: (milestone: Milestone) => void;
 }
 
-export const LessonProgress: React.FC<LessonProgressProps> = ({
+export const LessonProgress: FC<LessonProgressProps> = ({
   lesson,
   progress,
   onMilestoneComplete,
