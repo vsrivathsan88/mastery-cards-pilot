@@ -1,11 +1,14 @@
 import { ReactNode } from 'react';
 import { TeacherPanelContainer } from '../teacher-panel';
+import { SpeechBubbles } from './SpeechBubbles';
+import { LessonProgressBar } from './LessonProgressBar';
 import '../../styles/cozy-theme.css';
 
 interface CozyWorkspaceProps {
   // Lesson info
   lessonTitle?: string;
   onBack?: () => void;
+  currentMilestoneName?: string;
   
   // Progress for constellation
   totalMilestones?: number;
@@ -40,6 +43,7 @@ function generateAvatar(seed: string, type: 'pi' | 'student') {
 
 export function CozyWorkspace({
   lessonTitle = 'Learning Session',
+  currentMilestoneName,
   onBack,
   isConnected,
   piSpeaking,
@@ -64,6 +68,27 @@ export function CozyWorkspace({
   return (
     <div className="clean-workspace clean-text" style={{ paddingTop: '80px' }}>
       {/* Header removed - info shown in GameHeader instead */}
+
+      {/* Progress Bar */}
+      {isConnected && totalMilestones > 0 && (
+        <div style={{ marginBottom: '12px' }}>
+          <LessonProgressBar
+            completedMilestones={completedMilestones}
+            totalMilestones={totalMilestones}
+            currentMilestoneName={currentMilestoneName}
+          />
+        </div>
+      )}
+
+      {/* Speech Bubbles - Last conversation exchange */}
+      {isConnected && (piLastMessage || studentLastMessage) && (
+        <SpeechBubbles
+          piMessage={piLastMessage || ''}
+          studentMessage={studentLastMessage || ''}
+          piSpeaking={piSpeaking}
+          studentSpeaking={studentSpeaking}
+        />
+      )}
 
       {/* Main Content: Image + Canvas */}
       <div className="clean-workspace-top">

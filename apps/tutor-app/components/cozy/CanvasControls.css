@@ -1,0 +1,82 @@
+.canvas-controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--bg-card);
+  border: 3px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--border-primary);
+}
+
+.canvas-control-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 2px 2px 0 var(--border-primary);
+}
+
+.canvas-control-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--border-primary);
+}
+
+.canvas-control-btn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--border-primary);
+}
+
+.canvas-control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.canvas-control-clear {
+  background: #FFE5E5;
+  margin-left: 4px;
+}
+
+.canvas-control-clear:hover:not(:disabled) {
+  background: #FFD5D5;
+}
+
+.btn-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.btn-label {
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+/* Mobile - icon only */
+@media (max-width: 768px) {
+  .canvas-controls {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .canvas-control-btn {
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .btn-label {
+    display: none;
+  }
+
+  .btn-icon {
+    font-size: 20px;
+  }
+}

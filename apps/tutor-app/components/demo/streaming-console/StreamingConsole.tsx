@@ -8,6 +8,8 @@ import { CozyWorkspace } from '../../cozy/CozyWorkspace';
 import { CozyCelebration } from '../../cozy/CozyCelebration';
 import { CozyEncouragementParticles } from '../../cozy/CozyEncouragementParticles';
 import { CozyMicroCelebration } from '../../cozy/CozyMicroCelebration';
+import { LoadingState } from '../../cozy/LoadingState';
+import { SpeechIndicator } from '../../cozy/SpeechIndicator';
 import { LiveConnectConfig, Modality, LiveServerContent } from '@google/genai';
 import { AudioRecorder } from '../../../lib/audio-recorder';
 import { useAgentContext } from '../../../hooks/useAgentContext';
@@ -533,6 +535,10 @@ export default function StreamingConsole() {
     { id: 'help', label: 'Help', icon: '❓', content: helpTab }
   ];
 
+  // Get current milestone name
+  const currentMilestone = currentLesson?.milestones?.[progress?.currentMilestoneIndex || 0];
+  const currentMilestoneName = currentMilestone?.title || '';
+
   return (
     <div className="transcription-container" style={{ height: '100%' }}>
       {showPopUp && <PopUp onClose={handleClosePopUp} />}
@@ -551,12 +557,34 @@ export default function StreamingConsole() {
           duration={5000}
         />
       )}
+
+      {/* Speech Indicator - Shows when student is speaking */}
+      {isConnected && (
+        <SpeechIndicator
+          isListening={isConnected && !muted}
+          isSpeaking={studentSpeaking}
+        />
+      )}
+
+      {/* Loading State - Shows when agents are analyzing */}
+      {isAnalyzing && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1000,
+        }}>
+          <LoadingState type="analyzing" message="Pi is thinking about your answer..." />
+        </div>
+      )}
       
       {turns.length === 0 ? (
         <WelcomeScreen />
       ) : (
         <CozyWorkspace
           lessonTitle={currentLesson?.title || 'Learning Session'}
+          currentMilestoneName={currentMilestoneName}
           onBack={() => {
             useLogStore.getState().clearTurns();
           }}

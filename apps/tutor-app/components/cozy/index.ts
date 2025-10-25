@@ -8,3 +8,10 @@ export { TinyPiReactions } from './TinyPiReactions';
 export { TwinklingStars } from './TwinklingStars';
 export { Fireflies } from './Fireflies';
 export { ConstellationProgress } from './ConstellationProgress';
+
+// New UI/UX Components
+export { SpeechBubbles } from './SpeechBubbles';
+export { LessonProgressBar } from './LessonProgressBar';
+export { LoadingState } from './LoadingState';
+export { CanvasControls } from './CanvasControls';
+export { SpeechIndicator } from './SpeechIndicator';
