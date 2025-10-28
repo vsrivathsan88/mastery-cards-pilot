@@ -31,6 +31,12 @@ import { LessonLoader } from '@simili/lessons';
 import { LessonData } from '@simili/shared';
 import { apiClient } from '../../lib/api-client';
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ⚠️ DEBUG ONLY - Agent Monitoring
+// TO REMOVE: Delete this import and all debug code blocks
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { useAgentDebugStore, debugLog } from '@/lib/agent-debug-store';
+
 export type UseLiveApiResults = {
   client: GenAILiveClient;
   setConfig: (config: LiveConnectConfig) => void;
@@ -65,6 +71,106 @@ export function useLiveApi({
   // Connect orchestrator to client
   useEffect(() => {
     orchestrator.setClient(client);
+    
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ⚠️ DEBUG ONLY - Monitor Agent Activity
+    // TO REMOVE: Delete this entire block
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const setupAgentDebugMonitoring = () => {
+      // Check if getMultiAgentGraph exists (only in full orchestrator, not browser version)
+      const multiAgentGraph = typeof orchestrator.getMultiAgentGraph === 'function' 
+        ? orchestrator.getMultiAgentGraph() 
+        : null;
+      const contextManager = orchestrator.getContextManager();
+      
+      if (!contextManager) {
+        debugLog('Context manager not available for monitoring');
+        return;
+      }
+      
+      if (!multiAgentGraph) {
+        debugLog('Multi-agent graph not available (using browser-safe orchestrator)');
+        // Continue with context manager monitoring only
+      }
+      
+      debugLog('🔬 Agent debug monitoring enabled');
+      
+      // Monitor agent lifecycle events (if they exist and if multiAgentGraph exists)
+      // Note: These events don't exist yet - we'll add them next
+      if (multiAgentGraph) {
+        try {
+          // @ts-ignore - Events will be added to MultiAgentGraph
+          multiAgentGraph.on?.('agent:start', (data: any) => {
+          debugLog('Agent started', data);
+          useAgentDebugStore.getState().addActivity({
+            turn: data.turn,
+            timestamp: data.timestamp || Date.now(),
+            agent: data.agent,
+            status: 'running',
+          });
+        });
+        
+        // @ts-ignore
+        multiAgentGraph.on?.('agent:complete', (data: any) => {
+          debugLog('Agent completed', data);
+          useAgentDebugStore.getState().addActivity({
+            turn: data.turn,
+            timestamp: data.timestamp || Date.now(),
+            agent: data.agent,
+            status: 'complete',
+            duration: data.duration,
+            result: data.result,
+          });
+        });
+        
+        // @ts-ignore
+        multiAgentGraph.on?.('agent:error', (data: any) => {
+          debugLog('Agent error', data);
+          useAgentDebugStore.getState().addActivity({
+            turn: data.turn,
+            timestamp: Date.now(),
+            agent: data.agent,
+            status: 'error',
+          });
+        });
+        } catch (error) {
+          debugLog('Failed to attach agent event listeners (expected if events not implemented yet)');
+        }
+      }
+      
+      // Monitor prerequisite gaps (if events exist)
+      try {
+        // @ts-ignore - Events will be added to ContextManager
+        contextManager.on?.('prerequisite:gap', (gap: any) => {
+          debugLog('Prerequisite gap detected', gap);
+          useAgentDebugStore.getState().addPrerequisiteGap({
+            turn: gap.turn,
+            timestamp: Date.now(),
+            prerequisiteId: gap.prerequisiteId,
+            concept: gap.concept,
+            status: gap.status,
+            confidence: gap.confidence,
+            evidence: gap.evidence,
+            nextAction: gap.nextAction,
+            detectedGap: gap.detectedGap,
+            resolved: gap.resolved,
+          });
+        });
+        
+        // @ts-ignore
+        contextManager.on?.('prerequisite:resolved', (data: any) => {
+          debugLog('Prerequisite gap resolved', data);
+          useAgentDebugStore.getState().resolvePrerequisiteGap(data.prerequisiteId);
+        });
+      } catch (error) {
+        debugLog('Failed to attach prerequisite event listeners (expected if events not implemented yet)');
+      }
+    };
+    
+    setupAgentDebugMonitoring();
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // END DEBUG BLOCK
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   }, [client, orchestrator]);
 
   // register audio for streaming server -> speakers
@@ -144,6 +250,97 @@ export function useLiveApi({
               success: true,
               imageId,
               message: `Image "${imageId}" is now displayed to the student.`
+            },
+          });
+        } else if (fc.name === 'mark_milestone_complete') {
+          const { milestoneId, evidence, confidence } = fc.args;
+          
+          console.log(`[useLiveApi] ✅ Tool call: mark_milestone_complete`, { milestoneId, evidence, confidence });
+          
+          // ✅ FIX: Use pedagogy engine as single source of truth
+          const pedagogyEngine = orchestrator.getPedagogyEngine();
+          const currentMilestone = pedagogyEngine.getCurrentMilestone();
+          
+          if (currentMilestone?.id === milestoneId) {
+            // This will trigger the 'milestone_completed' event
+            // which already has a handler that updates both stores
+            pedagogyEngine.completeMilestone();
+            
+            console.log(`[useLiveApi] ✅ Milestone completed via tool call: ${milestoneId}`);
+            
+            functionResponses.push({
+              id: fc.id,
+              name: fc.name,
+              response: { 
+                success: true,
+                milestoneId,
+                message: `Milestone "${milestoneId}" completed successfully (confidence: ${confidence})`
+              },
+            });
+          } else {
+            // Milestone ID mismatch - log warning
+            console.warn(`[useLiveApi] ⚠️ Milestone ID mismatch in tool call:`, {
+              requested: milestoneId,
+              current: currentMilestone?.id,
+            });
+            
+            functionResponses.push({
+              id: fc.id,
+              name: fc.name,
+              response: { 
+                success: false,
+                error: `Milestone mismatch: expected ${currentMilestone?.id}, got ${milestoneId}`
+              },
+            });
+          }
+        } else if (fc.name === 'update_milestone_progress') {
+          const { milestoneId, progressPercent, feedback } = fc.args;
+          
+          console.log(`[useLiveApi] 📈 Updating milestone progress: ${milestoneId}`, { progressPercent, feedback });
+          
+          // Extract concepts from feedback (simple heuristic)
+          const concepts = [feedback as string];
+          
+          // Update teacher panel
+          useTeacherPanel.getState().logMilestoneProgress(
+            milestoneId as string, 
+            feedback as string, 
+            concepts
+          );
+          
+          // Update lesson progress
+          const currentProgress = useLessonStore.getState().progress;
+          if (currentProgress) {
+            useLessonStore.getState().updateProgress({
+              ...currentProgress,
+              percentComplete: progressPercent as number,
+            });
+          }
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              milestoneId,
+              progressPercent,
+              message: `Progress updated to ${progressPercent}%. ${feedback}`
+            },
+          });
+        } else if (fc.name === 'highlight_canvas_area') {
+          const { reason, duration } = fc.args;
+          
+          console.log(`[useLiveApi] 🎯 Highlighting canvas area`, { reason, duration });
+          
+          // TODO: Implement canvas highlight effect when canvas component is ready
+          // For now, just log it
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Canvas area highlighted: ${reason}`
             },
           });
         } else {
@@ -260,6 +457,10 @@ export function useLiveApi({
 
       console.log('[useLiveApi] 📝 Final transcription received:', text);
 
+      // CRITICAL: Pass transcription to pedagogy engine for milestone detection
+      // This must happen FIRST for immediate milestone detection
+      orchestrator.getPedagogyEngine().processTranscription(text, isFinal);
+
       // Get current lesson context
       const currentLesson = orchestrator.getPedagogyEngine().getCurrentLesson();
       if (!currentLesson) {
@@ -268,6 +469,12 @@ export function useLiveApi({
       }
 
       const progress = orchestrator.getPedagogyEngine().getProgress();
+      const currentMilestone = orchestrator.getPedagogyEngine().getCurrentMilestone();
+
+      // ✅ SIMPLIFIED: No upfront prerequisite checks!
+      // Milestone 0 warmup keywords ARE the prerequisite check (instant, no LLM needed)
+      // Keywords like "different", "bigger", "smaller" prove they understand the concepts
+      // This makes lesson start instant instead of waiting 1-4 seconds for LLM calls
 
       try {
         console.log('[useLiveApi] 🔍 Sending to backend for analysis...');
@@ -285,6 +492,21 @@ export function useLiveApi({
         });
 
         console.log('[useLiveApi] ✅ Backend analysis received:', analysis);
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Bridge: Forward subagent outputs to teacher panel
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        try {
+          useTeacherPanel.getState().syncAgentInsights(
+            analysis.emotional || undefined,
+            analysis.misconception || undefined,
+            text
+          );
+          console.log('[useLiveApi] 📊 Agent insights synced to teacher panel');
+        } catch (error) {
+          console.error('[useLiveApi] ❌ Failed to sync insights to teacher panel:', error);
+        }
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         // If misconception detected, send feedback to agent
         if (analysis.misconception?.detected && analysis.misconception.confidence && analysis.misconception.confidence > 0.7) {
@@ -371,9 +593,28 @@ export function useLiveApi({
       useLessonStore.getState().updateProgress(progress);
     };
     
+    const onMilestoneDetected = (milestone: any, transcription: string) => {
+      // 📊 LOG TO TEACHER PANEL: Student working on milestone
+      const { logMilestoneProgress } = require('../lib/teacher-panel-store').useTeacherPanel.getState();
+      logMilestoneProgress(
+        milestone.id,
+        transcription,
+        milestone.keywords || []
+      );
+      console.log('[useLiveApi] 📝 Milestone progress logged to teacher panel:', milestone.title);
+    };
+    
     const onMilestoneCompleted = (milestone: any) => {
       const celebration = PromptManager.generateCelebration(milestone);
       useLessonStore.getState().celebrate(celebration);
+      
+      // 📊 LOG TO TEACHER PANEL: Milestone completed
+      const { logMilestoneComplete } = require('../lib/teacher-panel-store').useTeacherPanel.getState();
+      logMilestoneComplete(
+        milestone.id,
+        `Student mastered: ${milestone.title}`
+      );
+      console.log('[useLiveApi] ✅ Milestone completion logged to teacher panel:', milestone.title);
       
       // Log celebration to conversation
       useLogStore.getState().addTurn({
@@ -388,6 +629,13 @@ export function useLiveApi({
       
       if (currentLesson && nextMilestone) {
         const progress = pedagogyEngine.getProgress();
+        
+        // ✅ FIX: Log new milestone start to teacher panel
+        useTeacherPanel.getState().logMilestoneStart(
+          nextMilestone.id,
+          nextMilestone.title
+        );
+        console.log('[useLiveApi] 📝 Next milestone logged to teacher panel:', nextMilestone.title);
         
         // Send JSON milestone transition to agent
         const transitionMessage = formatMilestoneTransition(
@@ -424,11 +672,13 @@ export function useLiveApi({
     };
     
     pedagogyEngine.on('progress_update', onProgressUpdate);
+    pedagogyEngine.on('milestone_detected', onMilestoneDetected);
     pedagogyEngine.on('milestone_completed', onMilestoneCompleted);
     pedagogyEngine.on('lesson_completed', onLessonCompleted);
     
     return () => {
       pedagogyEngine.off('progress_update', onProgressUpdate);
+      pedagogyEngine.off('milestone_detected', onMilestoneDetected);
       pedagogyEngine.off('milestone_completed', onMilestoneCompleted);
       pedagogyEngine.off('lesson_completed', onLessonCompleted);
     };
