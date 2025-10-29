@@ -20,12 +20,15 @@ import type {
 } from '@simili/agents';
 import { 
   EmotionalClassifier, 
-  MisconceptionClassifier 
+  MisconceptionClassifier,
+  PrerequisiteDetector
 } from '@simili/agents';
 import type { 
   EmotionalState, 
   MisconceptionAnalysisInput, 
-  MisconceptionAnalysisResult 
+  MisconceptionAnalysisResult,
+  PrerequisiteAnalysisInput,
+  PrerequisiteAnalysisResult
 } from '@simili/agents';
 
 const logger = {
@@ -59,6 +62,7 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
   // Real agent classifiers
   private emotionalClassifier: EmotionalClassifier;
   private misconceptionClassifier: MisconceptionClassifier;
+  private prerequisiteDetector: PrerequisiteDetector;
   
   // Agent execution tracking
   private agentTimeouts: Map<string, NodeJS.Timeout> = new Map();
@@ -76,8 +80,9 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     
     this.emotionalClassifier = new EmotionalClassifier(apiKey);
     this.misconceptionClassifier = new MisconceptionClassifier(apiKey);
+    this.prerequisiteDetector = new PrerequisiteDetector(apiKey);
     
-    logger.info('Initialized with real LLM agents');
+    logger.info('Initialized with real LLM agents (Emotional, Misconception, Prerequisite)');
   }
 
   /**
@@ -340,6 +345,79 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       return misconception;
     } catch (error) {
       logger.error('MisconceptionClassifier failed', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check prerequisite knowledge (only call during wonder hooks or early lesson)
+   * This should NOT run on every turn to avoid long wait times
+   */
+  public async checkPrerequisite(
+    transcription: string,
+    prerequisiteId: string,
+    isWonderHook: boolean = false
+  ): Promise<PrerequisiteAnalysisResult | null> {
+    if (!this.currentLesson) {
+      logger.warn('No lesson loaded for prerequisite check');
+      return null;
+    }
+
+    logger.info('🔍 Checking prerequisite', { prerequisiteId, isWonderHook });
+
+    try {
+      // Load prerequisites from lesson
+      const prerequisites = (this.currentLesson as any).prerequisitesDetailed || [];
+      const prerequisite = prerequisites.find((p: any) => p.id === prerequisiteId);
+
+      if (!prerequisite) {
+        logger.warn('Prerequisite not found in lesson', { prerequisiteId });
+        return null;
+      }
+
+      // Prepare input for PrerequisiteDetector
+      const input: PrerequisiteAnalysisInput = {
+        transcription,
+        prerequisite,
+        isWonderHook,
+      };
+
+      // Call detector
+      const result = await this.prerequisiteDetector.analyze(input);
+
+      logger.info('✅ Prerequisite check complete', {
+        prerequisiteId,
+        status: result.status,
+        confidence: result.confidence,
+      });
+
+      // Update context manager if gap detected
+      if (result.status === 'GAP_DETECTED' && result.detectedGap) {
+        const gapContext = {
+          turn: this.orchestrator.getContextManager().getCurrentTurn(),
+          timestamp: Date.now(),
+          prerequisiteId: result.prerequisiteId,
+          concept: result.concept,
+          status: result.status,
+          confidence: result.confidence,
+          evidence: result.evidence || '',
+          nextAction: result.nextAction,
+          detectedGap: result.detectedGap,
+          resolved: false,
+        };
+        
+        // Store in context manager
+        this.orchestrator.getContextManager().addPrerequisiteGap(gapContext);
+        
+        // Emit context update
+        const context = this.orchestrator.getContextManager().getContext();
+        this.emit('context_updated', context);
+      }
+
+      return result;
+    } catch (error) {
+      logger.error('Prerequisite check failed', error);
+      this.emit('agent_error', 'PrerequisiteDetector', error as Error);
       return null;
     }
   }

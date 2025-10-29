@@ -172,17 +172,20 @@
   object-fit: cover;
 }
 
-/* Speaking indicator */
+/* Speaking indicator - Enhanced for better visibility */
 .clean-avatar.speaking {
   animation: speakPulse 0.6s ease-in-out infinite;
+  border-color: var(--accent-primary);
 }
 
 @keyframes speakPulse {
   0%, 100% {
+    transform: scale(1);
     box-shadow: var(--shadow-sm) var(--border-primary);
   }
   50% {
-    box-shadow: 0 0 0 4px var(--accent-primary), var(--shadow-sm) var(--border-primary);
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.3), 0 0 0 12px rgba(99, 102, 241, 0.1), var(--shadow-sm) var(--border-primary);
   }
 }
 

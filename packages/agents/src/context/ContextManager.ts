@@ -32,6 +32,22 @@ export interface VisionContext {
   needsVoiceOver?: boolean;
 }
 
+export interface PrerequisiteGapContext {
+  turn: number;
+  prerequisiteId: string;
+  concept: string;
+  status: 'GAP_DETECTED' | 'PREREQUISITE_MET' | 'UNCLEAR' | 'PROBE_DEEPER';
+  confidence: number;
+  evidence?: string;
+  nextAction: 'CONTINUE_LESSON' | 'TEACH_PREREQUISITE' | 'PROBE_DEEPER' | 'RE_ASSESS';
+  detectedGap?: {
+    type: 'UNKNOWN_CONCEPT' | 'WRONG_INTUITION' | 'CONFUSION' | 'AVOIDANCE';
+    severity: 'critical' | 'moderate' | 'minor';
+    recommendation: string;
+  };
+  resolved?: boolean;
+}
+
 export interface MilestoneContext {
   currentMilestoneId: string;
   currentMilestoneTitle: string;
@@ -44,6 +60,7 @@ export interface MilestoneContext {
 export interface SessionContext {
   lesson: MilestoneContext;
   misconceptions: MisconceptionContext[];
+  prerequisiteGaps: PrerequisiteGapContext[];
   emotional?: EmotionalContext;
   vision?: VisionContext;
   turnNumber: number;
@@ -64,6 +81,7 @@ export class ContextManager {
         masteryCriteria: [],
       },
       misconceptions: [],
+      prerequisiteGaps: [],
       turnNumber: 0,
     };
   }
@@ -113,6 +131,33 @@ export class ContextManager {
     }
   }
 
+  public addPrerequisiteGap(gap: PrerequisiteGapContext): void {
+    gap.turn = this.turnNumber;
+    this.sessionContext.prerequisiteGaps.push(gap);
+    
+    // Keep only last 5 prerequisite gaps
+    if (this.sessionContext.prerequisiteGaps.length > 5) {
+      this.sessionContext.prerequisiteGaps = this.sessionContext.prerequisiteGaps.slice(-5);
+    }
+  }
+
+  public resolvePrerequisiteGap(prerequisiteId: string): void {
+    const gap = this.sessionContext.prerequisiteGaps.find(
+      g => g.prerequisiteId === prerequisiteId && !g.resolved
+    );
+    if (gap) {
+      gap.resolved = true;
+    }
+  }
+
+  public getCriticalPrerequisiteGaps(): PrerequisiteGapContext[] {
+    return this.sessionContext.prerequisiteGaps.filter(
+      gap => gap.status === 'GAP_DETECTED' && 
+             gap.detectedGap?.severity === 'critical' && 
+             !gap.resolved
+    );
+  }
+
   public updateEmotionalContext(emotional: EmotionalContext): void {
     this.sessionContext.emotional = emotional;
   }
@@ -153,6 +198,30 @@ export class ContextManager {
     formatted += `Progress: ${ctx.lesson.progress} milestones complete\n`;
     formatted += `Attempts on current milestone: ${ctx.lesson.attempts}\n`;
     formatted += `Time on current milestone: ${this.formatTime(ctx.lesson.timeOnMilestone)}\n\n`;
+
+    // Prerequisite Gaps (SHOW FIRST - CRITICAL!)
+    if (ctx.prerequisiteGaps.length > 0) {
+      const unresolvedGaps = ctx.prerequisiteGaps.filter(g => !g.resolved);
+      if (unresolvedGaps.length > 0) {
+        formatted += '## ⚠️ Prerequisite Gaps Detected\n';
+        formatted += '[From Prerequisite Detector - INVISIBLE ASSESSMENT]\n';
+        
+        unresolvedGaps.forEach(gap => {
+          if (gap.status === 'GAP_DETECTED') {
+            formatted += `- Turn ${gap.turn}: Missing "${gap.concept}" (confidence: ${gap.confidence.toFixed(2)})\n`;
+            if (gap.evidence) {
+              formatted += `  → Evidence: "${gap.evidence}"\n`;
+            }
+            if (gap.detectedGap) {
+              formatted += `  → Type: ${gap.detectedGap.type} (${gap.detectedGap.severity})\n`;
+              formatted += `  → Recommendation: ${gap.detectedGap.recommendation}\n`;
+            }
+            formatted += `  → Next Action: ${gap.nextAction}\n`;
+          }
+        });
+        formatted += '\n⚠️ IMPORTANT: Student may lack foundation for this lesson. Consider micro-lesson or pause.\n\n';
+      }
+    }
 
     // Misconceptions
     if (ctx.misconceptions.length > 0) {
@@ -228,6 +297,7 @@ export class ContextManager {
         masteryCriteria: [],
       },
       misconceptions: [],
+      prerequisiteGaps: [],
       turnNumber: 0,
     };
   }

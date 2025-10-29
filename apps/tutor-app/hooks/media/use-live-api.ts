@@ -491,7 +491,12 @@ export function useLiveApi({
           },
         });
 
-        console.log('[useLiveApi] ✅ Backend analysis received:', analysis);
+        console.log('[useLiveApi] ✅ Backend analysis received:', {
+          hasEmotional: !!analysis.emotional,
+          hasMisconception: !!analysis.misconception,
+          emotionalState: analysis.emotional?.state,
+          misconceptionType: analysis.misconception?.type,
+        });
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // Bridge: Forward subagent outputs to teacher panel
@@ -573,6 +578,16 @@ export function useLiveApi({
 
       } catch (error) {
         console.error('[useLiveApi] ❌ Backend analysis failed:', error);
+        console.error('[useLiveApi] 💡 Make sure backend server is running:');
+        console.error('[useLiveApi]    cd apps/api-server && npm run dev');
+        
+        // Show user-friendly error in UI
+        useLogStore.getState().addTurn({
+          role: 'system',
+          text: '⚠️ Agent analysis unavailable (backend offline). Teacher panel and adaptive behavior disabled.',
+          isFinal: true,
+        });
+        
         // Don't block the conversation if backend fails - just log
       }
     };

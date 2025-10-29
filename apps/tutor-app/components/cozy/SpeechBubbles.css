@@ -1,15 +1,15 @@
 .speech-bubbles-container {
   position: fixed;
-  bottom: 140px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
   max-width: 800px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   pointer-events: none;
-  z-index: 100;
+  z-index: 50;
 }
 
 .speech-bubble {
@@ -103,8 +103,9 @@
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .speech-bubbles-container {
-    bottom: 120px;
+    bottom: 90px;
     width: 95%;
+    gap: 6px;
   }
 
   .speech-bubble {

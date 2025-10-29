@@ -7,10 +7,20 @@
 
 import { useState } from 'react';
 import { useTeacherPanel } from '@/lib/teacher-panel-store';
+import { useLogStore } from '@/lib/state';
 import { StandardsCoverageView } from './StandardsCoverageView';
 import { MilestoneMasteryView } from './MilestoneMasteryView';
 import { MisconceptionLogView } from './MisconceptionLogView';
+import { TranscriptView } from './TranscriptView';
+import { PrerequisiteDetectionView } from './PrerequisiteDetectionView';
+import { AgentActivityView } from './AgentActivityView';
 import './TeacherPanel.css';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ⚠️ DEBUG ONLY - Agent Monitoring
+// TO REMOVE: Delete this import when removing debug features
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { useAgentDebugStore } from '@/lib/agent-debug-store';
 
 export function TeacherPanelContainer() {
   const {
@@ -23,7 +33,16 @@ export function TeacherPanelContainer() {
     exportData,
   } = useTeacherPanel();
   
-  const [expandedSection, setExpandedSection] = useState<string | null>('milestones');
+  const [expandedSection, setExpandedSection] = useState<string | null>('transcript');
+  
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ⚠️ DEBUG ONLY - Agent Activity Monitoring
+  // TO REMOVE: Delete these lines
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const debugActivities = useAgentDebugStore(state => state.activities);
+  const debugPrerequisiteGaps = useAgentDebugStore(state => state.prerequisiteGaps);
+  const isDebugMode = useAgentDebugStore(state => state.isDebugMode);
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   
   // Don't show if no active session
   if (!currentSession) {
@@ -80,6 +99,8 @@ export function TeacherPanelContainer() {
   
   const activeMisconceptions = misconceptionLogs.filter(m => m.status !== 'resolved').length;
   const completedMilestones = milestoneLogs.filter(m => m.status === 'completed').length;
+  const turns = useLogStore(state => state.turns);
+  const transcriptCount = turns.length;
   
   return (
     <div className={`teacher-panel ${isExpanded ? 'expanded' : 'minimized'}`}>
@@ -113,6 +134,17 @@ export function TeacherPanelContainer() {
           
           {/* Scrollable Content - Collapsible Sections */}
           <div className="panel-body-clean">
+            {/* Transcript Section */}
+            <CollapsibleSection
+              title="Transcript"
+              icon="💬"
+              count={transcriptCount}
+              isExpanded={expandedSection === 'transcript'}
+              onToggle={() => toggleSection('transcript')}
+            >
+              <TranscriptView />
+            </CollapsibleSection>
+            
             {/* Milestones Section */}
             <CollapsibleSection
               title="Milestones"
@@ -148,6 +180,44 @@ export function TeacherPanelContainer() {
             >
               <StandardsCoverageView />
             </CollapsibleSection>
+            
+            {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+            {/* ⚠️ DEBUG ONLY - Agent Monitoring Sections */}
+            {/* TO REMOVE: Delete these 2 sections when removing debug */}
+            {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+            {isDebugMode && (
+              <>
+                {/* Agent Activity Section (DEBUG) */}
+                <CollapsibleSection
+                  title="Agent Activity"
+                  icon="🤖"
+                  count={debugActivities.length}
+                  isExpanded={expandedSection === 'agents'}
+                  onToggle={() => toggleSection('agents')}
+                  badge="DEBUG"
+                >
+                  <AgentActivityView activities={debugActivities} />
+                </CollapsibleSection>
+                
+                {/* Prerequisite Detection Section (DEBUG) */}
+                <CollapsibleSection
+                  title="Prerequisite Detection"
+                  icon="🎯"
+                  count={debugPrerequisiteGaps.filter(g => !g.resolved).length}
+                  isExpanded={expandedSection === 'prerequisites'}
+                  onToggle={() => toggleSection('prerequisites')}
+                  badge="DEBUG"
+                >
+                  <PrerequisiteDetectionView 
+                    gaps={debugPrerequisiteGaps} 
+                    isActive={debugActivities.some(a => a.agent === 'prerequisite' && a.status === 'running')} 
+                  />
+                </CollapsibleSection>
+              </>
+            )}
+            {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+            {/* END DEBUG SECTIONS */}
+            {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
           </div>
           
           {/* Footer - Minimal */}

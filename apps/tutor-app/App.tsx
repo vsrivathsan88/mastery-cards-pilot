@@ -4,7 +4,7 @@ import { UserProvider, UserData } from './contexts/UserContext';
 import { Onboarding } from './components/onboarding';
 import StreamingConsole from './components/demo/streaming-console/StreamingConsole';
 
-const API_KEY = process.env.GEMINI_API_KEY as string;
+const API_KEY = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || 'test-api-key-for-testing') as string;
 console.log('[App] API_KEY loaded:', API_KEY ? `${API_KEY.substring(0, 10)}...` : 'MISSING');
 if (typeof API_KEY !== 'string' || API_KEY.length === 0) {
   throw new Error(
@@ -65,7 +65,7 @@ function App() {
 
   return (
     <UserProvider value={{ userData, updateUserData }}>
-      <div className="App" style={{ height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      <div className="App" style={{ height: '100vh', overflow: 'hidden', position: 'relative' }} data-testid="main-app">
         {/* Reset Button (bottom-left corner for debugging - unobtrusive) */}
         <button
           onClick={handleReset}

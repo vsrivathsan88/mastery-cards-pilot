@@ -25,6 +25,7 @@ interface UseAgentContextReturn {
   // Actions
   analyzeTranscription: (text: string) => Promise<AgentInsights>;
   analyzeVision: (canvasSnapshot: string, imageUrl?: string) => Promise<void>;
+  checkPrerequisite: (text: string, prerequisiteId: string, isWonderHook?: boolean) => Promise<any>;
   initializeLesson: (lesson: LessonData) => Promise<void>;
   getShouldUseFiller: () => boolean;
   getFiller: () => string | null;
@@ -144,6 +145,15 @@ export function useAgentContext(): UseAgentContextReturn {
     await agentService.analyzeVision(canvasSnapshot, imageUrl);
   }, [agentService]);
 
+  // Check prerequisite (only call during wonder hooks or early lesson)
+  const checkPrerequisite = useCallback(async (
+    text: string,
+    prerequisiteId: string,
+    isWonderHook: boolean = false
+  ) => {
+    return await agentService.checkPrerequisite(text, prerequisiteId, isWonderHook);
+  }, [agentService]);
+
   // Check if should use filler
   const getShouldUseFiller = useCallback((): boolean => {
     const lastDuration = agentService.getLastAnalysisDuration();
@@ -178,6 +188,7 @@ export function useAgentContext(): UseAgentContextReturn {
     systemPrompt,
     analyzeTranscription,
     analyzeVision,
+    checkPrerequisite,
     initializeLesson,
     getShouldUseFiller,
     getFiller,

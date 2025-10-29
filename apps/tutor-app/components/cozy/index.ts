@@ -7,6 +7,7 @@ export { CozyEncouragementParticles } from './CozyEncouragementParticles';
 export { TinyPiReactions } from './TinyPiReactions';
 export { TwinklingStars } from './TwinklingStars';
 export { Fireflies } from './Fireflies';
+export { FirstLessonTutorial } from './FirstLessonTutorial';
 export { ConstellationProgress } from './ConstellationProgress';
 
 // New UI/UX Components

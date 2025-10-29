@@ -163,21 +163,27 @@ ${engagement < 40 ? '⚠️ **LOW ENGAGEMENT** - Try more playful, interactive a
 
   private static formatVisionContext(vision: any): string {
     const age = Math.round((Date.now() - vision.timestamp) / 1000);
+    const confidencePercent = (vision.confidence * 100).toFixed(0);
     
     return `
-## 👁️ Visual Context (Canvas + Image)
+## 👁️ What Student Drew on Canvas
 
 \`\`\`json
 {
-  "last_analyzed": "${age} seconds ago",
-  "what_student_drew": "${vision.description}",
+  "analyzed": "${age} seconds ago",
+  "description": "${vision.description}",
   "interpretation": "${vision.interpretation}",
   "suggestion": "${vision.suggestion}",
-  "confidence": ${(vision.confidence * 100).toFixed(0)}%
+  "confidence": ${confidencePercent}%
 }
 \`\`\`
 
-${vision.needsVoiceOver ? '⚠️ Low confidence - Consider asking student to explain their work verbally' : ''}
+**🎯 ACTION REQUIRED:** Reference their drawing in your response!
+- Acknowledge what they drew: "I see you drew..."
+- Ask about their thinking: "Tell me about your drawing"
+- Build on their visual work
+
+${vision.confidence < 0.6 ? '⚠️ **Low confidence** - Ask them to explain their drawing verbally: "Can you tell me what you were trying to show?"' : '✅ Good confidence - Discuss and build on their visual representation'}
 `;
   }
 

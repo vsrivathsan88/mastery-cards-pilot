@@ -113,7 +113,24 @@ JSON:`;
 
     // Parse JSON response
     try {
-      const result = JSON.parse(text);
+      // Extract JSON if wrapped in markdown or text
+      let jsonText = text.trim();
+      
+      // Remove markdown code blocks if present
+      if (jsonText.startsWith('```')) {
+        const match = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        if (match) {
+          jsonText = match[1].trim();
+        }
+      }
+      
+      // Try to find JSON object in text
+      const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[0];
+      }
+      
+      const result = JSON.parse(jsonText);
       
       // Validate structure
       if (typeof result.detected !== 'boolean') {
