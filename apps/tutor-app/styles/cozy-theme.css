@@ -127,6 +127,11 @@
   color: var(--text-primary);
 }
 
+.clean-badge-danger {
+  background: var(--danger);
+  color: white;
+}
+
 /* Typography */
 .clean-text {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif;
@@ -365,6 +370,18 @@
   z-index: 9998;
   animation: microSparkle 2s ease-out forwards;
   opacity: 0;
+}
+
+/* Animation: Pulse for analyzing indicators */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
 }
 
 @keyframes starBurst {

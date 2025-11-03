@@ -2,18 +2,79 @@
  * Emotional State View
  * 
  * Shows current emotional state and engagement trends from agent analysis
+ * Now with REAL-TIME agent data!
  */
 
 import { useTeacherPanel } from '@/lib/teacher-panel-store';
+import { useAgentContext } from '@/hooks/useAgentContext';
 import { useMemo } from 'react';
 
 export function EmotionalStateView() {
   const { misconceptionLogs } = useTeacherPanel();
+  const { currentContext, isAnalyzing } = useAgentContext();
   
-  // Extract emotional context from recent logs (stored in description or as metadata)
-  // For now, we'll show a summary based on misconception severity as a proxy
-  
+  // Use real-time agent emotional data if available
   const emotionalSummary = useMemo(() => {
+    // REAL-TIME DATA from agent analysis!
+    if (currentContext?.emotional) {
+      const { state, engagementLevel, frustrationLevel, confusionLevel, confidence } = currentContext.emotional;
+      
+      // Map state to emoji and color
+      const stateMap: Record<string, { emoji: string; color: string; recommendation: string }> = {
+        excited: {
+          emoji: '🤩',
+          color: '#4caf50',
+          recommendation: 'Student is excited and engaged! Great momentum.',
+        },
+        confident: {
+          emoji: '😊',
+          color: '#4caf50',
+          recommendation: 'Student shows confidence. Keep building on this!',
+        },
+        focused: {
+          emoji: '🤔',
+          color: '#2196f3',
+          recommendation: 'Student is focused and working through the material.',
+        },
+        confused: {
+          emoji: '😕',
+          color: '#ff9800',
+          recommendation: 'Student shows confusion. Rephrase and provide examples.',
+        },
+        frustrated: {
+          emoji: '😤',
+          color: '#f44336',
+          recommendation: 'Student is frustrated. Consider scaffolding or taking a break.',
+        },
+        bored: {
+          emoji: '😐',
+          color: '#9e9e9e',
+          recommendation: 'Student may be bored. Try a different approach or challenge.',
+        },
+        neutral: {
+          emoji: '😶',
+          color: '#2196f3',
+          recommendation: 'Student is engaged neutrally. Continue monitoring.',
+        },
+      };
+      
+      const stateInfo = stateMap[state] || stateMap.neutral;
+      
+      return {
+        currentState: state.charAt(0).toUpperCase() + state.slice(1),
+        emoji: stateInfo.emoji,
+        engagementLevel: Math.round((engagementLevel || 0) * 100),
+        frustrationLevel: Math.round((frustrationLevel || 0) * 100),
+        confusionLevel: Math.round((confusionLevel || 0) * 100),
+        confidence: Math.round((confidence || 0) * 100),
+        recommendation: stateInfo.recommendation,
+        color: stateInfo.color,
+        isRealTime: true,
+      };
+    }
+    
+    // Fallback to misconception-based inference if no agent data
+    {
     if (misconceptionLogs.length === 0) {
       return {
         currentState: 'Engaged & Positive',
@@ -70,8 +131,10 @@ export function EmotionalStateView() {
       confidence,
       recommendation,
       color,
+      isRealTime: false,
     };
-  }, [misconceptionLogs]);
+    }
+  }, [misconceptionLogs, currentContext]);
   
   return (
     <div className="emotional-state-view" style={{ padding: '20px' }}>
@@ -134,20 +197,43 @@ export function EmotionalStateView() {
         />
       </div>
       
-      {/* Info note */}
-      <div 
-        style={{
-          marginTop: '20px',
-          padding: '12px',
-          background: '#f5f5f5',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: '#666',
-        }}
-      >
-        <strong>Note:</strong> Emotional indicators are inferred from conversation patterns, 
-        misconception detection, and student responses. Real-time analysis coming soon!
-      </div>
+      {/* Real-time badge or fallback note */}
+      {emotionalSummary.isRealTime ? (
+        <div 
+          style={{
+            marginTop: '20px',
+            padding: '12px',
+            background: '#e8f5e9',
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#2e7d32',
+            border: '1px solid #a5d6a7',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          {isAnalyzing && <span style={{ fontSize: '14px', animation: 'pulse 1.5s ease-in-out infinite' }}>🔄</span>}
+          {!isAnalyzing && <span style={{ fontSize: '14px' }}>✅</span>}
+          <div>
+            <strong>Real-Time Analysis</strong> - Data from live agent monitoring
+          </div>
+        </div>
+      ) : (
+        <div 
+          style={{
+            marginTop: '20px',
+            padding: '12px',
+            background: '#fff3e0',
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#e65100',
+            border: '1px solid #ffcc80',
+          }}
+        >
+          <strong>Inferred Data:</strong> No recent agent analysis. Showing estimates based on misconception patterns.
+        </div>
+      )}
     </div>
   );
 }

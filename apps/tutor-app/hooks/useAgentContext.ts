@@ -180,7 +180,7 @@ export function useAgentContext(): UseAgentContextReturn {
   }, [fillerService, currentContext]);
 
   return {
-    agentService,
+    agentService,      // Added for event subscription
     fillerService,
     currentContext,
     isAnalyzing,

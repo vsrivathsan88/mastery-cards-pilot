@@ -13,6 +13,7 @@ import { privacyMiddleware } from './middleware/privacy.js';
 import analyzeRouter from './routes/analyze.js';
 import sessionRouter from './routes/session.js';
 import healthRouter from './routes/health.js';
+import visionRouter from './routes/vision.js';
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ app.use((req, res, next) => {
 app.use('/api', healthRouter);
 app.use('/api', sessionRouter);
 app.use('/api', analyzeRouter);
+app.use('/api/vision', visionRouter);
 
 // 404 handler
 app.use((req, res) => {

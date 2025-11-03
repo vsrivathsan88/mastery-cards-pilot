@@ -30,6 +30,7 @@ import type {
   PrerequisiteAnalysisInput,
   PrerequisiteAnalysisResult
 } from '@simili/agents';
+import { VisionService, VisionAnalysisRequest } from './VisionService';
 
 const logger = {
   info: (msg: string, data?: any) => console.log(`[AgentService] 📊 ${msg}`, data || ''),
@@ -63,6 +64,7 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
   private emotionalClassifier: EmotionalClassifier;
   private misconceptionClassifier: MisconceptionClassifier;
   private prerequisiteDetector: PrerequisiteDetector;
+  private visionService: VisionService;
   
   // Agent execution tracking
   private agentTimeouts: Map<string, NodeJS.Timeout> = new Map();
@@ -81,8 +83,9 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     this.emotionalClassifier = new EmotionalClassifier(apiKey);
     this.misconceptionClassifier = new MisconceptionClassifier(apiKey);
     this.prerequisiteDetector = new PrerequisiteDetector(apiKey);
+    this.visionService = new VisionService(apiKey);
     
-    logger.info('Initialized with real LLM agents (Emotional, Misconception, Prerequisite)');
+    logger.info('Initialized with real LLM agents (Emotional, Misconception, Prerequisite, Vision)');
   }
 
   /**
@@ -188,27 +191,39 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
     canvasSnapshot: string, // base64 or data URL
     lessonImageUrl?: string
   ): Promise<VisionContext | null> {
-    logger.info('Starting vision analysis');
+    if (!this.currentLesson) {
+      logger.warn('No lesson loaded for vision analysis');
+      return null;
+    }
+    
+    logger.info('Starting vision analysis', {
+      hasCanvas: !!canvasSnapshot,
+      hasLessonImage: !!lessonImageUrl,
+    });
     
     try {
-      // TODO: Call backend vision analysis API or use Gemini multimodal
-      // For now, return mock data
-      const visionContext: VisionContext = {
-        timestamp: Date.now(),
-        description: 'Vision analysis in progress...',
-        interpretation: 'Analyzing student work...',
-        suggestion: 'Continue observing',
-        confidence: 0.5,
-        needsVoiceOver: true,
+      const request: VisionAnalysisRequest = {
+        canvasSnapshot,
+        lessonImageUrl,
+        currentMilestone: this.currentLesson.milestones?.[0]?.title || 'Learning fractions',
+        question: 'Analyze student work on canvas',
       };
       
-      this.orchestrator.getContextManager().updateVisionContext(visionContext);
+      const visionContext = await this.visionService.analyzeCanvas(request);
       
-      // Emit context update
-      const context = this.orchestrator.getContextManager().getContext();
-      this.emit('context_updated', context);
+      if (visionContext) {
+        this.orchestrator.getContextManager().updateVisionContext(visionContext);
+        
+        // Emit context update
+        const context = this.orchestrator.getContextManager().getContext();
+        this.emit('context_updated', context);
+        
+        logger.info('Vision analysis complete', { 
+          confidence: visionContext.confidence,
+          needsVoiceOver: visionContext.needsVoiceOver,
+        });
+      }
       
-      logger.info('Vision analysis complete', { confidence: visionContext.confidence });
       return visionContext;
       
     } catch (error) {

@@ -71,6 +71,11 @@ interface CozyWorkspaceProps {
   onExport: () => void;
   onReset: () => void;
   isMuted: boolean;
+  
+  // Agent indicators
+  isAnalyzing?: boolean;
+  emotionalState?: string;
+  hasActiveMisconceptions?: boolean;
 }
 
 export function CozyWorkspace({
@@ -93,6 +98,9 @@ export function CozyWorkspace({
   isMuted,
   totalMilestones = 0,
   completedMilestones = 0,
+  isAnalyzing = false,
+  emotionalState,
+  hasActiveMisconceptions = false,
 }: CozyWorkspaceProps) {
   const { userData } = useUser();
   
@@ -148,6 +156,53 @@ export function CozyWorkspace({
   return (
     <div className="clean-workspace clean-text" style={{ paddingTop: '80px' }}>
       {/* Header removed - info shown in GameHeader instead */}
+
+      {/* Agent Status Indicators */}
+      {isConnected && (
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          marginBottom: '12px',
+          flexWrap: 'wrap',
+        }}>
+          {/* Analyzing Indicator */}
+          {isAnalyzing && (
+            <div className="clean-badge clean-badge-primary" style={{ 
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}>
+              <span style={{ fontSize: '14px' }}>🔄</span>
+              <span>Analyzing...</span>
+            </div>
+          )}
+
+          {/* Emotional State Indicator */}
+          {emotionalState && emotionalState !== 'neutral' && (
+            <div className={`clean-badge ${
+              emotionalState === 'confused' || emotionalState === 'frustrated' 
+                ? 'clean-badge-danger' 
+                : 'clean-badge-success'
+            }`}>
+              <span style={{ fontSize: '14px' }}>
+                {emotionalState === 'confused' ? '😕' : 
+                 emotionalState === 'frustrated' ? '😤' :
+                 emotionalState === 'excited' ? '😊' : '🙂'}
+              </span>
+              <span>{emotionalState}</span>
+            </div>
+          )}
+
+          {/* Misconception Alert */}
+          {hasActiveMisconceptions && (
+            <div className="clean-badge" style={{
+              background: '#FF6B6B',
+              color: 'white',
+            }}>
+              <span style={{ fontSize: '14px' }}>⚠️</span>
+              <span>Needs Support</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Progress Bar */}
       {isConnected && totalMilestones > 0 && (

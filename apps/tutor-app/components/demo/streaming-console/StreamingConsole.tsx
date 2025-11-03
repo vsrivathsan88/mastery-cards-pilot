@@ -117,6 +117,7 @@ export default function StreamingConsole() {
     getShouldUseFiller,    // Check if filler needed
     getFiller,             // Get filler text
     agentStats,            // Debug stats
+    agentService,          // Direct access to service for events
   } = useAgentContext();
   
   // 📊 TEACHER PANEL - Sync agent insights with teacher panel
@@ -293,6 +294,31 @@ export default function StreamingConsole() {
       startSession(currentLesson.id, currentLesson.title);
     }
   }, [currentLesson, initializeLesson, startSession]);
+
+  // 🔄 DYNAMIC CONTEXT UPDATES - Send agent insights to Gemini mid-conversation
+  useEffect(() => {
+    if (!currentContext || !isConnected) return;
+
+    // Build concise context update
+    const contextUpdate = PromptBuilder.buildContextUpdate(currentContext);
+    
+    // Only send if we have meaningful insights
+    const hasMeaningfulContext = 
+      currentContext.emotional ||
+      (currentContext.misconceptions && currentContext.misconceptions.length > 0) ||
+      (currentContext.vision && currentContext.vision.needsVoiceOver);
+    
+    if (hasMeaningfulContext) {
+      console.log('[StreamingConsole] 🔄 Sending context update to Gemini:', {
+        hasEmotional: !!currentContext.emotional,
+        misconceptions: currentContext.misconceptions?.length || 0,
+        hasVision: !!currentContext.vision,
+      });
+      
+      // Send to Gemini Live as hidden message
+      client.sendContextUpdate(contextUpdate);
+    }
+  }, [currentContext, isConnected, client]);
 
   // 🎓 Show first-time tutorial when connected
   useEffect(() => {
@@ -756,6 +782,11 @@ export default function StreamingConsole() {
           studentLastMessage={lastStudentMessage}
           totalMilestones={currentLesson?.milestones?.length || 0}
           completedMilestones={progress?.completedMilestones || 0}
+          isAnalyzing={isAnalyzing}
+          emotionalState={currentContext?.emotional?.state}
+          hasActiveMisconceptions={
+            currentContext?.misconceptions?.some(m => m.detected && !m.resolved) || false
+          }
           lessonImage={
             <LessonImage 
               lessonId={currentLesson?.id}

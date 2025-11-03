@@ -149,6 +149,28 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this.log(`client.send`, parts);
   }
 
+  /**
+   * Send hidden context update to influence AI behavior mid-conversation
+   * This is sent as a user message but doesn't appear in transcription
+   */
+  public sendContextUpdate(contextText: string) {
+    if (this._status !== 'connected' || !this.session) {
+      console.warn('[GenAILiveClient] Cannot send context - not connected');
+      return;
+    }
+    
+    // Send as user message but mark as system context
+    this.session.sendClientContent({
+      turns: [{
+        role: 'user',
+        parts: [{ text: `[SYSTEM CONTEXT UPDATE - DO NOT ACKNOWLEDGE]\n${contextText}` }]
+      }],
+      turnComplete: true,
+    });
+    
+    this.log('client.contextUpdate', `Sent ${contextText.length} chars`);
+  }
+
   public sendRealtimeInput(chunks: Array<{ mimeType: string; data: string }>) {
     if (this._status !== 'connected' || !this.session) {
       this.emit('error', new ErrorEvent('Client is not connected'));

@@ -79,6 +79,12 @@ export class PromptBuilder {
       sections.push(this.formatVisionContext(context.vision));
     }
 
+    // Canvas Drawing Guidance
+    const canvasGuidance = this.formatCanvasGuidance(context);
+    if (canvasGuidance) {
+      sections.push(canvasGuidance);
+    }
+
     // Priority Instructions
     sections.push(this.formatPriorityInstructions(context));
 
@@ -242,6 +248,41 @@ ${priorities.map((p, i) => `${i + 1}. ${p}`).join('\n')}
   }
 
   /**
+   * Format canvas drawing guidance for agent
+   * Tells agent when and how to prompt student to draw
+   */
+  private static formatCanvasGuidance(context: SessionContext): string {
+    // Check if there's active canvas guidance from image pedagogy
+    const canvasGuidance = (context as any).canvasGuidance;
+    
+    if (!canvasGuidance) {
+      return '';
+    }
+
+    const sections: string[] = [];
+    
+    sections.push(`
+## 🎨 Canvas Drawing Guidance
+
+**Current Activity:** ${canvasGuidance.activityDescription || 'Drawing exercise'}
+
+**What Student Should Draw:**
+${canvasGuidance.expectedElements?.map((elem: string) => `- ${elem}`).join('\n') || '- (See image for reference)'}
+
+**Your Role as Tutor:**
+${canvasGuidance.agentPrompt || 'Encourage student to use the canvas to show their thinking'}
+
+**Watch for Common Mistakes:**
+${canvasGuidance.commonErrors?.map((err: string) => `- ${err}`).join('\n') || '- Monitor for errors'}
+
+**Success Indicators:**
+${canvasGuidance.successIndicators?.map((ind: string) => `- ${ind}`).join('\n') || '- Clear, accurate representation'}
+`);
+
+    return sections.join('\n');
+  }
+
+  /**
    * Get just the base prompt without agent context
    */
   public static getBasePrompt(): string {
@@ -253,5 +294,53 @@ ${priorities.map((p, i) => `${i + 1}. ${p}`).join('\n')}
     }
     
     return basePrompt;
+  }
+
+  /**
+   * Build concise context update for mid-conversation injection
+   * This is sent as a hidden message to update AI without interrupting
+   */
+  public static buildContextUpdate(context: SessionContext): string {
+    const sections: string[] = [];
+    
+    sections.push('📊 REAL-TIME CONTEXT UPDATE');
+    sections.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    // Only include what changed or is most relevant
+    if (context.emotional) {
+      const { state, engagementLevel, frustrationLevel, confusionLevel } = context.emotional;
+      sections.push(`\n🎭 Emotional State: ${state.toUpperCase()}`);
+      sections.push(`   Engagement: ${(engagementLevel * 100).toFixed(0)}%`);
+      if (frustrationLevel > 0.4) {
+        sections.push(`   ⚠️ Frustration: ${(frustrationLevel * 100).toFixed(0)}% - Simplify and encourage!`);
+      }
+      if (confusionLevel > 0.4) {
+        sections.push(`   ⚠️ Confusion: ${(confusionLevel * 100).toFixed(0)}% - Rephrase and use examples!`);
+      }
+    }
+    
+    // Recent misconceptions
+    if (context.misconceptions && context.misconceptions.length > 0) {
+      const recent = context.misconceptions.slice(-2); // Last 2
+      sections.push(`\n🔴 Active Misconceptions:`);
+      recent.forEach((m, i) => {
+        sections.push(`   ${i + 1}. ${m.type}: ${m.correctiveConcept}`);
+        if (m.intervention) {
+          sections.push(`      → Strategy: ${m.intervention}`);
+        }
+      });
+    }
+    
+    // Vision analysis
+    if (context.vision && context.vision.needsVoiceOver) {
+      sections.push(`\n👁️ Student's Drawing:`);
+      sections.push(`   ${context.vision.description.substring(0, 150)}...`);
+      sections.push(`   🎯 Suggest: ${context.vision.suggestion}`);
+    }
+    
+    sections.push('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    sections.push('Adapt your next response based on this context.');
+    
+    return sections.join('\n');
   }
 }
