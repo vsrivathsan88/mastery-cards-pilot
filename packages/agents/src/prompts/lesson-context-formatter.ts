@@ -47,6 +47,7 @@ export function formatLessonContext(options: LessonContextOptions): string {
       title: milestone.title,
       description: milestone.description,
       keywords: milestone.keywords || [],
+      storyGuide: (milestone as any).prompt || '',  // ✅ NEW: Story narrative with image switching cues
       index: milestoneIndex,
       total: lesson.milestones.length,
       teachingTips: (milestone as any).teachingTips || [],
@@ -87,6 +88,7 @@ export function formatMilestoneTransition(
       title: nextMilestone.title,
       description: nextMilestone.description,
       keywords: nextMilestone.keywords || [],
+      storyGuide: (nextMilestone as any).prompt || '',  // ✅ NEW: Story narrative for new milestone
       index: nextMilestoneIndex,
       total: totalMilestones,
       suggestedImages: suggestedImages.length > 0 ? suggestedImages : undefined, // ✅ NEW: Images for this milestone
