@@ -36,6 +36,7 @@ import { apiClient } from '../../lib/api-client';
 // TO REMOVE: Delete this import and all debug code blocks
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 import { useAgentDebugStore, debugLog } from '@/lib/agent-debug-store';
+import { canvasManipulationService } from '@/services/CanvasManipulationService';
 
 export type UseLiveApiResults = {
   client: GenAILiveClient;
@@ -352,23 +353,105 @@ export function useLiveApi({
           
           console.log(`[useLiveApi] 🎨 PILOT: Drawing on canvas`, { shapeType, purpose, temporary });
           
-          // TODO: Implement canvas drawing via CanvasManipulationService
-          // For now: log and acknowledge
+          // Draw on canvas using CanvasManipulationService
+          let shapeId: string | null = null;
+          let success = false;
+          let errorMessage = '';
+
+          if (!canvasManipulationService.isReady()) {
+            errorMessage = 'Canvas not ready yet';
+            console.warn(`[useLiveApi] ${errorMessage}`);
+          } else {
+            try {
+              switch (shapeType) {
+                case 'line':
+                  shapeId = canvasManipulationService.drawLine({
+                    x1: coordinates.x1,
+                    y1: coordinates.y1,
+                    x2: coordinates.x2,
+                    y2: coordinates.y2,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'circle':
+                  shapeId = canvasManipulationService.drawCircle({
+                    cx: coordinates.cx,
+                    cy: coordinates.cy,
+                    radius: coordinates.radius,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'rectangle':
+                  shapeId = canvasManipulationService.drawRectangle({
+                    x: coordinates.x,
+                    y: coordinates.y,
+                    width: coordinates.width,
+                    height: coordinates.height,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'arrow':
+                  shapeId = canvasManipulationService.drawArrow({
+                    x1: coordinates.x1,
+                    y1: coordinates.y1,
+                    x2: coordinates.x2,
+                    y2: coordinates.y2,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'freehand':
+                  shapeId = canvasManipulationService.drawFreehand({
+                    points: coordinates.points || [],
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                default:
+                  errorMessage = `Unknown shape type: ${shapeType}`;
+                  console.warn(`[useLiveApi] ${errorMessage}`);
+              }
+
+              success = shapeId !== null;
+            } catch (error) {
+              errorMessage = `Failed to draw: ${error}`;
+              console.error(`[useLiveApi] ${errorMessage}`, error);
+            }
+          }
           
           // Log to teacher panel for tracking
           useLogStore.getState().addTurn({
             role: 'system',
-            text: `🎨 Pi drew ${shapeType}: ${purpose}${temporary ? ' (temporary)' : ''}`,
+            text: success 
+              ? `🎨 Pi drew ${shapeType}: ${purpose}${temporary ? ' (temporary)' : ''}`
+              : `❌ Failed to draw ${shapeType}: ${errorMessage}`,
             isFinal: true,
           });
           
           functionResponses.push({
             id: fc.id,
             name: fc.name,
-            response: { 
+            response: success ? { 
               success: true,
               message: `Drawing added to canvas: ${shapeType} for ${purpose}`,
+              shapeId,
               coordinates,
+            } : {
+              success: false,
+              error: errorMessage,
             },
           });
         } else if (fc.name === 'add_canvas_label') {
@@ -376,23 +459,52 @@ export function useLiveApi({
           
           console.log(`[useLiveApi] 🏷️ PILOT: Adding canvas label`, { text, style, temporary });
           
-          // TODO: Implement canvas text via CanvasManipulationService
-          // For now: log and acknowledge
+          // Add text to canvas using CanvasManipulationService
+          let success = false;
+          let errorMessage = '';
+          let shapeId: string | null = null;
+
+          if (!canvasManipulationService.isReady()) {
+            errorMessage = 'Canvas not ready yet';
+            console.warn(`[useLiveApi] ${errorMessage}`);
+          } else {
+            try {
+              shapeId = canvasManipulationService.addText({
+                text,
+                x: position.x,
+                y: position.y,
+                fontSize,
+                style,
+                temporary,
+                pointsTo,
+              });
+              success = shapeId !== null;
+            } catch (error) {
+              errorMessage = `Failed to add label: ${error}`;
+              console.error(`[useLiveApi] ${errorMessage}`, error);
+            }
+          }
           
           // Log to teacher panel for tracking
           useLogStore.getState().addTurn({
             role: 'system',
-            text: `🏷️ Pi added label: "${text}" (${style || 'annotation'})${temporary ? ' (temporary)' : ''}`,
+            text: success
+              ? `🏷️ Pi added label: "${text}" (${style || 'annotation'})${temporary ? ' (temporary)' : ''}`
+              : `❌ Failed to add label: ${errorMessage}`,
             isFinal: true,
           });
           
           functionResponses.push({
             id: fc.id,
             name: fc.name,
-            response: { 
+            response: success ? { 
               success: true,
               message: `Label "${text}" added to canvas`,
+              shapeId,
               position,
+            } : {
+              success: false,
+              error: errorMessage,
             },
           });
         } else if (fc.name === 'show_emoji_reaction') {
@@ -427,14 +539,19 @@ export function useLiveApi({
           
           console.log(`[useLiveApi] ✅ PILOT: Verification prompt`, { focusArea, verificationPrompt });
           
+          // If highlightCanvas requested, highlight the canvas area
+          if (highlightCanvas && canvasManipulationService.isReady()) {
+            // Highlight full canvas area (adjust coordinates as needed)
+            canvasManipulationService.highlightRegion(50, 50, 400, 300, 3000);
+            console.log(`[useLiveApi] Highlighted canvas for verification`);
+          }
+          
           // Log verification prompt to teacher panel
           useLogStore.getState().addTurn({
             role: 'system',
             text: `✅ Pi asked for verification (${focusArea}): "${verificationPrompt}"`,
             isFinal: true,
           });
-          
-          // TODO: If highlightCanvas, trigger canvas highlight effect
           
           functionResponses.push({
             id: fc.id,
@@ -443,6 +560,7 @@ export function useLiveApi({
               success: true,
               message: `Verification prompt sent to student: ${verificationPrompt}`,
               focusArea,
+              highlighted: highlightCanvas && canvasManipulationService.isReady(),
             },
           });
         } 

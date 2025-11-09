@@ -2,6 +2,7 @@ import { Tldraw, Editor, useEditor } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import { useLessonStore } from '@/lib/state';
 import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { canvasManipulationService } from '@/services/CanvasManipulationService';
 
 interface LessonCanvasProps {
   lessonId?: string;
@@ -92,6 +93,10 @@ export const LessonCanvas = forwardRef<LessonCanvasRef, LessonCanvasProps>(
 
     const handleMount = (editor: Editor) => {
       editorRef.current = editor;
+      
+      // PILOT: Give CanvasManipulationService access to editor
+      canvasManipulationService.setEditor(editor);
+      console.log('[LessonCanvas] Editor mounted and connected to CanvasManipulationService');
     };
   
   // Get canvas instructions if available
