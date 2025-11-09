@@ -400,6 +400,10 @@ export default function StreamingConsole() {
     }
   }, [progress]);
 
+  // Track tool count to detect when tools load
+  const prevToolCountRef = useRef(0);
+  const configUpdateCountRef = useRef(0);
+
   // Set the configuration for the Live API
   // Update when systemPrompt changes (e.g., when lesson loads) but only if not connected
   useEffect(() => {
@@ -440,15 +444,41 @@ export default function StreamingConsole() {
     };
 
     console.log('[StreamingConsole] 🔍 SYSTEM PROMPT FROM STATE:', systemPrompt.substring(0, 100) + '...');
+    const currentToolCount = enabledTools.length;
+    const prevToolCount = prevToolCountRef.current;
+    const isConnectedNow = client.status === 'connected';
+    
     console.log('[StreamingConsole] 🔍 Setting config with:', {
       promptLength: systemPrompt.length,
-      toolCount: enabledTools.length,
+      toolCount: currentToolCount,
       tools: enabledTools.map(t => t.functionDeclarations[0].name),
+      configUpdateCount: configUpdateCountRef.current,
+      isConnected: isConnectedNow,
+      prevToolCount,
     });
-    setConfig(config);
-    console.log('[StreamingConsole] ✅ Config set with', enabledTools.length, 'tools');
     
-  }, [setConfig, systemPrompt, tools, voice]); // ✅ FIXED: Added tools and voice to dependencies
+    setConfig(config);
+    console.log('[StreamingConsole] ✅ Config set with', currentToolCount, 'tools');
+    
+    // ✅ CRITICAL FIX: Force reconnection when tools become available
+    // This handles the case where user connected BEFORE tools loaded
+    if (prevToolCount === 0 && currentToolCount > 0 && isConnectedNow) {
+      console.log('[StreamingConsole] 🔄 CRITICAL: Tools just loaded but already connected!');
+      console.log('[StreamingConsole] 🔄 Forcing reconnection to register tools with Gemini...');
+      
+      // Disconnect and reconnect to send new config with tools
+      disconnect();
+      
+      setTimeout(() => {
+        console.log('[StreamingConsole] 🔌 Reconnecting with', currentToolCount, 'tools...');
+        connect();
+      }, 1000); // 1 second delay to ensure clean disconnect
+    }
+    
+    prevToolCountRef.current = currentToolCount;
+    configUpdateCountRef.current += 1;
+    
+  }, [setConfig, systemPrompt, tools, voice, client.status, disconnect, connect]); // ✅ FIXED: Added tools and voice to dependencies
 
   useEffect(() => {
     const { addTurn, updateLastTurn } = useLogStore.getState();

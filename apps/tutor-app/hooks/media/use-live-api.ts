@@ -716,7 +716,9 @@ export function useLiveApi({
 
       // CRITICAL: Pass transcription to pedagogy engine for milestone detection
       // This must happen FIRST for immediate milestone detection
+      console.log('[useLiveApi] 🔄 Sending transcription to PedagogyEngine for keyword matching...');
       orchestrator.getPedagogyEngine().processTranscription(text, isFinal);
+      console.log('[useLiveApi] ✅ Transcription processed by PedagogyEngine');
 
       // Get current lesson context
       const currentLesson = orchestrator.getPedagogyEngine().getCurrentLesson();
