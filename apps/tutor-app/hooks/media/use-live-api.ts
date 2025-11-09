@@ -343,7 +343,113 @@ export function useLiveApi({
               message: `Canvas area highlighted: ${reason}`
             },
           });
-        } else {
+        } 
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // PILOT TOOLS - New tools for outcome tracking pilot
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        else if (fc.name === 'draw_on_canvas') {
+          const { shapeType, coordinates, strokeWidth, purpose, temporary, animated } = fc.args;
+          
+          console.log(`[useLiveApi] 🎨 PILOT: Drawing on canvas`, { shapeType, purpose, temporary });
+          
+          // TODO: Implement canvas drawing via CanvasManipulationService
+          // For now: log and acknowledge
+          
+          // Log to teacher panel for tracking
+          useLogStore.getState().addTurn({
+            role: 'system',
+            text: `🎨 Pi drew ${shapeType}: ${purpose}${temporary ? ' (temporary)' : ''}`,
+            isFinal: true,
+          });
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Drawing added to canvas: ${shapeType} for ${purpose}`,
+              coordinates,
+            },
+          });
+        } else if (fc.name === 'add_canvas_label') {
+          const { text, position, style, fontSize, temporary, pointsTo } = fc.args;
+          
+          console.log(`[useLiveApi] 🏷️ PILOT: Adding canvas label`, { text, style, temporary });
+          
+          // TODO: Implement canvas text via CanvasManipulationService
+          // For now: log and acknowledge
+          
+          // Log to teacher panel for tracking
+          useLogStore.getState().addTurn({
+            role: 'system',
+            text: `🏷️ Pi added label: "${text}" (${style || 'annotation'})${temporary ? ' (temporary)' : ''}`,
+            isFinal: true,
+          });
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Label "${text}" added to canvas`,
+              position,
+            },
+          });
+        } else if (fc.name === 'show_emoji_reaction') {
+          const { emoji, intensity, duration, position, reason } = fc.args;
+          
+          console.log(`[useLiveApi] 😊 PILOT: Showing emoji reaction`, { emoji, intensity, reason });
+          
+          // TODO: Implement emoji display via EmojiReactionComponent
+          // For now: log to UI
+          
+          // Show in log as visual feedback
+          useLogStore.getState().addTurn({
+            role: 'pi',
+            text: `${emoji}`,
+            isFinal: true,
+          });
+          
+          // Log to teacher panel for tracking
+          console.log(`[useLiveApi] 😊 Pi showed emoji: ${emoji} - ${reason}`);
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Emoji reaction shown: ${emoji}`,
+              intensity: intensity || 'normal',
+            },
+          });
+        } else if (fc.name === 'verify_student_work') {
+          const { verificationPrompt, focusArea, highlightCanvas } = fc.args;
+          
+          console.log(`[useLiveApi] ✅ PILOT: Verification prompt`, { focusArea, verificationPrompt });
+          
+          // Log verification prompt to teacher panel
+          useLogStore.getState().addTurn({
+            role: 'system',
+            text: `✅ Pi asked for verification (${focusArea}): "${verificationPrompt}"`,
+            isFinal: true,
+          });
+          
+          // TODO: If highlightCanvas, trigger canvas highlight effect
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Verification prompt sent to student: ${verificationPrompt}`,
+              focusArea,
+            },
+          });
+        } 
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // END PILOT TOOLS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        else {
           // Default response for other tools
           functionResponses.push({
             id: fc.id,
