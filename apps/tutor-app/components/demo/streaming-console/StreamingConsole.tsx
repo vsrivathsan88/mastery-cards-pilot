@@ -448,7 +448,7 @@ export default function StreamingConsole() {
     const prevToolCount = prevToolCountRef.current;
     const isConnectedNow = client.status === 'connected';
     
-    console.log('[StreamingConsole] 🔍 Setting config with:', {
+    console.log('%c[StreamingConsole] 🔍 Setting config with:', 'color: #3b82f6; font-weight: bold;', {
       promptLength: systemPrompt.length,
       toolCount: currentToolCount,
       tools: enabledTools.map(t => t.functionDeclarations[0].name),
@@ -458,7 +458,18 @@ export default function StreamingConsole() {
     });
     
     setConfig(config);
-    console.log('[StreamingConsole] ✅ Config set with', currentToolCount, 'tools');
+    console.log('%c[StreamingConsole] ✅ Config set with', 'color: #22c55e; font-weight: bold;', currentToolCount, 'tools');
+    
+    // Debug check: Verify config has tools
+    if (currentToolCount === 0) {
+      console.error('%c[StreamingConsole] ❌ CRITICAL: No tools in config!', 'color: #ef4444; font-weight: bold;');
+      console.error('[StreamingConsole] This means tool calls will NOT work!');
+    } else if (currentToolCount < 9) {
+      console.warn('%c[StreamingConsole] ⚠️ WARNING: Expected 9 tools, got', 'color: #f59e0b; font-weight: bold;', currentToolCount);
+      console.warn('[StreamingConsole] Pilot mode might not be enabled!');
+    } else {
+      console.log('%c[StreamingConsole] 🎉 Perfect! All 9 tools loaded', 'color: #22c55e; font-weight: bold;');
+    }
     
     // ✅ CRITICAL FIX: Force reconnection when tools become available
     // This handles the case where user connected BEFORE tools loaded
