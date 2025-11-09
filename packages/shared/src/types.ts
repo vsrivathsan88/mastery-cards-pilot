@@ -70,6 +70,12 @@ export interface Milestone {
   keywords?: string[];
   completed?: boolean;
   timestamp?: number;
+  prompt?: string; // ✅ CRITICAL FIX: Story narrative with image switching instructions
+  order?: number;
+  hidden?: boolean;
+  difficulty?: string;
+  purpose?: string;
+  expectedConcepts?: string[];
 }
 
 export interface LessonAsset {

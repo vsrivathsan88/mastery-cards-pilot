@@ -47,14 +47,20 @@ export function formatLessonContext(options: LessonContextOptions): string {
       title: milestone.title,
       description: milestone.description,
       keywords: milestone.keywords || [],
-      storyGuide: (milestone as any).prompt || '',  // ✅ NEW: Story narrative with image switching cues
+      storyGuide: milestone.prompt || '',  // ✅ Story narrative with image switching cues
       index: milestoneIndex,
       total: lesson.milestones.length,
       teachingTips: (milestone as any).teachingTips || [],
     },
     instructions: isFirstMilestone
-      ? `Warmly greet the student and introduce the lesson "${lesson.title}". Guide them toward understanding "${milestone.title}" using concrete examples. Use show_image() to display relevant visuals at key story moments.`
-      : `Move to milestone "${milestone.title}". Celebrate their progress, then guide them toward this new concept. Consider using show_image() to display new visuals that match this milestone.`,
+      ? `Warmly greet the student and introduce the lesson "${lesson.title}". 
+
+CRITICAL: Follow the storyGuide! When you see [Call show_image('id') here], call that tool IMMEDIATELY at that exact moment in the story. Images are NOT optional - they are essential for student understanding. 
+
+Guide them toward "${milestone.title}" using concrete examples and VISUAL AIDS.`
+      : `Move to milestone "${milestone.title}". Celebrate their progress!
+
+CRITICAL: Follow the storyGuide for this new milestone! Call show_image() when you see [Call show_image(...)] instructions. Use visuals to support this new concept - images help students learn!`,
   };
 
   return JSON.stringify(contextData, null, 2);
@@ -88,14 +94,22 @@ export function formatMilestoneTransition(
       title: nextMilestone.title,
       description: nextMilestone.description,
       keywords: nextMilestone.keywords || [],
-      storyGuide: (nextMilestone as any).prompt || '',  // ✅ NEW: Story narrative for new milestone
+      storyGuide: nextMilestone.prompt || '',  // ✅ Story narrative for new milestone
       index: nextMilestoneIndex,
       total: totalMilestones,
       suggestedImages: suggestedImages.length > 0 ? suggestedImages : undefined, // ✅ NEW: Images for this milestone
     },
     instructions: suggestedImages.length > 0
-      ? `Enthusiastically celebrate completing "${completedMilestone.title}", then transition to "${nextMilestone.title}". **Important: Call show_image() with one of the suggested images to provide visual support for this new milestone.** Guide them toward this new concept with fresh examples.`
-      : `Enthusiastically celebrate completing "${completedMilestone.title}", then transition to "${nextMilestone.title}". Guide them toward this new concept with fresh examples.`,
+      ? `Enthusiastically celebrate completing "${completedMilestone.title}"! 🎉
+
+Then transition to "${nextMilestone.title}". 
+
+**REQUIRED: Call show_image() with one of the suggested images RIGHT NOW to introduce this milestone visually!** Then follow the storyGuide with [Call show_image(...)] instructions. Images are ESSENTIAL - students need visuals to learn!`
+      : `Enthusiastically celebrate completing "${completedMilestone.title}"! 🎉
+
+Then transition to "${nextMilestone.title}". 
+
+**IMPORTANT: Follow the storyGuide! Call show_image() when you see [Call show_image(...)] instructions.** Use visuals to teach this concept!`,
   };
 
   return JSON.stringify(transitionData, null, 2);
