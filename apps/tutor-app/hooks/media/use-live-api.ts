@@ -241,10 +241,20 @@ export function useLiveApi({
         if (fc.name === 'show_image') {
           const { imageId, context } = fc.args;
           
-          console.log(`[useLiveApi] 🖼️ Showing image: ${imageId}`, context);
+          console.log(`[useLiveApi] 🖼️ TOOL CALL: show_image`, { imageId, context });
+          
+          // Verify image exists in lesson assets
+          const currentLesson = useLessonStore.getState().currentLesson;
+          const imageExists = currentLesson?.assets?.some((asset: any) => asset.id === imageId);
+          
+          if (!imageExists) {
+            console.warn(`[useLiveApi] ⚠️ Image "${imageId}" not found in lesson assets!`);
+            console.log('Available images:', currentLesson?.assets?.map((a: any) => a.id));
+          }
           
           // Update lesson store with current image
           useLessonStore.getState().setCurrentImage(imageId as string);
+          console.log(`[useLiveApi] ✅ Current image set to: ${imageId}`);
           
           // Prepare success response
           functionResponses.push({
@@ -253,7 +263,8 @@ export function useLiveApi({
             response: { 
               success: true,
               imageId,
-              message: `Image "${imageId}" is now displayed to the student.`
+              message: `Image "${imageId}" is now displayed to the student.`,
+              found: imageExists,
             },
           });
         } else if (fc.name === 'mark_milestone_complete') {
@@ -710,6 +721,16 @@ export function useLiveApi({
       // Keywords like "different", "bigger", "smaller" prove they understand the concepts
       // This makes lesson start instant instead of waiting 1-4 seconds for LLM calls
 
+      // ⚡ PERFORMANCE FIX: Skip heavy agent analysis for first few turns (greetings/intro)
+      // This significantly speeds up lesson start time
+      const turns = useLogStore.getState().turns;
+      const studentTurns = turns.filter(t => t.role === 'user').length;
+      
+      if (studentTurns < 2) {
+        console.log(`[useLiveApi] ⚡ Skipping agent analysis for early interaction (turn ${studentTurns}/2)`);
+        return;
+      }
+
       try {
         console.log('[useLiveApi] 🔍 Sending to backend for analysis...');
 
@@ -998,7 +1019,24 @@ export function useLiveApi({
       
       // Start Teacher Panel session
       useTeacherPanel.getState().startSession(lesson.id, lesson.title);
-      console.log('[useLiveApi] 📊 Teacher Panel session started');
+      
+      // Verify session started
+      const session = useTeacherPanel.getState().currentSession;
+      if (session) {
+        console.log('[useLiveApi] ✅ Teacher Panel session started:', session.id);
+      } else {
+        console.error('[useLiveApi] ❌ Teacher Panel session failed to start!');
+      }
+      
+      // Log first milestone
+      if (lesson.milestones && lesson.milestones.length > 0) {
+        const firstMilestone = lesson.milestones[0];
+        useTeacherPanel.getState().logMilestoneStart(
+          firstMilestone.id,
+          firstMilestone.title || firstMilestone.description || 'First milestone'
+        );
+        console.log('[useLiveApi] 📝 First milestone logged:', firstMilestone.title);
+      }
       
       // Format lesson context as a message (not system prompt)
       const currentMilestone = lesson.milestones[0];
