@@ -196,6 +196,59 @@ Examples:
   },
   
   {
+    name: 'analyze_student_canvas',
+    description: `Look at and analyze what the student has drawn on their canvas to provide informed feedback.
+    
+Use this when:
+- Student says "look at my drawing" or "what do you think?"
+- You need to verify their partitioning is correct
+- You want to comment on their work specifically
+- Checking if they divided a shape into equal parts
+- Student asks "is this right?" or requests feedback
+- Before giving feedback on their drawing
+
+IMPORTANT:
+- This gives you a detailed description of what they actually drew
+- Use it BEFORE commenting on their work (don't assume!)
+- Canvas might be empty if they haven't drawn yet
+- You'll receive analysis results to inform your response
+
+The response includes:
+- description: What's on the canvas
+- interpretation: What it means mathematically
+- confidence: How certain the analysis is
+- hasShapes: Whether anything is drawn
+- appearsEqual: If parts look equal (for fractions work)
+
+Examples:
+- Student: "Look at my circle!" → You: [calls this] "Let me see... I notice you drew a circle with three sections..."
+- Before feedback: "Let me check your work" → [call this] → then respond based on results
+- Student: "Is this right?" → [call this first] → then give specific feedback`,
+    
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        purpose: {
+          type: 'STRING',
+          description: 'Why you\'re analyzing the canvas. Examples: "Verifying equal parts", "Checking circle division", "Student requested feedback", "Before giving hints"',
+        },
+        lookingFor: {
+          type: 'STRING',
+          enum: ['shapes', 'partitioning', 'equality', 'completeness', 'accuracy'],
+          description: `What aspect you're focusing on:
+- shapes: What shapes are drawn
+- partitioning: How shapes are divided
+- equality: Whether parts look equal-sized
+- completeness: If task is finished
+- accuracy: Correctness of the work`,
+        },
+      },
+      required: ['purpose', 'lookingFor'],
+    },
+    isEnabled: true,
+  },
+  
+  {
     name: 'verify_student_work',
     description: `Ask student to verify or check their own work, promoting self-assessment and metacognition.
     

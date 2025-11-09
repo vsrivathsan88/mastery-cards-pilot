@@ -86,6 +86,11 @@ export class PedagogyEngine extends EventEmitter<PedagogyEvents> {
       // Emit detection event (even for 1 keyword - let system guide student)
       this.emit('milestone_detected', currentMilestone, text);
       
+      // ✅ CRITICAL FIX: Emit progress update so UI updates in real-time
+      // This triggers LessonProgress component and teacher panel to update
+      console.log(`[PedagogyEngine] 📊 Emitting progress update for UI...`);
+      this.emitProgress();
+      
       // For Milestone 0: ANY keyword match = PASS (it's a simple warmup)
       // For other milestones: 1 strong keyword OR 2 weak keywords
       const isWarmup = currentMilestone.id === 'milestone-0-warmup' || 

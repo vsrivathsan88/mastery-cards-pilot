@@ -95,7 +95,7 @@ export const useTools = create<{
   removeTool: (toolName: string) => void;
   updateTool: (oldName: string, updatedTool: FunctionCall) => void;
 }>(set => ({
-  tools: lessonTools,  // Default to lesson tools for tutor app
+  tools: getLessonTools(),  // ✅ Use merged tools (lesson + pilot if enabled)
   template: 'lesson-tutor',
   setTemplate: (template: Template) => {
     set({ tools: toolsets[template], template });

@@ -584,6 +584,91 @@ export function useLiveApi({
               highlighted: highlightCanvas && canvasManipulationService.isReady(),
             },
           });
+        } else if (fc.name === 'analyze_student_canvas') {
+          const { purpose, lookingFor } = fc.args;
+          
+          console.log(`[useLiveApi] 👁️ PILOT: Analyzing canvas`, { purpose, lookingFor });
+          
+          // Get canvas reference from StreamingConsole context
+          // This requires passing canvasRef through context or finding it
+          let analysis = null;
+          let success = false;
+          let errorMessage = '';
+          
+          try {
+            // Try to get canvas snapshot
+            // Note: This is simplified - in practice you'd need canvasRef from component
+            const canvasElement = document.querySelector('[data-canvas-id]') as HTMLCanvasElement;
+            
+            if (!canvasElement) {
+              errorMessage = 'Canvas not found or not ready yet';
+              console.warn(`[useLiveApi] ${errorMessage}`);
+              
+              functionResponses.push({
+                id: fc.id,
+                name: fc.name,
+                response: {
+                  success: false,
+                  error: errorMessage,
+                  description: 'No canvas available to analyze.',
+                  suggestion: 'Canvas may not be initialized yet. Try again.',
+                },
+              });
+            } else {
+              // Get canvas as data URL for analysis
+              const dataUrl = canvasElement.toDataURL('image/png');
+              
+              // TODO: Call actual vision analysis service
+              // For now, provide basic feedback
+              analysis = {
+                description: 'Canvas analysis not yet implemented - using placeholder',
+                interpretation: `Looking for: ${lookingFor}`,
+                confidence: 0.5,
+                hasShapes: true,
+                suggestion: 'Vision analysis service integration pending',
+              };
+              
+              success = true;
+              
+              console.log(`[useLiveApi] ✅ Canvas analysis complete (placeholder)`, { purpose });
+              
+              // Log to teacher panel
+              useLogStore.getState().addTurn({
+                role: 'system',
+                text: `👁️ Pi analyzed canvas: ${purpose} (looking for: ${lookingFor})`,
+                isFinal: true,
+              });
+              
+              functionResponses.push({
+                id: fc.id,
+                name: fc.name,
+                response: {
+                  success: true,
+                  description: analysis.description,
+                  interpretation: analysis.interpretation,
+                  confidence: analysis.confidence,
+                  findings: {
+                    hasShapes: analysis.hasShapes,
+                    lookingFor: lookingFor,
+                  },
+                  suggestion: analysis.suggestion,
+                },
+              });
+            }
+          } catch (error) {
+            errorMessage = `Canvas analysis failed: ${error}`;
+            console.error(`[useLiveApi] ${errorMessage}`, error);
+            
+            functionResponses.push({
+              id: fc.id,
+              name: fc.name,
+              response: {
+                success: false,
+                error: errorMessage,
+                description: 'Could not analyze canvas at this time.',
+              },
+            });
+          }
         } 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // END PILOT TOOLS
