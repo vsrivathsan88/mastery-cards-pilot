@@ -94,13 +94,17 @@ Features: canvasDrawingTool, canvasLabelTool, emojiReactionTool, ...
 - [x] Canvas text/label rendering
 - [x] Canvas highlight effect
 - [x] Wired to TLDraw editor
-- [ ] Emoji display component (TODO)
+- [x] Emoji display component
 
-### 📋 Phase 4: Outcome Tracking (TODO)
-- [ ] `OutcomeTrackerService` for evidence collection
-- [ ] Evidence aggregation from canvas + transcripts
-- [ ] Outcome analysis and scoring
-- [ ] Teacher panel outcomes view
+### ✅ Phase 4: Outcome Tracking (COMPLETE)
+- [x] `OutcomeTrackerService` for evidence collection
+- [x] Evidence aggregation from canvas + transcripts
+- [x] Outcome analysis and correctness scoring
+- [x] Talk-out-loud metrics tracking
+- [x] Transfer indicators detection
+- [x] Session summary generation
+- [ ] Teacher panel outcomes view (TODO - optional)
+- [ ] Evidence storage (TODO - logs to console currently)
 
 ### 📋 Phase 5: Assessment Checkpoints (TODO)
 - [ ] Verification question prompts
@@ -117,18 +121,18 @@ apps/tutor-app/
 ├── lib/
 │   ├── pilot-config.ts              # Feature flags
 │   ├── pilot-types.ts               # Data structures
+│   ├── emoji-reaction-store.ts      # NEW: Emoji state management
 │   ├── tools/
 │   │   ├── lesson-tools.ts          # Existing tools
 │   │   └── pilot-tools.ts           # NEW: Pilot tools
 │   └── state.ts                     # Modified: Conditional tool loading
+├── components/pilot/
+│   └── EmojiReaction.tsx            # NEW: Emoji display component
 ├── hooks/media/
-│   └── use-live-api.ts              # Modified: Tool call handlers
+│   └── use-live-api.ts              # Modified: Tool handlers + outcome collection
 └── services/
-    └── OutcomeTrackerService.ts     # TODO: Evidence collection
-
-packages/agents/src/
-└── pedagogy/
-    └── OutcomeCollector.ts          # TODO: Outcome aggregation
+    ├── CanvasManipulationService.ts # NEW: Canvas drawing
+    └── OutcomeTrackerService.ts     # NEW: Evidence collection
 ```
 
 ---
