@@ -446,9 +446,9 @@ export default function StreamingConsole() {
       tools: enabledTools.map(t => t.functionDeclarations[0].name),
     });
     setConfig(config);
-    console.log('[StreamingConsole] ✅ Config set');
+    console.log('[StreamingConsole] ✅ Config set with', enabledTools.length, 'tools');
     
-  }, [setConfig, systemPrompt]); // Update when system prompt changes (lesson load)
+  }, [setConfig, systemPrompt, tools, voice]); // ✅ FIXED: Added tools and voice to dependencies
 
   useEffect(() => {
     const { addTurn, updateLastTurn } = useLogStore.getState();

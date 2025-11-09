@@ -960,12 +960,20 @@ export function useLiveApi({
         );
         console.log('[useLiveApi] 📝 Next milestone logged to teacher panel:', nextMilestone.title);
         
+        // Extract available images from lesson assets
+        const availableImages = (currentLesson as any).assets?.map((asset: any) => ({
+          id: asset.id,
+          description: asset.description || asset.alt,
+          usage: asset.usage || 'general',
+        })) || [];
+        
         // Send JSON milestone transition to agent
         const transitionMessage = formatMilestoneTransition(
           milestone,
           nextMilestone,
           progress?.currentMilestoneIndex || 0,
-          currentLesson.milestones.length
+          currentLesson.milestones.length,
+          availableImages // ✅ NOW Pi knows which images to use!
         );
         
         console.log('[useLiveApi] 🎯 Moving to milestone', progress?.currentMilestoneIndex || 0, ':', nextMilestone.title);
