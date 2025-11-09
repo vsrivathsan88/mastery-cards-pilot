@@ -1,0 +1,154 @@
+/**
+ * MasteryCard Styles
+ * Neo-brutalist design matching tutor-app aesthetic
+ */
+
+.mastery-card {
+  background: white;
+  border: 4px solid #1A1D2E;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 8px 8px 0 #1A1D2E;
+  width: 100%;
+  max-width: 500px;
+  min-height: 400px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.mastery-card.current {
+  cursor: grab;
+  z-index: 10;
+}
+
+.mastery-card.current:active {
+  cursor: grabbing;
+}
+
+.mastery-card.background {
+  position: absolute;
+  opacity: 0.5;
+  transform: scale(0.95);
+  z-index: 1;
+}
+
+.difficulty-badge {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+  padding: 8px 16px;
+  border: 3px solid #1A1D2E;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 14px;
+  color: white;
+  box-shadow: 4px 4px 0 #1A1D2E;
+}
+
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1A1D2E;
+  margin: 0;
+  text-align: center;
+}
+
+.card-prompt {
+  background: #F8F9FA;
+  border: 3px solid #1A1D2E;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.prompt-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.prompt-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1A1D2E;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 3px solid #E5E7EB;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+}
+
+.meta-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1A1D2E;
+}
+
+.swipe-hint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.swipe-direction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6B7280;
+}
+
+.swipe-direction.left {
+  flex-direction: row;
+}
+
+.swipe-direction.right {
+  flex-direction: row-reverse;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .mastery-card {
+    max-width: 100%;
+    min-height: 350px;
+    padding: 24px;
+  }
+  
+  .card-title {
+    font-size: 24px;
+  }
+  
+  .prompt-text {
+    font-size: 18px;
+  }
+}
