@@ -634,11 +634,23 @@ export function useLiveApi({
     const promptLength = config.systemInstruction?.parts?.[0]?.text?.length || 0;
     const promptPreview = config.systemInstruction?.parts?.[0]?.text?.substring(0, 100) || '';
     
-    console.log('[useLiveApi] 🔌 Connecting...', { 
+    // ✅ ENHANCED: Log full config details for debugging
+    const toolsArray = config.tools || [];
+    const toolNames = toolsArray.map((t: any) => t.functionDeclarations?.[0]?.name).filter(Boolean);
+    
+    console.log('[useLiveApi] 🔌 Connecting with config:', { 
       hasSystemInstruction: !!config.systemInstruction,
       promptLength,
-      promptPreview: promptPreview + '...'
+      promptPreview: promptPreview + '...',
+      toolsCount: toolsArray.length,
+      toolNames: toolNames,
     });
+    
+    if (toolsArray.length === 0) {
+      console.warn('[useLiveApi] ⚠️ WARNING: Connecting with ZERO tools! Tools may not be registered.');
+    } else {
+      console.log('[useLiveApi] ✅ Tools will be registered:', toolNames.join(', '));
+    }
     
     // Don't disconnect if already connected - just check for pending context
     if (client.status === 'connected') {
@@ -864,6 +876,14 @@ export function useLiveApi({
     };
     
     const onMilestoneDetected = (milestone: any, transcription: string) => {
+      // ✅ ENHANCED: More detailed logging for debugging
+      console.log('[useLiveApi] 🎯 MILESTONE DETECTED EVENT:', {
+        milestoneId: milestone.id,
+        milestoneTitle: milestone.title,
+        transcription: transcription.substring(0, 50) + '...',
+        keywordsMatched: milestone.keywords,
+      });
+      
       // 📊 LOG TO TEACHER PANEL: Student working on milestone
       const { logMilestoneProgress } = require('../lib/teacher-panel-store').useTeacherPanel.getState();
       logMilestoneProgress(
@@ -871,7 +891,12 @@ export function useLiveApi({
         transcription,
         milestone.keywords || []
       );
-      console.log('[useLiveApi] 📝 Milestone progress logged to teacher panel:', milestone.title);
+      
+      console.log('[useLiveApi] ✅ Teacher panel updated - milestone progress');
+      
+      // Verify it was logged
+      const logs = require('../lib/teacher-panel-store').useTeacherPanel.getState().milestoneLogs;
+      console.log('[useLiveApi] 📊 Total milestone logs in panel:', logs.length);
     };
     
     const onMilestoneCompleted = async (milestone: any) => {
