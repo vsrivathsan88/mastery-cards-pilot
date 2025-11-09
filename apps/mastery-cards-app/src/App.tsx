@@ -4,11 +4,15 @@
  */
 
 import { useEffect } from 'react';
+import { LiveAPIProvider } from './contexts/LiveAPIContext';
 import { MasteryCard } from './components/cards/MasteryCard';
 import { SessionHeader } from './components/session/SessionHeader';
+import { VoiceControl } from './components/voice/VoiceControl';
 import { useSessionStore } from './lib/state/session-store';
 import { getCardsForSession } from './lib/cards/card-generator';
 import './App.css';
+
+const API_KEY = (import.meta.env.VITE_GEMINI_API_KEY || 'test-api-key-for-testing') as string;
 
 function App() {
   const { 
@@ -81,43 +85,48 @@ function App() {
   }
   
   return (
-    <div className="app">
-      <SessionHeader />
-      
-      <main className="card-container">
-        <div className="card-stack">
-          <MasteryCard 
-            card={currentCard}
-            isCurrent={true}
-          />
-        </div>
+    <LiveAPIProvider apiKey={API_KEY}>
+      <div className="app">
+        <SessionHeader />
         
-        {/* Manual swipe buttons for testing */}
-        <div className="swipe-buttons">
-          <button 
-            className="swipe-button left"
-            onClick={handleSwipeLeft}
-          >
-            ⬅️ Needs Practice
-          </button>
-          <button 
-            className="swipe-button right"
-            onClick={handleSwipeRight}
-          >
-            Mastered! ➡️
-          </button>
-        </div>
-        
-        <div className="instructions">
-          <p>
-            <strong>🎤 Voice Mode:</strong> Coming soon! For now, use the buttons above.
-          </p>
-          <p>
-            This is the MVP - swipe gestures and Pi voice will be added next.
-          </p>
-        </div>
-      </main>
-    </div>
+        <main className="card-container">
+          <div className="card-stack">
+            <MasteryCard 
+              card={currentCard}
+              isCurrent={true}
+            />
+          </div>
+          
+          {/* Voice Control */}
+          <VoiceControl />
+          
+          {/* Manual swipe buttons for testing */}
+          <div className="swipe-buttons">
+            <button 
+              className="swipe-button left"
+              onClick={handleSwipeLeft}
+            >
+              ⬅️ Needs Practice
+            </button>
+            <button 
+              className="swipe-button right"
+              onClick={handleSwipeRight}
+            >
+              Mastered! ➡️
+            </button>
+          </div>
+          
+          <div className="instructions">
+            <p>
+              <strong>🎤 Voice Mode:</strong> Click "Start Voice Session" to talk with Pi!
+            </p>
+            <p>
+              Or use the manual buttons for testing.
+            </p>
+          </div>
+        </main>
+      </div>
+    </LiveAPIProvider>
   );
 }
 
