@@ -37,6 +37,9 @@ import { apiClient } from '../../lib/api-client';
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 import { useAgentDebugStore, debugLog } from '@/lib/agent-debug-store';
 import { canvasManipulationService } from '@/services/CanvasManipulationService';
+import { useEmojiReactionStore } from '@/lib/emoji-reaction-store';
+import { OutcomeTrackerService } from '@/services/OutcomeTrackerService';
+import { PILOT_MODE } from '@/lib/pilot-config';
 
 export type UseLiveApiResults = {
   client: GenAILiveClient;
@@ -512,8 +515,14 @@ export function useLiveApi({
           
           console.log(`[useLiveApi] 😊 PILOT: Showing emoji reaction`, { emoji, intensity, reason });
           
-          // TODO: Implement emoji display via EmojiReactionComponent
-          // For now: log to UI
+          // Show emoji using EmojiReactionStore
+          useEmojiReactionStore.getState().showReaction(
+            emoji as string,
+            (intensity as 'subtle' | 'normal' | 'celebration') || 'normal',
+            (duration as number) || 2,
+            (position as 'avatar' | 'center' | 'canvas') || 'avatar',
+            reason as string
+          );
           
           // Show in log as visual feedback
           useLogStore.getState().addTurn({
@@ -532,6 +541,7 @@ export function useLiveApi({
               success: true,
               message: `Emoji reaction shown: ${emoji}`,
               intensity: intensity || 'normal',
+              position: position || 'avatar',
             },
           });
         } else if (fc.name === 'verify_student_work') {
@@ -843,9 +853,62 @@ export function useLiveApi({
       console.log('[useLiveApi] 📝 Milestone progress logged to teacher panel:', milestone.title);
     };
     
-    const onMilestoneCompleted = (milestone: any) => {
+    const onMilestoneCompleted = async (milestone: any) => {
       const celebration = PromptManager.generateCelebration(milestone);
       useLessonStore.getState().celebrate(celebration);
+      
+      // 🧪 PILOT: Collect outcome evidence
+      if (PILOT_MODE.enabled && PILOT_MODE.features.outcomeEvidence) {
+        try {
+          // Get recent transcript (last 30 seconds of student speech)
+          const turns = useLogStore.getState().turns;
+          const recentStudentTurns = turns
+            .filter(t => t.role === 'user' && t.isFinal)
+            .slice(-3)
+            .map(t => t.text)
+            .join(' ');
+          
+          // Get canvas snapshot if available
+          let canvasSnapshot: string | null = null;
+          let canvasShapeCount = 0;
+          try {
+            const canvasRef = (document.querySelector('[data-canvas-ref]') as any)?.getSnapshot;
+            if (canvasRef) {
+              canvasSnapshot = await canvasRef();
+              canvasShapeCount = (document.querySelector('[data-canvas-ref]') as any)?.getShapeCount?.() || 0;
+            }
+          } catch (error) {
+            console.warn('[useLiveApi] Could not get canvas snapshot:', error);
+          }
+          
+          // Get tool calls for this milestone (from logs)
+          const toolCalls = turns
+            .filter(t => t.role === 'system' && t.text.includes('Pi drew') || t.text.includes('Pi added'))
+            .slice(-5)
+            .map(t => ({
+              name: t.text.includes('drew') ? 'draw_on_canvas' : 'add_canvas_label',
+              timestamp: t.timestamp.getTime(),
+              purpose: t.text,
+            }));
+          
+          // Collect evidence
+          const evidence = await OutcomeTrackerService.collectEvidence(milestone, {
+            transcript: recentStudentTurns,
+            canvasSnapshot: canvasSnapshot || undefined,
+            canvasShapeCount,
+            toolCallsUsed: toolCalls,
+            timeSpent: milestone.timeSpent || 60, // Default 60s if not tracked
+            attemptCount: 1,
+          });
+          
+          console.log('[useLiveApi] 🧪 Outcome evidence collected:', evidence);
+          
+          // TODO: Store evidence with milestone log
+          // This would require updating logMilestoneComplete to accept evidence
+        } catch (error) {
+          console.error('[useLiveApi] Failed to collect outcome evidence:', error);
+        }
+      }
       
       // 📊 LOG TO TEACHER PANEL: Milestone completed
       const { logMilestoneComplete } = require('../lib/teacher-panel-store').useTeacherPanel.getState();

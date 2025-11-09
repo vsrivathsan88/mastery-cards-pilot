@@ -10,6 +10,8 @@ import { CozyEncouragementParticles } from '../../cozy/CozyEncouragementParticle
 import { CozyMicroCelebration } from '../../cozy/CozyMicroCelebration';
 import { LoadingState } from '../../cozy/LoadingState';
 import { FirstLessonTutorial } from '../../cozy/FirstLessonTutorial';
+import { EmojiReaction } from '../../pilot/EmojiReaction';
+import { useEmojiReactionStore } from '@/lib/emoji-reaction-store';
 // import { SpeechIndicator } from '../../cozy/SpeechIndicator'; // REMOVED: Too cluttered
 import { LiveConnectConfig, Modality, LiveServerContent } from '@google/genai';
 import { AudioRecorder } from '../../../lib/audio-recorder';
@@ -732,6 +734,9 @@ export default function StreamingConsole() {
   const currentMilestone = currentLesson?.milestones?.[progress?.currentMilestoneIndex || 0];
   const currentMilestoneName = currentMilestone?.title || '';
 
+  // PILOT: Subscribe to emoji reactions
+  const { currentReaction } = useEmojiReactionStore();
+
   return (
     <div className="transcription-container" style={{ height: '100%' }}>
       {showPopUp && <PopUp onClose={handleClosePopUp} />}
@@ -739,6 +744,9 @@ export default function StreamingConsole() {
       {/* Floating encouragement particles */}
       <CozyEncouragementParticles trigger={particleTrigger} />
       <CozyMicroCelebration trigger={microTrigger} />
+      
+      {/* PILOT: Emoji reactions from Pi */}
+      <EmojiReaction reaction={currentReaction} />
       
       {/* Celebration overlay */}
       {celebrationMessage && (
