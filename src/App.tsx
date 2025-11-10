@@ -302,10 +302,17 @@ function AppContent() {
     const { functionCalls } = toolCall;
     if (!functionCalls || functionCalls.length === 0) return;
     
+    console.log('[App] 🔧 Tool calls received:', functionCalls.map((fc: any) => ({
+      name: fc.name,
+      args: fc.args
+    })));
+    
     const toolResponses: any[] = [];
     
     functionCalls.forEach((call: any) => {
       const { id, name, args } = call;
+      
+      console.log(`[App] 🔨 Processing tool: ${name}`, args);
       
       let response: any = { id, name };
       
@@ -414,15 +421,17 @@ function AppContent() {
           
           console.log(`[App] 📊 Assessment result: hasMastery=${hasMastery}, confidence=${confidence}, depth=${depth}`);
           
-          // Return as direct object, NOT stringified JSON
+          // Return as direct object - avoid arrays, use strings instead
+          // Arrays in protobuf.Struct can cause issues
           response.response = {
             hasMastery,
             confidence,
             depth,
             reasoning,
             suggestedPoints,
-            matchedConcepts: matchedKeywords,
-            missingConcepts: keywords.filter(k => !lowerResponse.includes(k))
+            matchedConceptsCount: matchedKeywords.length,
+            matchedConceptsList: matchedKeywords.join(', '),  // String, not array
+            missingConceptsList: keywords.filter(k => !lowerResponse.includes(k)).join(', ')  // String, not array
           };
           response.scheduling = 'SILENT'; // Assessment feedback is internal
           
