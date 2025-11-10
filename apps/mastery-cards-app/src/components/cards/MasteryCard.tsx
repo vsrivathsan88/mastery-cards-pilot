@@ -1,80 +1,65 @@
 /**
  * Individual Mastery Card Component
- * Displays a single card with text prompt
+ * Displays a single card with image and learning context
  */
 
 import React from 'react';
-import type { MasteryCard as MasteryCardType } from '../../types/cards';
+import type { MasteryCard as MVPCard } from '../../lib/cards/mvp-cards-data';
 import './MasteryCard.css';
 
 interface MasteryCardProps {
-  card: MasteryCardType;
+  card: MVPCard;
   isCurrent: boolean;
   style?: React.CSSProperties;
 }
 
 export function MasteryCard({ card, isCurrent, style }: MasteryCardProps) {
-  // Difficulty badge colors
-  const difficultyColors = {
-    easy: '#22c55e',    // green
-    medium: '#f59e0b',  // orange
-    hard: '#ef4444',    // red
-  };
+  // Calculate total possible points for this card
+  const basicPoints = card.milestones.basic.points;
+  const advancedPoints = card.milestones.advanced?.points || 0;
+  const misconceptionPoints = card.misconception?.teachingMilestone.points || 0;
+  const maxPoints = basicPoints + advancedPoints + misconceptionPoints;
   
-  const difficultyEmoji = {
-    easy: '⭐',
-    medium: '⭐⭐',
-    hard: '⭐⭐⭐',
-  };
+  // Don't show points badge on welcome card
+  const isWelcomeCard = card.cardNumber === 0;
   
   return (
     <div 
       className={`mastery-card ${isCurrent ? 'current' : 'background'}`}
       style={style}
-      data-card-id={card.cardId}
+      data-card-id={card.id}
     >
-      {/* Difficulty badge */}
-      <div 
-        className="difficulty-badge"
-        style={{ backgroundColor: difficultyColors[card.difficulty] }}
-      >
-        {difficultyEmoji[card.difficulty]} {card.difficulty.toUpperCase()}
-      </div>
+      {/* Points badge - hide on welcome card */}
+      {!isWelcomeCard && maxPoints > 0 && (
+        <div className="points-badge">
+          <span className="points-emoji">✨</span>
+          <span className="points-value">Up to {maxPoints} pts</span>
+        </div>
+      )}
+      
+      {/* Card image */}
+      {card.imageUrl && (
+        <div className="card-image-container">
+          <img 
+            src={card.imageUrl} 
+            alt={card.title}
+            className="card-image"
+          />
+        </div>
+      )}
       
       {/* Card content */}
       <div className="card-content">
         <h2 className="card-title">{card.title}</h2>
+        <p className="card-context">{card.context}</p>
         
-        <div className="card-prompt">
-          <div className="prompt-icon">🤔</div>
-          <p className="prompt-text">{card.textPrompt}</p>
-        </div>
-        
-        <div className="card-meta">
-          <div className="meta-item">
-            <span className="meta-label">Standard:</span>
-            <span className="meta-value">{card.standard}</span>
+        {/* Misconception indicator */}
+        {card.misconception && (
+          <div className="misconception-badge">
+            🤔 Pi needs your help!
           </div>
-          <div className="meta-item">
-            <span className="meta-label">Points:</span>
-            <span className="meta-value">+{card.pointValue}</span>
-          </div>
-        </div>
+        )}
       </div>
-      
-      {/* Swipe hint */}
-      {isCurrent && (
-        <div className="swipe-hint">
-          <div className="swipe-direction left">
-            <span>⬅️</span>
-            <span>Practice More</span>
-          </div>
-          <div className="swipe-direction right">
-            <span>Mastered!</span>
-            <span>➡️</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { useSessionStore } from '../../lib/state/session-store';
 import './SessionHeader.css';
 
 export function SessionHeader() {
-  const { points, streak, level, getProgress } = useSessionStore();
+  const { points, streak, currentLevel, getProgress } = useSessionStore();
   const progress = getProgress();
   
   return (
@@ -16,8 +16,8 @@ export function SessionHeader() {
         <div className="stat-item level">
           <span className="stat-icon">⚡</span>
           <div className="stat-content">
-            <span className="stat-label">Level</span>
-            <span className="stat-value">{level}</span>
+            <span className="stat-label">{currentLevel.title}</span>
+            <span className="stat-value">Lv {currentLevel.level}</span>
           </div>
         </div>
         

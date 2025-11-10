@@ -13,6 +13,7 @@ export interface MasteryCard {
   description: string;
   textPrompt: string; // "Explain what 1/2 means"
   imageUrl?: string; // For future
+  imageDescription: string; // AI generation prompt for images
   
   // Hierarchy
   scaffoldLevel: 'foundational' | 'intermediate' | 'advanced';
@@ -20,6 +21,7 @@ export interface MasteryCard {
   dependsOn: string[];       // Prerequisite card IDs
   
   // Assessment
+  masteryGoal: string; // What Pi is assessing
   successCriteria: string;
   commonMisconceptions: string[];
   

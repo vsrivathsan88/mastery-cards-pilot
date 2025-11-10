@@ -4,9 +4,13 @@
  */
 
 import { create } from 'zustand';
-import type { MasteryCard, CardSession } from '../../types/cards';
+import type { CardSession } from '../../types/cards';
+import { MVP_CARDS, getCurrentLevel, type Level, type MasteryCard } from '../cards/mvp-cards-data';
 
 interface SessionState {
+  // Student info
+  studentName: string | null;
+  
   // Current session
   sessionId: string | null;
   currentCardIndex: number;
@@ -21,27 +25,29 @@ interface SessionState {
   // Scoring
   points: number;
   streak: number;
-  level: number;
+  currentLevel: Level;
   
   // Timing
   sessionStartTime: number | null;
   currentCardStartTime: number | null;
   
   // Actions
-  startSession: (cards: MasteryCard[]) => void;
+  setStudentName: (name: string) => void;
+  startSession: (cards?: MasteryCard[]) => void;
   nextCard: () => void;
-  masteredCard: (cardId: string, pointsEarned: number) => void;
+  awardPoints: (points: number, celebration?: string) => { leveledUp: boolean; newLevel?: Level };
+  masteredCard: (cardId: string) => void;
   needsPracticeCard: (cardId: string) => void;
   resetStreak: () => void;
   endSession: () => CardSession | null;
   
   // Getters
   getProgress: () => { current: number; total: number; percentage: number };
-  getLevel: () => { level: number; pointsInLevel: number; pointsToNextLevel: number };
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
   // Initial state
+  studentName: null,
   sessionId: null,
   currentCardIndex: 0,
   cardsInDeck: [],
@@ -51,12 +57,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   needsPractice: [],
   points: 0,
   streak: 0,
-  level: 1,
+  currentLevel: getCurrentLevel(0), // Start at Level 1: Explorer
   sessionStartTime: null,
   currentCardStartTime: null,
   
+  // Set student name
+  setStudentName: (name) => {
+    console.log('[Session] Student name set:', name);
+    set({ studentName: name });
+  },
+  
   // Start a new session
-  startSession: (cards) => {
+  startSession: (cards = MVP_CARDS) => {
     const sessionId = `session-${Date.now()}`;
     console.log(`[Session] Starting new session: ${sessionId} with ${cards.length} cards`);
     
@@ -70,7 +82,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       needsPractice: [],
       points: 0,
       streak: 0,
-      level: 1,
+      currentLevel: getCurrentLevel(0),
       sessionStartTime: Date.now(),
       currentCardStartTime: Date.now(),
     });
@@ -97,21 +109,43 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
   
-  // Card was mastered
-  masteredCard: (cardId, pointsEarned) => {
-    const { streak, cardsReviewed, masteredToday, points } = get();
-    const newPoints = points + pointsEarned;
-    const newLevel = Math.floor(newPoints / 100) + 1;
+  // Award points and check for level-up
+  awardPoints: (points, celebration) => {
+    const { points: currentPoints, currentLevel } = get();
+    const newPoints = currentPoints + points;
+    const newLevel = getCurrentLevel(newPoints);
+    const leveledUp = newLevel.level > currentLevel.level;
     
-    console.log(`[Session] Card ${cardId} mastered! +${pointsEarned} points (streak: ${streak + 1})`);
+    console.log(`[Session] +${points} points! Total: ${newPoints} (${celebration || 'Nice!'})`);
+    
+    if (leveledUp) {
+      console.log(`[Session] 🎉 LEVEL UP! ${currentLevel.title} → ${newLevel.title}`);
+    }
+    
+    set({
+      points: newPoints,
+      currentLevel: newLevel,
+    });
+    
+    return {
+      leveledUp,
+      newLevel: leveledUp ? newLevel : undefined,
+    };
+  },
+  
+  // Card was mastered
+  masteredCard: (cardId) => {
+    const { streak, cardsReviewed, masteredToday } = get();
+    
+    console.log(`[Session] Card ${cardId} mastered! (streak: ${streak + 1})`);
     
     set({
       cardsReviewed: cardsReviewed + 1,
       masteredToday: [...masteredToday, cardId],
       streak: streak + 1,
-      points: newPoints,
-      level: newLevel,
     });
+    
+    // Points are awarded separately via awardPoints()
   },
   
   // Card needs practice
@@ -157,7 +191,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       pointsEarned: state.points,
       currentStreak: state.streak,
       maxStreak: state.streak, // TODO: Track max separately
-      level: state.level,
+      level: state.currentLevel.level,
       averageTimePerCard,
       totalInteractions: state.cardsReviewed,
     };
@@ -190,18 +224,5 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     };
   },
   
-  // Get level info
-  getLevel: () => {
-    const { points } = get();
-    const pointsPerLevel = 100;
-    const level = Math.floor(points / pointsPerLevel) + 1;
-    const pointsInLevel = points % pointsPerLevel;
-    const pointsToNextLevel = pointsPerLevel - pointsInLevel;
-    
-    return {
-      level,
-      pointsInLevel,
-      pointsToNextLevel,
-    };
-  },
+
 }));
