@@ -100,7 +100,7 @@ function AppContent() {
       }
     ];
     
-    // EXACT pattern from working tutor-app
+    // EXACT pattern from working tutor-app + robustness features
     const config: any = {
       responseModalities: [Modality.AUDIO],  // Array with enum, not string!
       speechConfig: {
@@ -110,6 +110,22 @@ function AppContent() {
           },
         },
       },
+      
+      // Voice Activity Detection - automatic turn-taking
+      automaticActivityDetection: {
+        // Auto-detect when student starts/stops speaking
+        startOfSpeechSensitivity: 0.5,  // 0.0-1.0, higher = more sensitive
+        prefixPaddingMs: 200,  // Buffer before speech detection
+      },
+      
+      // Context Window Compression - unlimited session length
+      contextWindowCompression: {
+        slidingWindow: {},  // Use sliding window to prevent 15min timeout
+      },
+      
+      // Session Resumption - handle WebSocket resets
+      sessionResumption: {},  // Enable session resumption
+      
       inputAudioTranscription: {},   // Enable transcription
       outputAudioTranscription: {},
       systemInstruction: {

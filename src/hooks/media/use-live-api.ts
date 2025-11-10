@@ -91,6 +91,19 @@ export function useLiveApi({
         wasClean: event.wasClean
       });
       setConnected(false);
+      
+      // CRITICAL: Stop microphone to prevent error spam
+      if (audioRecorderRef.current) {
+        console.log('[useLiveApi] 🛑 Stopping microphone after disconnect');
+        audioRecorderRef.current.stop();
+        audioRecorderRef.current = null;
+      }
+      
+      // Stop audio output
+      if (audioStreamerRef.current) {
+        audioStreamerRef.current.stop();
+      }
+      
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
       }
@@ -114,13 +127,6 @@ export function useLiveApi({
       startSilenceTimer();
     };
 
-    // Bind event listeners
-    client.on('open', onOpen);
-    client.on('close', onClose);
-    client.on('error', onError);
-    client.on('interrupted', stopAudioStreamer);
-    client.on('audio', onAudio);
-
     // Tool call handler - will be set up by App.tsx
     const onToolCall = (toolCall: LiveServerToolCall) => {
       console.log('[useLiveApi] Tool call received:', toolCall);
@@ -128,7 +134,29 @@ export function useLiveApi({
       lastResponseTimeRef.current = Date.now(); // Reset on tool calls too
       startSilenceTimer();
     };
-
+    
+    // Handle GoAway messages - connection will soon close
+    const onGoAway = (goAway: any) => {
+      const timeLeftSeconds = goAway.timeLeft?.seconds || 0;
+      console.warn(`[useLiveApi] ⚠️ GoAway received - connection closing in ${timeLeftSeconds}s`);
+      // Could trigger reconnection here if needed
+    };
+    
+    // Handle session resumption updates - save token for reconnection
+    const onSessionResumption = (update: any) => {
+      if (update.resumable && update.newHandle) {
+        console.log('[useLiveApi] 📌 Session resumption token received:', update.newHandle.substring(0, 20) + '...');
+        // Store in localStorage for reconnection
+        localStorage.setItem('gemini-session-token', update.newHandle);
+      }
+    };
+    
+    // Bind event listeners
+    client.on('open', onOpen);
+    client.on('close', onClose);
+    client.on('error', onError);
+    client.on('interrupted', stopAudioStreamer);
+    client.on('audio', onAudio);
     client.on('toolcall', onToolCall);
 
     // Start silence detection after connection
@@ -136,6 +164,9 @@ export function useLiveApi({
       startSilenceTimer();
     }
 
+    // Note: GoAway and SessionResumption events would need to be added to GenAILiveClient
+    // For now, they're defined but not subscribed (SDK may not expose them yet)
+    
     // Cleanup
     return () => {
       client.off('open', onOpen);
