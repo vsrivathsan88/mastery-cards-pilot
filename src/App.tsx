@@ -414,16 +414,15 @@ function AppContent() {
           
           console.log(`[App] 📊 Assessment result: hasMastery=${hasMastery}, confidence=${confidence}, depth=${depth}`);
           
+          // Return as direct object, NOT stringified JSON
           response.response = {
-            result: JSON.stringify({
-              hasMastery,
-              confidence,
-              depth,
-              reasoning,
-              suggestedPoints,
-              matchedConcepts: matchedKeywords,
-              missingConcepts: keywords.filter(k => !lowerResponse.includes(k))
-            })
+            hasMastery,
+            confidence,
+            depth,
+            reasoning,
+            suggestedPoints,
+            matchedConcepts: matchedKeywords,
+            missingConcepts: keywords.filter(k => !lowerResponse.includes(k))
           };
           response.scheduling = 'SILENT'; // Assessment feedback is internal
           
@@ -474,14 +473,13 @@ function AppContent() {
           
           console.log(`[App] ⚖️ Decision: shouldAdvance=${shouldAdvance}`);
           
+          // Return as direct object, NOT stringified JSON
           response.response = {
-            result: JSON.stringify({
-              shouldAdvance,
-              feedback,
-              conversationTurns: conversationTurns.current,
-              timeSinceCardChange: Math.round(timeSinceCardChange / 1000),
-              currentCardId: currentCard.id
-            })
+            shouldAdvance,
+            feedback,
+            conversationTurns: conversationTurns.current,
+            timeSinceCardChange: Math.round(timeSinceCardChange / 1000),
+            currentCardId: currentCard.id
           };
           response.scheduling = 'SILENT'; // Decision feedback is internal
           
