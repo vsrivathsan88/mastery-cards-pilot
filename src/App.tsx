@@ -39,6 +39,20 @@ function AppContent() {
   const { messages, clearMessages } = useDebugStore();
   const { client, setConfig } = useLiveAPIContext();
   
+  // Conversation tracking refs (must be at top level)
+  const conversationTurns = useRef<number>(0);
+  const lastCardChange = useRef<number>(0);
+  const transcript = useRef<Array<{
+    timestamp: number;
+    role: 'student' | 'pi' | 'system';
+    text: string;
+    cardId?: string;
+    cardTitle?: string;
+  }>>([]);
+  const lastStudentResponses = useRef<string[]>([]);
+  const sessionStartTime = useRef<number>(Date.now());
+  const sessionNumber = useRef<number>(1);
+  
   // Build proper voice-to-voice config with system prompt (updates when card changes)
   useEffect(() => {
     if (!studentName) return;
@@ -135,39 +149,22 @@ function AppContent() {
     }
   }, [studentName, sessionId, startSession]);
   
+  // Track session counts per student in localStorage
+  useEffect(() => {
+    if (studentName) {
+      const storageKey = `session-count-${studentName}`;
+      const previousCount = parseInt(localStorage.getItem(storageKey) || '0', 10);
+      sessionNumber.current = previousCount + 1;
+      localStorage.setItem(storageKey, sessionNumber.current.toString());
+      console.log(`[App] 📊 Session #${sessionNumber.current} for ${studentName}`);
+    }
+  }, [studentName]);
+  
   // Register tool handlers with Gemini client
   useEffect(() => {
     if (!client) return;
     
     console.log('[App] Registering tool handlers...');
-    
-    // Conversation tracking for verification enforcement
-    const conversationTurns = useRef<number>(0);
-    const lastCardChange = useRef<number>(0);
-    
-    // Robustness: Transcript storage and quality tracking
-    const transcript = useRef<Array<{
-      timestamp: number;
-      role: 'student' | 'pi' | 'system';
-      text: string;
-      cardId?: string;
-      cardTitle?: string;
-    }>>([]);
-    
-    const lastStudentResponses = useRef<string[]>([]);
-    const sessionStartTime = useRef<number>(Date.now());
-    const sessionNumber = useRef<number>(1);
-    
-    // Track session counts per student in localStorage
-    useEffect(() => {
-      if (studentName) {
-        const storageKey = `session-count-${studentName}`;
-        const previousCount = parseInt(localStorage.getItem(storageKey) || '0', 10);
-        sessionNumber.current = previousCount + 1;
-        localStorage.setItem(storageKey, sessionNumber.current.toString());
-        console.log(`[App] 📊 Session #${sessionNumber.current} for ${studentName}`);
-      }
-    }, [studentName]);
     
     // Minimal response detection
     const minimalPhrases = ['ok', 'okay', 'yeah', 'yep', 'yup', 'sure', 'uh-huh', 'mhm', 'nope', 'nah', 'idk', 'dunno'];
