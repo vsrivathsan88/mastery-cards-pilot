@@ -258,7 +258,7 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED award_mastery_points - only ${conversationTurns.current} turns, need ${minTurns}`);
             const blockMsg = `[SYSTEM BLOCK] Cannot award points yet - you need to verify understanding first. You've only had ${conversationTurns.current} exchange(s) on this card. Ask a challenge question like "What makes you say that?" or "Can you explain that?" Then award points after they explain their reasoning.`;
             addToTranscript('system', blockMsg);
-            response.response = blockMsg;
+            response.response = { blocked: true, reason: blockMsg };
             break;
           }
           
@@ -268,7 +268,7 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED award_mastery_points - minimal response: "${lastStudentMsg}"`);
             const blockMsg = `[SYSTEM BLOCK] Cannot award points for minimal response "${lastStudentMsg}". Ask them to elaborate: "I need to hear your thinking - what do you notice in this image?" or "Tell me more about that."`;
             addToTranscript('system', blockMsg);
-            response.response = blockMsg;
+            response.response = { blocked: true, reason: blockMsg };
             break;
           }
           
@@ -276,7 +276,7 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED award_mastery_points - repeated response: "${lastStudentMsg}"`);
             const blockMsg = `[SYSTEM BLOCK] Student keeps saying "${lastStudentMsg}" - this is repetition. Ask: "You've said that before. Can you explain it in a different way?" or "What else do you notice?"`;
             addToTranscript('system', blockMsg);
-            response.response = blockMsg;
+            response.response = { blocked: true, reason: blockMsg };
             break;
           }
           
@@ -291,9 +291,17 @@ function AppContent() {
               points: points + pointsToAward
             });
             setShowLevelUp(true);
-            response.response = `Successfully awarded ${pointsToAward} points! LEVEL UP to ${result.newLevel.title}! Total points: ${points + pointsToAward}`;
+            response.response = { 
+              success: true,
+              message: `Successfully awarded ${pointsToAward} points! LEVEL UP to ${result.newLevel.title}!`,
+              totalPoints: points + pointsToAward 
+            };
           } else {
-            response.response = `Successfully awarded ${pointsToAward} points. Total points: ${points + pointsToAward}`;
+            response.response = { 
+              success: true,
+              message: `Successfully awarded ${pointsToAward} points.`,
+              totalPoints: points + pointsToAward 
+            };
           }
           break;
         }
@@ -305,7 +313,7 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED show_next_card - only ${conversationTurns.current} turns`);
             const blockMsg = `[SYSTEM BLOCK] Cannot advance yet - you need to assess understanding first. Ask your starting question for this card, then listen to their response. Only advance after you've verified their understanding OR they've struggled for 2-3 attempts.`;
             addToTranscript('system', blockMsg);
-            response.response = blockMsg;
+            response.response = { blocked: true, reason: blockMsg };
             break;
           }
           
@@ -317,18 +325,27 @@ function AppContent() {
           
           if (newCard) {
             addToTranscript('system', `Advanced to card: ${newCard.title}`);
-            response.response = `Card changed to "${newCard.title}". Now ask your starting question for this card: "${newCard.piStartingQuestion}"`;
+            response.response = { 
+              success: true,
+              newCard: newCard.title,
+              startingQuestion: newCard.piStartingQuestion 
+            };
           } else {
             addToTranscript('system', 'Session completed - all cards done');
             saveTranscript();
-            response.response = `SESSION COMPLETE - You've gone through all 8 cards! Total points earned: ${points}. Final level: ${currentLevel.title}. Now wrap up the session: (1) Celebrate their achievement, (2) Briefly reinforce 1-2 key concepts they learned, (3) End warmly with encouragement in 3-4 sentences.`;
+            response.response = { 
+              success: true,
+              sessionComplete: true,
+              totalPoints: points,
+              finalLevel: currentLevel.title 
+            };
           }
           break;
         }
         
         default:
           console.warn(`[App] Unknown tool: ${name}`);
-          response.response = `Error: Unknown tool "${name}". Only award_mastery_points and show_next_card are available.`;
+          response.response = { error: true, message: `Unknown tool "${name}"` };
       }
       
       toolResponses.push(response);
