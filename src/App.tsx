@@ -74,30 +74,30 @@ function AppContent() {
               properties: {
                 cardId: {
                   type: 'string',
-                  description: 'The ID of the current card (e.g., "card-1-cookies")',
+                  description: 'The ID of the card for which points are being awarded (e.g., "equal-parts-cover")'
                 },
                 points: {
                   type: 'number',
-                  description: 'Points to award: 20-50 for basic understanding, 30-100 for advanced, 100 for teaching Pi',
+                  description: 'Number of points to award. Use 50 for basic understanding, 100 for teaching milestone moments, 200 for major breakthroughs'
                 },
                 celebration: {
                   type: 'string',
-                  description: 'A short, energetic celebration message (e.g., "Nice work!", "That was fire!")',
-                },
+                  description: 'A short phrase celebrating what they did well (e.g., "Explained denominator clearly!", "Great connection to equal parts!")'
+                }
               },
-              required: ['cardId', 'points', 'celebration'],
-            },
+              required: ['cardId', 'points', 'celebration']
+            }
           },
           {
             name: 'show_next_card',
-            description: 'Move to the next card/image. Call this after awarding points to keep the session flowing.',
+            description: 'Advance to the next card in the session. Only call this after the student has demonstrated understanding of the current card OR after 2-3 failed attempts.',
             parameters: {
               type: 'object',
-              properties: {},
-            },
-          },
-        ],
-      },
+              properties: {}
+            }
+          }
+        ]
+      }
     ];
     
     // EXACT pattern from working tutor-app
@@ -149,289 +149,234 @@ function AppContent() {
       localStorage.setItem(storageKey, sessionNumber.current.toString());
     }
   }, [studentName]);
+
+  // Helper functions at component level (stable, don't change)
+  const minimalPhrases = ['ok', 'okay', 'yeah', 'yep', 'yup', 'sure', 'uh-huh', 'mhm', 'nope', 'nah', 'idk', 'dunno'];
   
-  // Register tool handlers with Gemini client
+  const isMinimalResponse = useCallback((text: string): boolean => {
+    if (!text) return true;
+    const clean = text.toLowerCase().trim();
+    const words = clean.split(/\s+/);
+    if (clean.length < 3) return true;
+    if (words.length === 1 && minimalPhrases.includes(clean)) return true;
+    if (words.length < 2) return true;
+    return false;
+  }, []);
+  
+  const isRepeatedResponse = useCallback((text: string): boolean => {
+    if (!text) return false;
+    const clean = text.toLowerCase().trim();
+    const matches = lastStudentResponses.current.filter(r => r.toLowerCase().trim() === clean).length;
+    return matches >= 2;
+  }, []);
+  
+  const addToTranscript = useCallback((role: 'student' | 'pi' | 'system', text: string) => {
+    transcript.current.push({
+      timestamp: Date.now() - sessionStartTime.current,
+      role,
+      text,
+      cardId: currentCard?.id,
+      cardTitle: currentCard?.title
+    });
+    
+    if (role === 'student') {
+      lastStudentResponses.current.push(text);
+      if (lastStudentResponses.current.length > 5) {
+        lastStudentResponses.current.shift();
+      }
+    }
+  }, [currentCard]);
+  
+  const saveTranscript = useCallback(() => {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+    
+    const previousSessions: string[] = JSON.parse(
+      localStorage.getItem(`sessions-${studentName}`) || '[]'
+    );
+    
+    const transcriptData = {
+      sessionId: `${studentName}-session${sessionNumber.current}-${Date.now()}`,
+      sessionNumber: sessionNumber.current,
+      studentName: studentName || 'Unknown',
+      startTime: sessionStartTime.current,
+      startTimeFormatted: new Date(sessionStartTime.current).toISOString(),
+      endTime: Date.now(),
+      endTimeFormatted: now.toISOString(),
+      durationMs: Date.now() - sessionStartTime.current,
+      durationMinutes: Math.round((Date.now() - sessionStartTime.current) / 60000),
+      totalPoints: points,
+      finalLevel: currentLevel?.title,
+      cardsCompleted: currentCard?.cardNumber || 0,
+      averageTimePerCard: Math.round((Date.now() - sessionStartTime.current) / (currentCard?.cardNumber || 1)),
+      totalTurns: transcript.current.filter(t => t.role === 'student' || t.role === 'pi').length,
+      studentResponses: transcript.current.filter(t => t.role === 'student').length,
+      piResponses: transcript.current.filter(t => t.role === 'pi').length,
+      systemBlocks: transcript.current.filter(t => t.role === 'system' && t.text.includes('BLOCK')).length,
+      pointsAwarded: transcript.current.filter(t => t.role === 'system' && t.text.includes('Awarded')).length,
+      previousSessionCount: sessionNumber.current - 1,
+      previousSessionIds: previousSessions,
+      transcript: transcript.current
+    };
+    
+    previousSessions.push(transcriptData.sessionId);
+    localStorage.setItem(`sessions-${studentName}`, JSON.stringify(previousSessions));
+    
+    const filename = `${studentName || 'Unknown'}-session${sessionNumber.current}-${dateStr}-${timeStr}.json`;
+    const blob = new Blob([JSON.stringify(transcriptData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [studentName, points, currentLevel, currentCard]);
+
+  // Handle tool calls from Pi
+  const handleToolCall = useCallback((toolCall: any) => {
+    const { functionCalls } = toolCall;
+    if (!functionCalls || functionCalls.length === 0) return;
+    
+    const toolResponses: any[] = [];
+    
+    functionCalls.forEach((call: any) => {
+      const { id, name, args } = call;
+      
+      let response: any = { id, name };
+      
+      switch (name) {
+        case 'award_mastery_points': {
+          const { cardId, points: pointsToAward, celebration } = args;
+          
+          const timeSinceCardChange = Date.now() - lastCardChange.current;
+          const minTurns = pointsToAward >= 100 ? 3 : 2;
+          
+          if (conversationTurns.current < minTurns && timeSinceCardChange > 2000) {
+            console.warn(`[App] ⛔ BLOCKED award_mastery_points - only ${conversationTurns.current} turns, need ${minTurns}`);
+            const blockMsg = `[SYSTEM BLOCK] Cannot award points yet - you need to verify understanding first. You've only had ${conversationTurns.current} exchange(s) on this card. Ask a challenge question like "What makes you say that?" or "Can you explain that?" Then award points after they explain their reasoning.`;
+            addToTranscript('system', blockMsg);
+            response.response = blockMsg;
+            break;
+          }
+          
+          const lastStudentMsg = lastStudentResponses.current[lastStudentResponses.current.length - 1] || '';
+          
+          if (isMinimalResponse(lastStudentMsg)) {
+            console.warn(`[App] ⛔ BLOCKED award_mastery_points - minimal response: "${lastStudentMsg}"`);
+            const blockMsg = `[SYSTEM BLOCK] Cannot award points for minimal response "${lastStudentMsg}". Ask them to elaborate: "I need to hear your thinking - what do you notice in this image?" or "Tell me more about that."`;
+            addToTranscript('system', blockMsg);
+            response.response = blockMsg;
+            break;
+          }
+          
+          if (isRepeatedResponse(lastStudentMsg)) {
+            console.warn(`[App] ⛔ BLOCKED award_mastery_points - repeated response: "${lastStudentMsg}"`);
+            const blockMsg = `[SYSTEM BLOCK] Student keeps saying "${lastStudentMsg}" - this is repetition. Ask: "You've said that before. Can you explain it in a different way?" or "What else do you notice?"`;
+            addToTranscript('system', blockMsg);
+            response.response = blockMsg;
+            break;
+          }
+          
+          addToTranscript('system', `Awarded ${pointsToAward} points for ${cardId}: ${celebration}`);
+          
+          const result = awardPoints(pointsToAward, celebration);
+          
+          if (result.leveledUp && result.newLevel) {
+            addToTranscript('system', `LEVEL UP to ${result.newLevel.title}!`);
+            setLevelUpData({
+              level: result.newLevel.title,
+              points: points + pointsToAward
+            });
+            setShowLevelUp(true);
+            response.response = `Successfully awarded ${pointsToAward} points! LEVEL UP to ${result.newLevel.title}! Total points: ${points + pointsToAward}`;
+          } else {
+            response.response = `Successfully awarded ${pointsToAward} points. Total points: ${points + pointsToAward}`;
+          }
+          break;
+        }
+        
+        case 'show_next_card': {
+          const timeSinceCardChange = Date.now() - lastCardChange.current;
+          
+          if (conversationTurns.current < 2 && timeSinceCardChange > 2000 && currentCard?.cardNumber !== 0) {
+            console.warn(`[App] ⛔ BLOCKED show_next_card - only ${conversationTurns.current} turns`);
+            const blockMsg = `[SYSTEM BLOCK] Cannot advance yet - you need to assess understanding first. Ask your starting question for this card, then listen to their response. Only advance after you've verified their understanding OR they've struggled for 2-3 attempts.`;
+            addToTranscript('system', blockMsg);
+            response.response = blockMsg;
+            break;
+          }
+          
+          nextCard();
+          conversationTurns.current = 0;
+          lastCardChange.current = Date.now();
+          
+          const { currentCard: newCard } = useSessionStore.getState();
+          
+          if (newCard) {
+            addToTranscript('system', `Advanced to card: ${newCard.title}`);
+            response.response = `Card changed to "${newCard.title}". Now ask your starting question for this card: "${newCard.piStartingQuestion}"`;
+          } else {
+            addToTranscript('system', 'Session completed - all cards done');
+            saveTranscript();
+            response.response = `SESSION COMPLETE - You've gone through all 8 cards! Total points earned: ${points}. Final level: ${currentLevel.title}. Now wrap up the session: (1) Celebrate their achievement, (2) Briefly reinforce 1-2 key concepts they learned, (3) End warmly with encouragement in 3-4 sentences.`;
+          }
+          break;
+        }
+        
+        default:
+          console.warn(`[App] Unknown tool: ${name}`);
+          response.response = `Error: Unknown tool "${name}". Only award_mastery_points and show_next_card are available.`;
+      }
+      
+      toolResponses.push(response);
+    });
+    
+    if (toolResponses.length > 0) {
+      try {
+        client.sendToolResponse({ functionResponses: toolResponses });
+      } catch (error) {
+        console.error('[App] Failed to send tool responses:', error);
+      }
+    }
+  }, [client, awardPoints, nextCard, currentCard, points, currentLevel, addToTranscript, isMinimalResponse, isRepeatedResponse, saveTranscript]);
+
+  // Track conversation turns
+  const handleContent = useCallback((data: any) => {
+    conversationTurns.current += 1;
+    
+    if (data?.serverContent?.modelTurn?.parts) {
+      const text = data.serverContent.modelTurn.parts
+        .filter((p: any) => p.text)
+        .map((p: any) => p.text)
+        .join(' ');
+      if (text) {
+        addToTranscript('pi', text);
+      }
+    }
+  }, [addToTranscript]);
+  
+  // Track student transcriptions
+  const handleInputTranscription = useCallback((text: string, isFinal: boolean) => {
+    if (isFinal && text) {
+      addToTranscript('student', text);
+    }
+  }, [addToTranscript]);
+  
+  // Register handlers
   useEffect(() => {
     if (!client) return;
-    
-    // Minimal response detection
-    const minimalPhrases = ['ok', 'okay', 'yeah', 'yep', 'yup', 'sure', 'uh-huh', 'mhm', 'nope', 'nah', 'idk', 'dunno'];
-    
-    const isMinimalResponse = (text: string): boolean => {
-      if (!text) return true;
-      const clean = text.toLowerCase().trim();
-      const words = clean.split(/\s+/);
-      
-      // Too short
-      if (clean.length < 3) return true;
-      
-      // Single word that's minimal
-      if (words.length === 1 && minimalPhrases.includes(clean)) return true;
-      
-      // Less than 2 words
-      if (words.length < 2) return true;
-      
-      return false;
+    client.on('toolcall', handleToolCall);
+    client.on('content', handleContent);
+    client.on('inputTranscription', handleInputTranscription);
+    return () => {
+      client.off('toolcall', handleToolCall);
+      client.off('content', handleContent);
+      client.off('inputTranscription', handleInputTranscription);
     };
-    
-    // Repeated response detection
-    const isRepeatedResponse = (text: string): boolean => {
-      if (!text) return false;
-      const clean = text.toLowerCase().trim();
-      const matches = lastStudentResponses.current.filter(r => r.toLowerCase().trim() === clean).length;
-      return matches >= 2; // Said exact same thing 2+ times
-    };
-    
-    // Add to transcript
-    const addToTranscript = (role: 'student' | 'pi' | 'system', text: string) => {
-      transcript.current.push({
-        timestamp: Date.now() - sessionStartTime.current,
-        role,
-        text,
-        cardId: currentCard?.id,
-        cardTitle: currentCard?.title
-      });
-      
-      // Track last 5 student responses for repetition detection
-      if (role === 'student') {
-        lastStudentResponses.current.push(text);
-        if (lastStudentResponses.current.length > 5) {
-          lastStudentResponses.current.shift();
-        }
-      }
-    };
-    
-    // Save transcript to JSON
-    const saveTranscript = () => {
-      const now = new Date();
-      const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
-      
-      // Get previous sessions count for this student
-      const previousSessions: string[] = JSON.parse(
-        localStorage.getItem(`sessions-${studentName}`) || '[]'
-      );
-      
-      const transcriptData = {
-        // Session identification
-        sessionId: `${studentName}-session${sessionNumber.current}-${Date.now()}`,
-        sessionNumber: sessionNumber.current,
-        studentName: studentName || 'Unknown',
-        
-        // Timing
-        startTime: sessionStartTime.current,
-        startTimeFormatted: new Date(sessionStartTime.current).toISOString(),
-        endTime: Date.now(),
-        endTimeFormatted: now.toISOString(),
-        durationMs: Date.now() - sessionStartTime.current,
-        durationMinutes: Math.round((Date.now() - sessionStartTime.current) / 60000),
-        
-        // Performance
-        totalPoints: points,
-        finalLevel: currentLevel?.title,
-        cardsCompleted: currentCard?.cardNumber || 0,
-        averageTimePerCard: Math.round((Date.now() - sessionStartTime.current) / (currentCard?.cardNumber || 1)),
-        
-        // Quality metrics
-        totalTurns: transcript.current.filter(t => t.role === 'student' || t.role === 'pi').length,
-        studentResponses: transcript.current.filter(t => t.role === 'student').length,
-        piResponses: transcript.current.filter(t => t.role === 'pi').length,
-        systemBlocks: transcript.current.filter(t => t.role === 'system' && t.text.includes('BLOCK')).length,
-        pointsAwarded: transcript.current.filter(t => t.role === 'system' && t.text.includes('Awarded')).length,
-        
-        // Student history
-        previousSessionCount: sessionNumber.current - 1,
-        previousSessionIds: previousSessions,
-        
-        // Full transcript
-        transcript: transcript.current
-      };
-      
-      // Update student's session history
-      previousSessions.push(transcriptData.sessionId);
-      localStorage.setItem(`sessions-${studentName}`, JSON.stringify(previousSessions));
-      
-      // Save as JSON blob for download with better filename
-      const filename = `${studentName || 'Unknown'}-session${sessionNumber.current}-${dateStr}-${timeStr}.json`;
-      const blob = new Blob([JSON.stringify(transcriptData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    };
-
-    // Handle tool calls from Pi
-    const handleToolCall = (toolCall: any) => {
-      const { functionCalls } = toolCall;
-      if (!functionCalls || functionCalls.length === 0) return;
-      
-      // Process each function call and collect responses
-      const toolResponses: any[] = [];
-      
-      functionCalls.forEach((call: any) => {
-        const { id, name, args } = call;
-        
-        let response: any = {
-          id: id,
-          name: name,
-        };
-        
-        switch (name) {
-          case 'award_mastery_points': {
-            const { cardId, points: pointsToAward, celebration } = args;
-            
-            // ENFORCEMENT 1: Check if enough conversation happened
-            const timeSinceCardChange = Date.now() - lastCardChange.current;
-            const minTurns = pointsToAward >= 100 ? 3 : 2; // Teaching milestones need 3+ turns
-            
-            if (conversationTurns.current < minTurns && timeSinceCardChange > 2000) {
-              // BLOCK the tool call - not enough verification
-              console.warn(`[App] ⛔ BLOCKED award_mastery_points - only ${conversationTurns.current} turns, need ${minTurns}`);
-              const blockMsg = `[SYSTEM BLOCK] Cannot award points yet - you need to verify understanding first. You've only had ${conversationTurns.current} exchange(s) on this card. Ask a challenge question like "What makes you say that?" or "Can you explain that?" Then award points after they explain their reasoning.`;
-              addToTranscript('system', blockMsg);
-              response.response = blockMsg;
-              break;
-            }
-            
-            // ENFORCEMENT 2: Check last student response quality
-            const lastStudentMsg = lastStudentResponses.current[lastStudentResponses.current.length - 1] || '';
-            
-            if (isMinimalResponse(lastStudentMsg)) {
-              // BLOCK - minimal response detected
-              console.warn(`[App] ⛔ BLOCKED award_mastery_points - minimal response: "${lastStudentMsg}"`);
-              const blockMsg = `[SYSTEM BLOCK] Cannot award points for minimal response "${lastStudentMsg}". Ask them to elaborate: "I need to hear your thinking - what do you notice in this image?" or "Tell me more about that."`;
-              addToTranscript('system', blockMsg);
-              response.response = blockMsg;
-              break;
-            }
-            
-            if (isRepeatedResponse(lastStudentMsg)) {
-              // BLOCK - repeated response detected
-              console.warn(`[App] ⛔ BLOCKED award_mastery_points - repeated response: "${lastStudentMsg}"`);
-              const blockMsg = `[SYSTEM BLOCK] Student keeps saying "${lastStudentMsg}" - this is repetition. Ask: "You've said that before. Can you explain it in a different way?" or "What else do you notice?"`;
-              addToTranscript('system', blockMsg);
-              response.response = blockMsg;
-              break;
-            }
-            
-            // All checks passed - award points
-            addToTranscript('system', `Awarded ${pointsToAward} points for ${cardId}: ${celebration}`);
-            
-            const result = awardPoints(pointsToAward, celebration);
-            
-            if (result.leveledUp && result.newLevel) {
-              addToTranscript('system', `LEVEL UP to ${result.newLevel.title}!`);
-              
-              // Trigger level up animation
-              setLevelUpData({
-                level: result.newLevel.title,
-                points: points + pointsToAward
-              });
-              setShowLevelUp(true);
-              
-              response.response = `Successfully awarded ${pointsToAward} points! LEVEL UP to ${result.newLevel.title}! Total points: ${points + pointsToAward}`;
-            } else {
-              response.response = `Successfully awarded ${pointsToAward} points. Total points: ${points + pointsToAward}`;
-            }
-            break;
-          }
-          
-          case 'show_next_card': {
-            // ENFORCEMENT: Only allow after points awarded OR 2+ failed attempts
-            const timeSinceCardChange = Date.now() - lastCardChange.current;
-            
-            if (conversationTurns.current < 2 && timeSinceCardChange > 2000 && currentCard?.cardNumber !== 0) {
-              // BLOCK - need to actually talk to student first
-              console.warn(`[App] ⛔ BLOCKED show_next_card - only ${conversationTurns.current} turns`);
-              const blockMsg = `[SYSTEM BLOCK] Cannot advance yet - you need to assess understanding first. Ask your starting question for this card, then listen to their response. Only advance after you've verified their understanding OR they've struggled for 2-3 attempts.`;
-              addToTranscript('system', blockMsg);
-              response.response = blockMsg;
-              break;
-            }
-            
-            nextCard();
-            conversationTurns.current = 0; // Reset for new card
-            
-            // Get the new card immediately
-            const { currentCard: newCard } = useSessionStore.getState();
-            
-            if (newCard) {
-              addToTranscript('system', `Advanced to card: ${newCard.title}`);
-              response.response = `Card changed to "${newCard.title}". Now ask your starting question for this card: "${newCard.piStartingQuestion}"`;
-            } else {
-              addToTranscript('system', 'Session completed - all cards done');
-              
-              // Save transcript at end of session
-              saveTranscript();
-              
-              response.response = `SESSION COMPLETE - You've gone through all 8 cards! Total points earned: ${points}. Final level: ${currentLevel.title}. Now wrap up the session: (1) Celebrate their achievement, (2) Briefly reinforce 1-2 key concepts they learned, (3) End warmly with encouragement in 3-4 sentences.`;
-            }
-            break;
-          }
-          
-          default:
-            console.warn(`[App] Unknown tool: ${name}`);
-            response.response = `Error: Unknown tool "${name}". Only award_mastery_points and show_next_card are available.`;
-        }
-        
-        toolResponses.push(response);
-      });
-      
-      // Send tool responses back to Gemini
-      if (toolResponses.length > 0) {
-        try {
-          client.sendToolResponse({
-            functionResponses: toolResponses
-          });
-        } catch (error) {
-          console.error('[App] Failed to send tool responses:', error);
-        }
-      }
-    };
-    
-    // Track conversation turns for enforcement  
-    const handleContent = useCallback((data: any) => {
-      conversationTurns.current += 1;
-      
-      // Add content to transcript
-      if (data?.serverContent?.modelTurn?.parts) {
-        // Pi speaking
-        const text = data.serverContent.modelTurn.parts
-          .filter((p: any) => p.text)
-          .map((p: any) => p.text)
-          .join(' ');
-        if (text) {
-          addToTranscript('pi', text);
-        }
-      }
-      
-      // Note: Student audio transcription will be added separately via inputTranscription events
-    }, [currentCard]);
-    
-    // Track student transcriptions
-    const handleInputTranscription = useCallback((text: string, isFinal: boolean) => {
-      if (isFinal && text) {
-        addToTranscript('student', text);
-      }
-    }, []);
-    
-    // Register handlers
-    useEffect(() => {
-      if (!client) return;
-      client.on('toolcall', handleToolCall);
-      client.on('content', handleContent);
-      client.on('inputTranscription', handleInputTranscription);
-      return () => {
-        client.off('toolcall', handleToolCall);
-        client.off('content', handleContent);
-        client.off('inputTranscription', handleInputTranscription);
-      };
-    }, [client, handleToolCall, handleContent, handleInputTranscription]);
-  }, [client, awardPoints, nextCard, currentCard]);
+  }, [client, handleToolCall, handleContent, handleInputTranscription]);
   
   const handleNameSubmit = (name: string) => {
     setStudentName(name);
@@ -501,10 +446,14 @@ function AppContent() {
           <PiAvatar size="medium" expression="curious" showLabel={false} />
         </div>
         
-        <div className="card-stack">
-          <MasteryCard 
-            card={currentCard}
-            isCurrent={true}
+        {/* Current Card */}
+        <div className="active-card">
+          <MasteryCard
+            imageUrl={currentCard.imageUrl}
+            imageDescription={currentCard.imageDescription}
+            title={currentCard.title}
+            cardNumber={currentCard.cardNumber}
+            totalCards={8}
           />
         </div>
         
