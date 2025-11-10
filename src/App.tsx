@@ -11,10 +11,8 @@ import { SessionHeader } from './components/session/SessionHeader';
 import { ControlTray } from './components/voice/ControlTray';
 import { PiAvatar } from './components/PiAvatar';
 import { NamePrompt } from './components/NamePrompt';
-import { DebugPanel } from './components/DebugPanel';
 import { LevelUpAnimation } from './components/LevelUpAnimation';
 import { useSessionStore } from './lib/state/session-store';
-import { useDebugStore } from './lib/state/debug-store';
 import { getMasteryCardsSystemPrompt } from './lib/prompts/cards-system-prompt';
 import { TranscriptManager } from './lib/transcript-manager';
 import './App.css';
@@ -36,7 +34,6 @@ function AppContent() {
     awardPoints,
   } = useSessionStore();
   
-  const { messages, clearMessages } = useDebugStore();
   const { client, setConfig } = useLiveAPIContext();
   
   // Conversation tracking refs (must be at top level)
@@ -124,11 +121,6 @@ function AppContent() {
     };
     
     setConfig(config);
-    
-    console.log('[App] ✅ Voice config + system prompt set');
-    console.log('[App] Current card:', currentCard?.title || 'none');
-    console.log('[App] Points:', points, '| Level:', currentLevel.title);
-    console.log('[App] Tools registered:', tools[0].functionDeclarations.map(t => t.name).join(', '));
   }, [studentName, currentCard, points, currentLevel, setConfig]);
   
   // Show name prompt if no student name
@@ -144,7 +136,6 @@ function AppContent() {
   // Initialize session after name is set
   useEffect(() => {
     if (studentName && !sessionId) {
-      console.log('[App] Initializing session for', studentName);
       startSession(); // Uses MVP_CARDS by default
     }
   }, [studentName, sessionId, startSession]);
@@ -156,15 +147,12 @@ function AppContent() {
       const previousCount = parseInt(localStorage.getItem(storageKey) || '0', 10);
       sessionNumber.current = previousCount + 1;
       localStorage.setItem(storageKey, sessionNumber.current.toString());
-      console.log(`[App] 📊 Session #${sessionNumber.current} for ${studentName}`);
     }
   }, [studentName]);
   
   // Register tool handlers with Gemini client
   useEffect(() => {
     if (!client) return;
-    
-    console.log('[App] Registering tool handlers...');
     
     // Minimal response detection
     const minimalPhrases = ['ok', 'okay', 'yeah', 'yep', 'yup', 'sure', 'uh-huh', 'mhm', 'nope', 'nah', 'idk', 'dunno'];
@@ -274,36 +262,10 @@ function AppContent() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
-      console.log('[App] 💾 Transcript saved:', filename);
-      console.log('[App] 📊 Session stats:', {
-        sessionNumber: sessionNumber.current,
-        duration: transcriptData.durationMinutes + ' minutes',
-        points: transcriptData.totalPoints,
-        blocks: transcriptData.systemBlocks,
-        responses: transcriptData.studentResponses
-      });
-      
-      // Log global stats for all students
-      const globalStats = TranscriptManager.getGlobalStats();
-      console.log('[App] 🌍 Global stats:', globalStats);
     };
-    
-    // Reset turn counter when card changes
-    useEffect(() => {
-      conversationTurns.current = 0;
-      lastCardChange.current = Date.now();
-      
-      // Log card change to transcript
-      if (currentCard) {
-        addToTranscript('system', `Card changed to: ${currentCard.title}`);
-      }
-    }, [currentCard?.id]);
 
     // Handle tool calls from Pi
     const handleToolCall = (toolCall: any) => {
-      console.log('[App] 🔧 Tool call received:', toolCall);
-      
       const { functionCalls } = toolCall;
       if (!functionCalls || functionCalls.length === 0) return;
       
@@ -312,7 +274,6 @@ function AppContent() {
       
       functionCalls.forEach((call: any) => {
         const { id, name, args } = call;
-        console.log(`[App] Executing tool: ${name}`, args);
         
         let response: any = {
           id: id,
@@ -358,13 +319,11 @@ function AppContent() {
             }
             
             // All checks passed - award points
-            console.log(`[App] 🌟 Awarding ${pointsToAward} points for ${cardId}: ${celebration}`);
             addToTranscript('system', `Awarded ${pointsToAward} points for ${cardId}: ${celebration}`);
             
             const result = awardPoints(pointsToAward, celebration);
             
             if (result.leveledUp && result.newLevel) {
-              console.log(`[App] 🎉 LEVEL UP! ${result.newLevel.title}`);
               addToTranscript('system', `LEVEL UP to ${result.newLevel.title}!`);
               
               // Trigger level up animation
@@ -394,7 +353,6 @@ function AppContent() {
               break;
             }
             
-            console.log('[App] ➡️ Moving to next card...');
             nextCard();
             conversationTurns.current = 0; // Reset for new card
             
@@ -402,11 +360,9 @@ function AppContent() {
             const { currentCard: newCard } = useSessionStore.getState();
             
             if (newCard) {
-              console.log('[App] 📤 New card is:', newCard.title);
               addToTranscript('system', `Advanced to card: ${newCard.title}`);
               response.response = `Card changed to "${newCard.title}". Now ask your starting question for this card: "${newCard.piStartingQuestion}"`;
             } else {
-              console.log('[App] 📤 Session complete - no more cards');
               addToTranscript('system', 'Session completed - all cards done');
               
               // Save transcript at end of session
@@ -427,7 +383,6 @@ function AppContent() {
       
       // Send tool responses back to Gemini
       if (toolResponses.length > 0) {
-        console.log('[App] 📤 Sending tool responses back to Gemini:', toolResponses);
         try {
           client.sendToolResponse({
             functionResponses: toolResponses
@@ -441,7 +396,6 @@ function AppContent() {
     // Track conversation turns for enforcement  
     const handleContent = useCallback((data: any) => {
       conversationTurns.current += 1;
-      console.log(`[App] 💬 Turn ${conversationTurns.current} on ${currentCard?.title}`);
       
       // Add content to transcript
       if (data?.serverContent?.modelTurn?.parts) {
@@ -461,7 +415,6 @@ function AppContent() {
     // Track student transcriptions
     const handleInputTranscription = useCallback((text: string, isFinal: boolean) => {
       if (isFinal && text) {
-        console.log(`[App] 🎤 Student said: "${text}"`);
         addToTranscript('student', text);
       }
     }, []);
@@ -558,9 +511,6 @@ function AppContent() {
         {/* Gemini Live Control Tray */}
         <ControlTray />
       </main>
-      
-      {/* Debug Panel for Eval Testing */}
-      <DebugPanel messages={messages} onClear={clearMessages} />
       
       {/* Level Up Animation */}
       {levelUpData && (
