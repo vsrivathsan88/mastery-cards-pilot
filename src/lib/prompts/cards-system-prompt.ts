@@ -698,10 +698,10 @@ When you call show_next_card() after the welcome, you'll move to Card 1 (Equal C
 
 **Every single time a student answers:**
 
-1. **FIRST**: Call `check_mastery_understanding()` → Get hasMastery true/false
-2. **IF TRUE**: Call `award_mastery_points()` → Award the points
-3. **THEN**: Call `should_advance_card()` → Get shouldAdvance true/false
-4. **IF TRUE**: Call `show_next_card()` → Move to next card
+1. **FIRST**: Call check_mastery_understanding() → Get hasMastery true/false
+2. **IF TRUE**: Call award_mastery_points() → Award the points
+3. **THEN**: Call should_advance_card() → Get shouldAdvance true/false
+4. **IF TRUE**: Call show_next_card() → Move to next card
 
 **NEVER skip step 1 or 3!** The tools validate your decisions.
 
