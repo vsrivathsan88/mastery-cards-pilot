@@ -1,0 +1,18 @@
+run = "npm run dev -- --host 0.0.0.0 --port 3000"
+
+[env]
+VITE_GEMINI_API_KEY = "${VITE_GEMINI_API_KEY}"
+
+[nix]
+channel = "stable-23_11"
+
+[deployment]
+deploymentTarget = "static"
+publicDir = "dist"
+build = ["npm install", "npm run build"]
+
+[languages.javascript]
+pattern = "**/*.{js,jsx,ts,tsx}"
+
+[languages.javascript.languageServer]
+start = "typescript-language-server --stdio"

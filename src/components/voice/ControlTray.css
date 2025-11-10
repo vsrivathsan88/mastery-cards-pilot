@@ -1,0 +1,173 @@
+/**
+ * Control Tray Styles
+ * Neo-brutalist design matching tutor-app
+ */
+
+.control-tray {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  background: var(--bg-card);
+  border: var(--border-width-thick) solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md) var(--border-primary);
+  transition: all 0.3s ease;
+}
+
+.control-tray.connected {
+  background: var(--success);
+}
+
+/* Status Section */
+.control-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  border: 2px solid var(--border-primary);
+  transition: all 0.3s ease;
+}
+
+.status-indicator.active {
+  background: #22c55e;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+.status-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Buttons Section */
+.control-buttons {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.control-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: var(--border-width-thick) solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm) var(--border-primary);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.control-button:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md) var(--border-primary);
+}
+
+.control-button:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--border-primary);
+}
+
+.control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.button-label {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Connect Button */
+.connect-button {
+  background: var(--accent-primary);
+}
+
+.connect-button.active {
+  background: var(--danger);
+  color: white;
+}
+
+.connect-button.loading {
+  animation: loading 1s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Mic Button */
+.mic-button {
+  background: var(--bg-card);
+}
+
+.mic-button.muted {
+  background: var(--text-secondary);
+  color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .control-tray {
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .control-status {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .control-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .control-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .button-label {
+    display: block;
+  }
+}
