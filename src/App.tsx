@@ -601,9 +601,12 @@ function AppContent() {
     
     if (toolResponses.length > 0) {
       try {
+        console.log('[App] 📤 Sending tool responses:', JSON.stringify(toolResponses, null, 2));
         client.sendToolResponse({ functionResponses: toolResponses });
+        console.log('[App] ✅ Tool responses sent successfully');
       } catch (error) {
-        console.error('[App] Failed to send tool responses:', error);
+        console.error('[App] ❌ Failed to send tool responses:', error);
+        throw error;
       }
     }
   }, [client, awardPoints, nextCard, currentCard, points, currentLevel, addToTranscript, isMinimalResponse, isRepeatedResponse, saveTranscript]);
