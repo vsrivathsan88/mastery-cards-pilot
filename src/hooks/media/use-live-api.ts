@@ -84,12 +84,20 @@ export function useLiveApi({
       lastResponseTimeRef.current = Date.now();
     };
 
-    const onClose = () => {
-      console.log('[useLiveApi] Connection closed');
+    const onClose = (event: CloseEvent) => {
+      console.error('[useLiveApi] ❌ Connection closed!', {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean
+      });
       setConnected(false);
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
       }
+    };
+    
+    const onError = (event: ErrorEvent) => {
+      console.error('[useLiveApi] ❌ Connection error!', event);
     };
 
     const stopAudioStreamer = () => {
@@ -109,6 +117,7 @@ export function useLiveApi({
     // Bind event listeners
     client.on('open', onOpen);
     client.on('close', onClose);
+    client.on('error', onError);
     client.on('interrupted', stopAudioStreamer);
     client.on('audio', onAudio);
 
@@ -131,6 +140,7 @@ export function useLiveApi({
     return () => {
       client.off('open', onOpen);
       client.off('close', onClose);
+      client.off('error', onError);
       client.off('interrupted', stopAudioStreamer);
       client.off('audio', onAudio);
       client.off('toolcall', onToolCall);
