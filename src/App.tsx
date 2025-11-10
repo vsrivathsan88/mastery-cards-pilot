@@ -393,9 +393,10 @@ function AppContent() {
     }
   }, [addToTranscript]);
   
-  // Track student transcriptions
+  // Track student transcriptions - count turns here (only when student speaks)
   const handleInputTranscription = useCallback((text: string, isFinal: boolean) => {
     if (isFinal && text) {
+      conversationTurns.current += 1;  // Increment only on student input
       addToTranscript('student', text);
     }
   }, [addToTranscript]);
