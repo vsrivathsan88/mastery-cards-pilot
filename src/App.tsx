@@ -449,11 +449,8 @@ function AppContent() {
         {/* Current Card */}
         <div className="active-card">
           <MasteryCard
-            imageUrl={currentCard.imageUrl}
-            imageDescription={currentCard.imageDescription}
-            title={currentCard.title}
-            cardNumber={currentCard.cardNumber}
-            totalCards={8}
+            card={currentCard}
+            isCurrent={true}
           />
         </div>
         
