@@ -69,6 +69,7 @@ function AppContent() {
           {
             name: 'award_mastery_points',
             description: 'Award points to the student when they demonstrate understanding. This will update the points on screen and check for level-ups.',
+            behavior: 'NON_BLOCKING',  // Allow async processing, won't block conversation
             parameters: {
               type: 'object',
               properties: {
@@ -91,6 +92,7 @@ function AppContent() {
           {
             name: 'show_next_card',
             description: 'Advance to the next card in the session. Only call this after the student has demonstrated understanding of the current card OR after 2-3 failed attempts.',
+            behavior: 'NON_BLOCKING',  // Allow async processing, won't block conversation
             parameters: {
               type: 'object',
               properties: {}
@@ -274,7 +276,8 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED award_mastery_points - only ${conversationTurns.current} turns, need ${minTurns}`);
             const blockMsg = `[SYSTEM BLOCK] Cannot award points yet - you need to verify understanding first. You've only had ${conversationTurns.current} exchange(s) on this card. Ask a challenge question like "What makes you say that?" or "Can you explain that?" Then award points after they explain their reasoning.`;
             addToTranscript('system', blockMsg);
-            response.response = { blocked: true, reason: blockMsg };
+            response.response = { result: blockMsg };
+            response.scheduling = 'SILENT';  // Don't announce blocks, just adjust behavior
             break;
           }
           
@@ -284,7 +287,8 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED award_mastery_points - minimal response: "${lastStudentMsg}"`);
             const blockMsg = `[SYSTEM BLOCK] Cannot award points for minimal response "${lastStudentMsg}". Ask them to elaborate: "I need to hear your thinking - what do you notice in this image?" or "Tell me more about that."`;
             addToTranscript('system', blockMsg);
-            response.response = { blocked: true, reason: blockMsg };
+            response.response = { result: blockMsg };
+            response.scheduling = 'SILENT';  // Don't announce blocks
             break;
           }
           
@@ -292,7 +296,8 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED award_mastery_points - repeated response: "${lastStudentMsg}"`);
             const blockMsg = `[SYSTEM BLOCK] Student keeps saying "${lastStudentMsg}" - this is repetition. Ask: "You've said that before. Can you explain it in a different way?" or "What else do you notice?"`;
             addToTranscript('system', blockMsg);
-            response.response = { blocked: true, reason: blockMsg };
+            response.response = { result: blockMsg };
+            response.scheduling = 'SILENT';  // Don't announce blocks
             break;
           }
           
@@ -308,16 +313,14 @@ function AppContent() {
             });
             setShowLevelUp(true);
             response.response = { 
-              success: true,
-              message: `Successfully awarded ${pointsToAward} points! LEVEL UP to ${result.newLevel.title}!`,
-              totalPoints: points + pointsToAward 
+              result: `Successfully awarded ${pointsToAward} points! LEVEL UP to ${result.newLevel.title}! Total: ${points + pointsToAward}`
             };
+            response.scheduling = 'INTERRUPT';  // Interrupt to announce level-up immediately!
           } else {
             response.response = { 
-              success: true,
-              message: `Successfully awarded ${pointsToAward} points.`,
-              totalPoints: points + pointsToAward 
+              result: `Successfully awarded ${pointsToAward} points. Total: ${points + pointsToAward}`
             };
+            response.scheduling = 'WHEN_IDLE';  // Don't interrupt, wait until Pi finishes current thought
           }
           break;
         }
@@ -329,7 +332,8 @@ function AppContent() {
             console.warn(`[App] ⛔ BLOCKED show_next_card - only ${conversationTurns.current} turns`);
             const blockMsg = `[SYSTEM BLOCK] Cannot advance yet - you need to assess understanding first. Ask your starting question for this card, then listen to their response. Only advance after you've verified their understanding OR they've struggled for 2-3 attempts.`;
             addToTranscript('system', blockMsg);
-            response.response = { blocked: true, reason: blockMsg };
+            response.response = { result: blockMsg };
+            response.scheduling = 'SILENT';  // Don't announce blocks
             break;
           }
           
@@ -342,26 +346,24 @@ function AppContent() {
           if (newCard) {
             addToTranscript('system', `Advanced to card: ${newCard.title}`);
             response.response = { 
-              success: true,
-              newCard: newCard.title,
-              startingQuestion: newCard.piStartingQuestion 
+              result: `Card changed to "${newCard.title}". Now ask: "${newCard.piStartingQuestion}"`
             };
+            response.scheduling = 'WHEN_IDLE';  // Wait to finish current thought before moving to next card
           } else {
             addToTranscript('system', 'Session completed - all cards done');
             saveTranscript();
             response.response = { 
-              success: true,
-              sessionComplete: true,
-              totalPoints: points,
-              finalLevel: currentLevel.title 
+              result: `SESSION COMPLETE! All 8 cards done. Total: ${points} points. Level: ${currentLevel.title}. Now wrap up warmly.`
             };
+            response.scheduling = 'INTERRUPT';  // Interrupt to announce completion
           }
           break;
         }
         
         default:
           console.warn(`[App] Unknown tool: ${name}`);
-          response.response = { error: true, message: `Unknown tool "${name}"` };
+          response.response = { result: `Error: Unknown tool "${name}"` };
+          response.scheduling = 'SILENT';
       }
       
       toolResponses.push(response);
