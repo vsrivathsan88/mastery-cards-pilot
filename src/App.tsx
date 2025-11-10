@@ -67,23 +67,67 @@ function AppContent() {
       {
         functionDeclarations: [
           {
-            name: 'award_mastery_points',
-            description: 'Award points to the student when they demonstrate understanding. This will update the points on screen and check for level-ups.',
-            behavior: 'NON_BLOCKING',  // Allow async processing, won't block conversation
+            name: 'check_mastery_understanding',
+            description: 'REQUIRED BEFORE AWARDING POINTS: Analyze if student truly understands the concept. Use this to validate understanding depth before calling award_mastery_points. This prevents awarding points for guessing or minimal responses.',
+            behavior: 'NON_BLOCKING',
+            parameters: {
+              type: 'object',
+              properties: {
+                studentResponse: {
+                  type: 'string',
+                  description: 'The student\'s most recent response to analyze'
+                },
+                cardId: {
+                  type: 'string',
+                  description: 'The ID of the current card being assessed'
+                },
+                milestoneType: {
+                  type: 'string',
+                  enum: ['basic', 'advanced', 'teaching'],
+                  description: 'Which milestone level you\'re checking for'
+                }
+              },
+              required: ['studentResponse', 'cardId', 'milestoneType']
+            }
+          },
+          {
+            name: 'should_advance_card',
+            description: 'REQUIRED BEFORE CALLING show_next_card: Analyze if it\'s appropriate to move to the next card. Checks if student has mastered current concept or if they need more practice.',
+            behavior: 'NON_BLOCKING',
             parameters: {
               type: 'object',
               properties: {
                 cardId: {
                   type: 'string',
-                  description: 'The ID of the card for which points are being awarded (e.g., "equal-parts-cover")'
+                  description: 'The ID of the current card'
+                },
+                reason: {
+                  type: 'string',
+                  enum: ['mastered', 'struggling', 'incomplete'],
+                  description: 'Why you think it\'s time to advance'
+                }
+              },
+              required: ['cardId', 'reason']
+            }
+          },
+          {
+            name: 'award_mastery_points',
+            description: 'Award points ONLY AFTER check_mastery_understanding returns hasMastery: true. This will update the points on screen and check for level-ups.',
+            behavior: 'NON_BLOCKING',
+            parameters: {
+              type: 'object',
+              properties: {
+                cardId: {
+                  type: 'string',
+                  description: 'The ID of the card for which points are being awarded'
                 },
                 points: {
                   type: 'number',
-                  description: 'Number of points to award. Use 50 for basic understanding, 100 for teaching milestone moments, 200 for major breakthroughs'
+                  description: 'Number of points to award (must match the suggestedPoints from check_mastery_understanding)'
                 },
                 celebration: {
                   type: 'string',
-                  description: 'A short phrase celebrating what they did well (e.g., "Explained denominator clearly!", "Great connection to equal parts!")'
+                  description: 'A short phrase celebrating what they did well'
                 }
               },
               required: ['cardId', 'points', 'celebration']
@@ -91,8 +135,8 @@ function AppContent() {
           },
           {
             name: 'show_next_card',
-            description: 'Advance to the next card in the session. Only call this after the student has demonstrated understanding of the current card OR after 2-3 failed attempts.',
-            behavior: 'NON_BLOCKING',  // Allow async processing, won't block conversation
+            description: 'Advance to next card ONLY AFTER should_advance_card returns shouldAdvance: true. Moves to the next card in the session.',
+            behavior: 'NON_BLOCKING',
             parameters: {
               type: 'object',
               properties: {}
@@ -266,6 +310,185 @@ function AppContent() {
       let response: any = { id, name };
       
       switch (name) {
+        case 'check_mastery_understanding': {
+          const { studentResponse, cardId, milestoneType } = args;
+          
+          console.log(`[App] 🔬 Analyzing mastery: "${studentResponse}" for ${cardId} (${milestoneType})`);
+          
+          // Get the card to check against criteria
+          const card = currentCard;
+          if (!card || card.id !== cardId) {
+            response.response = {
+              result: `Error: Card ${cardId} not found or not current card`
+            };
+            response.scheduling = 'SILENT';
+            break;
+          }
+          
+          // Get milestone criteria
+          const milestone = milestoneType === 'teaching' 
+            ? card.misconception?.teachingMilestone
+            : card.milestones[milestoneType as 'basic' | 'advanced'];
+            
+          if (!milestone) {
+            response.response = {
+              result: `Error: No ${milestoneType} milestone found for this card`
+            };
+            response.scheduling = 'SILENT';
+            break;
+          }
+          
+          // Analyze the response
+          const lowerResponse = studentResponse.toLowerCase();
+          const keywords = milestone.evidenceKeywords.map(k => k.toLowerCase());
+          
+          // Check for red flags (minimal responses)
+          const minimalPatterns = /^(yeah|yep|ok|okay|uh-huh|mm-hmm|sure|yes|no|maybe|idk|i guess)$/i;
+          const isMinimal = minimalPatterns.test(studentResponse.trim());
+          
+          // Check for question marks (uncertainty)
+          const hasUncertainty = studentResponse.includes('?') || /\b(maybe|i think|i guess|probably|kinda|sorta)\b/i.test(studentResponse);
+          
+          // Check keyword coverage
+          const matchedKeywords = keywords.filter(keyword => lowerResponse.includes(keyword));
+          const keywordCoverage = matchedKeywords.length / keywords.length;
+          
+          // Check response length (depth indicator)
+          const wordCount = studentResponse.trim().split(/\s+/).length;
+          const hasDepth = wordCount >= 4; // At least 4 words shows thought
+          
+          // Determine mastery
+          let hasMastery = false;
+          let confidence = 0;
+          let depth: 'surface' | 'partial' | 'deep' = 'surface';
+          let reasoning = '';
+          let suggestedPoints = 0;
+          
+          if (isMinimal) {
+            hasMastery = false;
+            confidence = 0.1;
+            depth = 'surface';
+            reasoning = `Minimal response "${studentResponse}" - needs elaboration. Ask them to explain their thinking.`;
+          } else if (hasUncertainty) {
+            hasMastery = false;
+            confidence = 0.3;
+            depth = 'surface';
+            reasoning = `Response shows uncertainty (questioning or hedging). Student needs to articulate with confidence.`;
+          } else if (keywordCoverage < 0.3) {
+            hasMastery = false;
+            confidence = 0.4;
+            depth = 'partial';
+            reasoning = `Only ${Math.round(keywordCoverage * 100)}% keyword match with expected concepts. Missing key ideas: ${keywords.filter(k => !lowerResponse.includes(k)).join(', ')}`;
+          } else if (keywordCoverage >= 0.5 && hasDepth) {
+            hasMastery = true;
+            confidence = 0.7 + (keywordCoverage * 0.2); // 0.7-0.9 range
+            depth = wordCount >= 8 ? 'deep' : 'partial';
+            reasoning = `Strong response with ${Math.round(keywordCoverage * 100)}% concept coverage and ${wordCount} words of explanation. Matched concepts: ${matchedKeywords.join(', ')}`;
+            suggestedPoints = milestone.points;
+          } else {
+            hasMastery = false;
+            confidence = 0.5 + (keywordCoverage * 0.2);
+            depth = 'partial';
+            reasoning = `Partial understanding detected (${Math.round(keywordCoverage * 100)}% coverage). Ask follow-up to verify depth.`;
+          }
+          
+          // Additional checks based on conversation history
+          const lastFewResponses = lastStudentResponses.current.slice(-3);
+          const isRepeating = lastFewResponses.filter(r => r.toLowerCase() === lowerResponse).length > 1;
+          
+          if (isRepeating) {
+            hasMastery = false;
+            confidence = Math.min(confidence, 0.3);
+            reasoning = `Student is repeating "${studentResponse}" - may be guessing or parroting. Ask different question.`;
+          }
+          
+          // Check turn count
+          const timeSinceCardChange = Date.now() - lastCardChange.current;
+          const minTurns = milestoneType === 'teaching' ? 3 : 2;
+          
+          if (conversationTurns.current < minTurns && timeSinceCardChange > 2000) {
+            hasMastery = false;
+            confidence = Math.min(confidence, 0.4);
+            reasoning = `Only ${conversationTurns.current} conversation turn(s) on this card. Need at least ${minTurns} turns to verify understanding. ${reasoning}`;
+          }
+          
+          console.log(`[App] 📊 Assessment result: hasMastery=${hasMastery}, confidence=${confidence}, depth=${depth}`);
+          
+          response.response = {
+            result: JSON.stringify({
+              hasMastery,
+              confidence,
+              depth,
+              reasoning,
+              suggestedPoints,
+              matchedConcepts: matchedKeywords,
+              missingConcepts: keywords.filter(k => !lowerResponse.includes(k))
+            })
+          };
+          response.scheduling = 'SILENT'; // Assessment feedback is internal
+          
+          // Also log to transcript for debugging
+          addToTranscript('system', `[ASSESSMENT] ${milestoneType} for ${cardId}: ${hasMastery ? 'PASS' : 'NEEDS MORE'} (confidence: ${confidence.toFixed(2)}, depth: ${depth})`);
+          break;
+        }
+        
+        case 'should_advance_card': {
+          const { cardId, reason } = args;
+          
+          console.log(`[App] 🔍 Checking if should advance from ${cardId}, reason: ${reason}`);
+          
+          if (!currentCard || currentCard.id !== cardId) {
+            response.response = {
+              result: `Error: Card ${cardId} is not the current card`
+            };
+            response.scheduling = 'SILENT';
+            break;
+          }
+          
+          const timeSinceCardChange = Date.now() - lastCardChange.current;
+          let shouldAdvance = false;
+          let feedback = '';
+          
+          if (reason === 'mastered') {
+            // Check if they've had enough conversation
+            if (conversationTurns.current < 2 && timeSinceCardChange > 2000 && currentCard.cardNumber !== 0) {
+              shouldAdvance = false;
+              feedback = `Cannot advance yet - only ${conversationTurns.current} turns on this card. Student needs more time to demonstrate mastery. Ask challenge questions to verify understanding.`;
+            } else {
+              shouldAdvance = true;
+              feedback = `Good to advance - student has demonstrated understanding through ${conversationTurns.current} conversation turns.`;
+            }
+          } else if (reason === 'struggling') {
+            // After 3-4 exchanges, it's okay to move on
+            if (conversationTurns.current >= 3) {
+              shouldAdvance = true;
+              feedback = `Student has tried ${conversationTurns.current} times. Moving on is appropriate - they can revisit this concept later.`;
+            } else {
+              shouldAdvance = false;
+              feedback = `Give student more attempts (currently ${conversationTurns.current} turns). Try rephrasing question or offering different perspective.`;
+            }
+          } else if (reason === 'incomplete') {
+            shouldAdvance = false;
+            feedback = `Student hasn't fully engaged with this card. Ask your starting question if you haven't yet, or try a follow-up question.`;
+          }
+          
+          console.log(`[App] ⚖️ Decision: shouldAdvance=${shouldAdvance}`);
+          
+          response.response = {
+            result: JSON.stringify({
+              shouldAdvance,
+              feedback,
+              conversationTurns: conversationTurns.current,
+              timeSinceCardChange: Math.round(timeSinceCardChange / 1000),
+              currentCardId: currentCard.id
+            })
+          };
+          response.scheduling = 'SILENT'; // Decision feedback is internal
+          
+          addToTranscript('system', `[ADVANCE CHECK] ${cardId}: ${shouldAdvance ? 'YES' : 'NOT YET'} - ${feedback}`);
+          break;
+        }
+        
         case 'award_mastery_points': {
           const { cardId, points: pointsToAward, celebration } = args;
           
