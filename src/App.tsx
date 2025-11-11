@@ -10,7 +10,7 @@ import { PiAvatar } from './components/PiAvatar';
 import { NamePrompt } from './components/NamePrompt';
 import { LevelUpAnimation } from './components/LevelUpAnimation';
 import { useSessionStore } from './lib/state/session-store';
-import { getSimplePiPrompt } from './lib/prompts/simple-pi-prompt';
+import { getPiPrompt } from './lib/prompts/simple-pi-prompt';
 import { evaluateMastery, type ConversationTurn } from './lib/evaluator/claude-judge';
 import { OpenAIRealtimeClient } from './lib/openai-realtime-client';
 import './App.css';
@@ -62,10 +62,8 @@ function AppContent() {
     // Get everything from store to avoid prop dependencies
     const card = useSessionStore.getState().currentCard;
     if (!card) return;
-    const pts = useSessionStore.getState().points;
-    const lvl = useSessionStore.getState().currentLevel;
     
-    const instructions = getSimplePiPrompt(studentName, card, pts, lvl);
+    const instructions = getPiPrompt(studentName, card);
     
     const client = new OpenAIRealtimeClient({
       apiKey: openaiKey,
