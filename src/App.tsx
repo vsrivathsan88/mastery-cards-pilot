@@ -16,6 +16,7 @@ import { ManualControls } from './components/ManualControls';
 import { useSessionStore } from './lib/state/session-store';
 import { getMissionFirstPrompt } from './lib/prompts/mission-first-prompt';
 import { TranscriptManager } from './lib/transcript-manager';
+import { CardStateMachine, CardState } from './lib/state/card-state-machine';
 import './App.css';
 
 function AppContent() {
@@ -53,6 +54,9 @@ function AppContent() {
   
   // Tool call lock for debouncing (prevent duplicate calls)
   const toolCallLock = useRef<{ show_next_card?: number }>({});
+  
+  // State machine for explicit card assessment flow
+  const cardStateMachine = useRef<CardStateMachine>(new CardStateMachine());
   
   // Build proper voice-to-voice config with system prompt (ONCE at session start)
   useEffect(() => {
@@ -350,6 +354,16 @@ function AppContent() {
         case 'award_mastery_points': {
           const { cardId, points: pointsToAward, celebration } = args;
           
+          // Check if state machine allows this
+          const currentState = cardStateMachine.current.getCurrentState();
+          if (!currentState.canCallTools) {
+            console.warn('[App] ⚠️ award_mastery_points blocked: State machine not ready', currentState);
+            response.response = {
+              result: `ERROR: Cannot award points yet. You are in state ${currentState.state}. ${currentState.transitionReason}. Complete the assessment flow first.`
+            };
+            break;
+          }
+          
           console.log(`[App] ✨ Awarding ${pointsToAward} points for ${cardId}`);
           addToTranscript('system', `Awarded ${pointsToAward} points for ${cardId}: ${celebration}`);
           
@@ -376,57 +390,95 @@ function AppContent() {
         case 'show_next_card': {
           console.log('[App] 🔄 Advancing to next card');
           
+          // Check if state machine allows this
+          const currentState = cardStateMachine.current.getCurrentState();
+          if (!currentState.canCallTools) {
+            console.warn('[App] ⚠️ show_next_card blocked: State machine not ready', currentState);
+            response.response = {
+              result: `ERROR: Cannot advance yet. You are in state ${currentState.state}. ${currentState.transitionReason}`
+            };
+            break;
+          }
+          
           nextCard();
           conversationTurns.current = 0;
           lastCardChange.current = Date.now();
+          
+          // Reset state machine for new card
+          cardStateMachine.current.reset();
           
           const { currentCard: newCard } = useSessionStore.getState();
           
           if (newCard) {
             addToTranscript('system', `Advanced to card: ${newCard.title}`);
             
-            // Send new card info as a context message (not system prompt update)
+            // Get state context
+            const stateContext = cardStateMachine.current.getStateContext();
+            
+            // Send new card info WITH state machine context
             const cardContext = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-NEW CARD: ${newCard.title}
+📋 NEW CARD: ${newCard.title}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-WHAT YOU SEE:
+${stateContext}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📸 CARD DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**WHAT YOU SEE:**
 ${newCard.imageDescription}
 
-WHAT YOU'RE ASSESSING:
+**WHAT YOU'RE ASSESSING (Learning Goal):**
 ${newCard.learningGoal}
 
-YOUR STARTING QUESTION:
+**YOUR STARTING QUESTION:**
 "${newCard.piStartingQuestion}"
 
-MASTERY CRITERIA (score 1-5):
-Basic (${newCard.milestones.basic.points} pts): ${newCard.milestones.basic.description}
-Evidence for score 4-5: ${newCard.milestones.basic.evidenceKeywords.join(', ')}
+**MASTERY CRITERIA:**
+
+Basic Understanding (${newCard.milestones.basic.points} pts):
+${newCard.milestones.basic.description}
+Evidence signals: ${newCard.milestones.basic.evidenceKeywords.join(', ')}
 ${newCard.milestones.advanced ? `
-Advanced (${newCard.milestones.advanced.points} pts BONUS): ${newCard.milestones.advanced.description}
-Evidence for score 4-5: ${newCard.milestones.advanced.evidenceKeywords.join(', ')}
+Advanced Understanding (${newCard.milestones.advanced.points} pts BONUS):
+${newCard.milestones.advanced.description}
+Evidence signals: ${newCard.milestones.advanced.evidenceKeywords.join(', ')}
 ` : ''}
 ${newCard.misconception ? `
-⚠️ MISCONCEPTION CARD - You present wrong thinking: "${newCard.misconception.piWrongThinking}"
-Student should teach you: ${newCard.misconception.correctConcept}
-Teaching mastery (${newCard.misconception.teachingMilestone.points} pts): ${newCard.misconception.teachingMilestone.description}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ MISCONCEPTION CARD - SPECIAL ROLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**You present this WRONG thinking:**
+"${newCard.misconception.piWrongThinking}"
+
+**Student should teach you:**
+${newCard.misconception.correctConcept}
+
+**Teaching Mastery (${newCard.misconception.teachingMilestone.points} pts):**
+${newCard.misconception.teachingMilestone.description}
+
+You are GENUINELY CONFUSED until they explain why you're wrong.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ` : ''}
 
-NOW: Ask your starting question to begin assessing this card.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 FOLLOW THE STATE MACHINE - Current state is CARD_START
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
             
             // Send as context update mid-conversation
             try {
               client.send([{ text: cardContext }]);
-              console.log('[App] ✅ Card context sent successfully');
+              console.log('[App] ✅ Card context with state machine sent successfully');
             } catch (error) {
               console.error('[App] ❌ Failed to send card context:', error);
               // Continue anyway - Pi might still function
             }
             
             response.response = { 
-              result: `Card changed successfully. New card info sent. Ask your starting question now.`
+              result: `Card changed successfully. State reset to CARD_START. Ask your starting question now.`
             };
           } else {
             addToTranscript('system', 'Session completed - all cards done');
