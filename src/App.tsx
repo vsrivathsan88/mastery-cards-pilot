@@ -58,6 +58,17 @@ function AppContent() {
   // State machine for explicit card assessment flow
   const cardStateMachine = useRef<CardStateMachine>(new CardStateMachine());
   
+  // PHASE 1 ROBUSTNESS: Tool call history for idempotency
+  const toolCallHistory = useRef<Map<string, {
+    cardId: string;
+    callId: string;
+    timestamp: number;
+    processed: boolean;
+  }>>(new Map());
+  
+  // PHASE 1 ROBUSTNESS: Turn-based locking
+  const toolCallInProgress = useRef<boolean>(false);
+  
   // Build proper voice-to-voice config with system prompt (ONCE at session start)
   useEffect(() => {
     if (!studentName || !sessionId) return;
@@ -301,49 +312,58 @@ function AppContent() {
     const { functionCalls } = toolCall;
     if (!functionCalls || functionCalls.length === 0) return;
     
-    console.log('[App] 🔧 Tool calls received:', functionCalls.map((fc: any) => ({
-      name: fc.name,
-      args: fc.args
-    })));
-    
-    // STEP 1: DEDUPLICATE - Remove duplicate calls within same batch
-    const uniqueCalls = functionCalls.filter((call: any, index: number, self: any[]) => {
-      return self.findIndex((c: any) => c.name === call.name) === index;
-    });
-    
-    if (uniqueCalls.length < functionCalls.length) {
-      console.warn(`[App] ⚠️ Removed ${functionCalls.length - uniqueCalls.length} duplicate tool calls`);
-    }
-    
-    // STEP 2: DEBOUNCE - Filter out calls that are too recent
-    const now = Date.now();
-    const filteredCalls = uniqueCalls.filter((call: any) => {
-      if (call.name === 'show_next_card') {
-        const lastCall = toolCallLock.current.show_next_card || 0;
-        if (now - lastCall < 2000) {
-          console.warn('[App] ⚠️ BLOCKED: show_next_card called too recently (debouncing)');
-          return false;
-        }
-        toolCallLock.current.show_next_card = now;
-      }
-      return true;
-    });
-    
-    if (filteredCalls.length === 0) {
-      console.log('[App] ℹ️ All tool calls filtered out (duplicates/debounce)');
+    // PHASE 1: Turn-based locking - prevent parallel tool processing
+    if (toolCallInProgress.current) {
+      console.warn('[Lock] ⚠️ Tool call already in progress, blocking this batch');
       return;
     }
     
-    console.log(`[App] 🔨 Processing ${filteredCalls.length} tool calls`);
+    toolCallInProgress.current = true;
     
-    const toolResponses: any[] = [];
-    
-    // Add timeout safety - if processing takes too long, something went wrong
-    const processingTimeout = setTimeout(() => {
-      console.error('[App] ⚠️ Tool processing timeout - this should not happen');
-    }, 5000);
-    
-    filteredCalls.forEach((call: any) => {
+    try {
+      console.log('[App] 🔧 Tool calls received:', functionCalls.map((fc: any) => ({
+        name: fc.name,
+        args: fc.args
+      })));
+      
+      // STEP 1: DEDUPLICATE - Remove duplicate calls within same batch
+      const uniqueCalls = functionCalls.filter((call: any, index: number, self: any[]) => {
+        return self.findIndex((c: any) => c.name === call.name) === index;
+      });
+      
+      if (uniqueCalls.length < functionCalls.length) {
+        console.warn(`[App] ⚠️ Removed ${functionCalls.length - uniqueCalls.length} duplicate tool calls`);
+      }
+      
+      // STEP 2: DEBOUNCE - Filter out calls that are too recent
+      const now = Date.now();
+      const filteredCalls = uniqueCalls.filter((call: any) => {
+        if (call.name === 'show_next_card') {
+          const lastCall = toolCallLock.current.show_next_card || 0;
+          if (now - lastCall < 2000) {
+            console.warn('[App] ⚠️ BLOCKED: show_next_card called too recently (debouncing)');
+            return false;
+          }
+          toolCallLock.current.show_next_card = now;
+        }
+        return true;
+      });
+      
+      if (filteredCalls.length === 0) {
+        console.log('[App] ℹ️ All tool calls filtered out (duplicates/debounce)');
+        return;
+      }
+      
+      console.log(`[App] 🔨 Processing ${filteredCalls.length} tool calls`);
+      
+      const toolResponses: any[] = [];
+      
+      // Add timeout safety - if processing takes too long, something went wrong
+      const processingTimeout = setTimeout(() => {
+        console.error('[App] ⚠️ Tool processing timeout - this should not happen');
+      }, 5000);
+      
+      filteredCalls.forEach((call: any) => {
       const { id, name, args } = call;
       
       console.log(`[App] 🔨 Processing tool: ${name}`, args);
@@ -353,6 +373,17 @@ function AppContent() {
       switch (name) {
         case 'award_mastery_points': {
           const { cardId, points: pointsToAward, celebration } = args;
+          
+          // PHASE 1: Idempotency check - prevent double awards
+          const callId = `award-${cardId}-${pointsToAward}-${celebration}`;
+          
+          if (toolCallHistory.current.has(callId)) {
+            console.warn('[Idempotency] ⚠️ Points already awarded for this card:', callId);
+            response.response = {
+              result: `Points already awarded for ${cardId}. No duplicate award.`
+            };
+            break;
+          }
           
           // Check if state machine allows this
           const currentState = cardStateMachine.current.getCurrentState();
@@ -366,6 +397,14 @@ function AppContent() {
           
           console.log(`[App] ✨ Awarding ${pointsToAward} points for ${cardId}`);
           addToTranscript('system', `Awarded ${pointsToAward} points for ${cardId}: ${celebration}`);
+          
+          // Mark as processed BEFORE awarding (prevent race conditions)
+          toolCallHistory.current.set(callId, {
+            cardId,
+            callId,
+            timestamp: Date.now(),
+            processed: true
+          });
           
           const result = awardPoints(pointsToAward, celebration);
           
@@ -501,6 +540,14 @@ You are GENUINELY CONFUSED until they explain why you're wrong.
     
     clearTimeout(processingTimeout);
     
+    // PHASE 1: Cleanup old tool call history (older than 5 minutes)
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    for (const [id, entry] of toolCallHistory.current.entries()) {
+      if (entry.timestamp < fiveMinutesAgo) {
+        toolCallHistory.current.delete(id);
+      }
+    }
+    
     if (toolResponses.length > 0) {
       try {
         console.log('[App] 📤 Sending tool responses:', JSON.stringify(toolResponses, null, 2));
@@ -512,7 +559,93 @@ You are GENUINELY CONFUSED until they explain why you're wrong.
         addToTranscript('system', `ERROR: Tool response failed - ${error}`);
       }
     }
+    } finally {
+      // PHASE 1: Always unlock, even if error
+      setTimeout(() => {
+        toolCallInProgress.current = false;
+        console.log('[Lock] 🔓 Tool processing unlocked');
+      }, 1000);
+    }
   }, [client, awardPoints, nextCard, currentCard, points, currentLevel, addToTranscript, saveTranscript]);
+
+  // PHASE 1: Send state update to Pi
+  const sendStateUpdate = useCallback(() => {
+    const stateContext = cardStateMachine.current.getStateContext();
+    
+    const stateMessage = `
+╔═══════════════════════════════════════════════════════════════╗
+║  🚦 STATE UPDATE (Automatic)
+╚═══════════════════════════════════════════════════════════════╝
+
+${stateContext}
+
+**This is an automatic state update based on the conversation so far.**
+Follow the guidance above for your next action.
+`;
+    
+    try {
+      client.send([{ text: stateMessage }]);
+      console.log('[Auto] State update sent to Pi');
+    } catch (error) {
+      console.error('[Auto] Failed to send state update:', error);
+    }
+  }, [client]);
+
+  // PHASE 1: Automatic state transitions based on conversation
+  const handleConversationTurn = useCallback((role: 'pi' | 'student', text: string) => {
+    const state = cardStateMachine.current.getCurrentState();
+    
+    console.log(`[Auto] Conversation turn: ${role} said "${text.substring(0, 50)}..." (State: ${state.state})`);
+    
+    if (role === 'pi') {
+      const lowerText = text.toLowerCase();
+      
+      // Detect Pi asking a question
+      if (lowerText.includes('?')) {
+        if (state.state === CardState.CARD_START && !state.hasAskedStartingQuestion) {
+          // Pi asked starting question
+          cardStateMachine.current.startedObserving();
+          console.log('[Auto] Detected starting question → OBSERVING');
+        } else if (state.state === CardState.PROBING && !state.hasProbed) {
+          // Pi asked follow-up
+          const currentData = cardStateMachine.current.getCurrentState();
+          cardStateMachine.current['stateData'] = {
+            ...currentData,
+            hasProbed: true
+          };
+          console.log('[Auto] Detected follow-up question → Still PROBING (waiting for answer)');
+        } else if (state.state === CardState.FINAL_CHECK) {
+          console.log('[Auto] Pi asking final check question');
+        }
+      }
+    } else if (role === 'student') {
+      // Detect student response and advance state
+      if (state.state === CardState.OBSERVING) {
+        // Student answered Q1
+        cardStateMachine.current.receivedObservation(text);
+        console.log('[Auto] Student answered Q1 → PROBING');
+        
+        // Send state update
+        setTimeout(() => sendStateUpdate(), 500);
+        
+      } else if (state.state === CardState.PROBING && state.hasProbed) {
+        // Student answered Q2
+        cardStateMachine.current.receivedExplanation(text);
+        console.log('[Auto] Student answered Q2 → JUDGING');
+        
+        // Send state update
+        setTimeout(() => sendStateUpdate(), 500);
+        
+      } else if (state.state === CardState.FINAL_CHECK) {
+        // Student answered final check
+        cardStateMachine.current.receivedFinalAnswer(text);
+        console.log('[Auto] Student answered final check → JUDGING (for decision)');
+        
+        // Send state update
+        setTimeout(() => sendStateUpdate(), 500);
+      }
+    }
+  }, [sendStateUpdate]);
 
   // Track conversation turns
   const handleContent = useCallback((data: any) => {
@@ -525,9 +658,33 @@ You are GENUINELY CONFUSED until they explain why you're wrong.
         .join(' ');
       if (text) {
         addToTranscript('pi', text);
+        
+        // PHASE 1: Auto-detect Pi's turn
+        handleConversationTurn('pi', text);
       }
     }
-  }, [addToTranscript]);
+    
+    // Also track student responses (from input audio transcription)
+    if (data?.serverContent?.turnComplete && data?.clientContent?.turns) {
+      const studentTurns = data.clientContent.turns
+        .filter((turn: any) => turn.role === 'user')
+        .map((turn: any) => turn.parts?.map((p: any) => p.text).join(' '))
+        .filter(Boolean);
+      
+      if (studentTurns.length > 0) {
+        const studentText = studentTurns[studentTurns.length - 1];
+        
+        // PHASE 1: Auto-detect student's turn
+        handleConversationTurn('student', studentText);
+        
+        // Store for reference
+        lastStudentResponses.current.push(studentText);
+        if (lastStudentResponses.current.length > 5) {
+          lastStudentResponses.current.shift();
+        }
+      }
+    }
+  }, [addToTranscript, handleConversationTurn]);
   
   // Track student transcriptions - count turns here (only when student speaks)
   const handleInputTranscription = useCallback((text: string, isFinal: boolean) => {
