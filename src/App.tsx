@@ -14,7 +14,7 @@ import { NamePrompt } from './components/NamePrompt';
 import { LevelUpAnimation } from './components/LevelUpAnimation';
 import { ManualControls } from './components/ManualControls';
 import { useSessionStore } from './lib/state/session-store';
-import { getSimplifiedSystemPrompt } from './lib/prompts/simplified-prompt';
+import { getMissionFirstPrompt } from './lib/prompts/mission-first-prompt';
 import { TranscriptManager } from './lib/transcript-manager';
 import './App.css';
 
@@ -51,12 +51,15 @@ function AppContent() {
   const sessionStartTime = useRef<number>(Date.now());
   const sessionNumber = useRef<number>(1);
   
+  // Tool call lock for debouncing (prevent duplicate calls)
+  const toolCallLock = useRef<{ show_next_card?: number }>({});
+  
   // Build proper voice-to-voice config with system prompt (ONCE at session start)
   useEffect(() => {
     if (!studentName || !sessionId) return;
     
     // Build INITIAL system prompt - card info will be sent as context updates
-    const systemPrompt = getSimplifiedSystemPrompt(
+    const systemPrompt = getMissionFirstPrompt(
       studentName,
       currentCard || undefined,
       points,
@@ -299,6 +302,36 @@ function AppContent() {
       args: fc.args
     })));
     
+    // STEP 1: DEDUPLICATE - Remove duplicate calls within same batch
+    const uniqueCalls = functionCalls.filter((call: any, index: number, self: any[]) => {
+      return self.findIndex((c: any) => c.name === call.name) === index;
+    });
+    
+    if (uniqueCalls.length < functionCalls.length) {
+      console.warn(`[App] ⚠️ Removed ${functionCalls.length - uniqueCalls.length} duplicate tool calls`);
+    }
+    
+    // STEP 2: DEBOUNCE - Filter out calls that are too recent
+    const now = Date.now();
+    const filteredCalls = uniqueCalls.filter((call: any) => {
+      if (call.name === 'show_next_card') {
+        const lastCall = toolCallLock.current.show_next_card || 0;
+        if (now - lastCall < 2000) {
+          console.warn('[App] ⚠️ BLOCKED: show_next_card called too recently (debouncing)');
+          return false;
+        }
+        toolCallLock.current.show_next_card = now;
+      }
+      return true;
+    });
+    
+    if (filteredCalls.length === 0) {
+      console.log('[App] ℹ️ All tool calls filtered out (duplicates/debounce)');
+      return;
+    }
+    
+    console.log(`[App] 🔨 Processing ${filteredCalls.length} tool calls`);
+    
     const toolResponses: any[] = [];
     
     // Add timeout safety - if processing takes too long, something went wrong
@@ -306,7 +339,7 @@ function AppContent() {
       console.error('[App] ⚠️ Tool processing timeout - this should not happen');
     }, 5000);
     
-    functionCalls.forEach((call: any) => {
+    filteredCalls.forEach((call: any) => {
       const { id, name, args } = call;
       
       console.log(`[App] 🔨 Processing tool: ${name}`, args);
