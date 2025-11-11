@@ -19,14 +19,15 @@ function AppContent() {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [levelUpData, setLevelUpData] = useState<{ level: string; points: number } | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [isMicActive, setIsMicActive] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   
   const { 
     currentCard, 
     sessionId,
     studentName,
     points,
-    currentLevel,
     setStudentName,
     startSession,
     nextCard,
@@ -48,7 +49,7 @@ function AppContent() {
   // Initialize OpenAI client ONCE when session starts
   useEffect(() => {
     if (!studentName || !sessionId || !openaiKey) {
-      return; // Only check minimum required
+      return;
     }
     
     // ONLY create client if we don't have one
@@ -56,7 +57,7 @@ function AppContent() {
       return; // Already have client
     }
     
-    console.log('[App] 🔧 Creating OpenAI client ONE TIME');
+    console.log('[App] 🔧 Creating WebSocket client ONE TIME');
     
     // Get everything from store to avoid prop dependencies
     const card = useSessionStore.getState().currentCard;
@@ -68,15 +69,16 @@ function AppContent() {
     
     const client = new OpenAIRealtimeClient({
       apiKey: openaiKey,
-      voice: 'alloy',
+      voice: 'sage',
       instructions,
       temperature: 0.8
     });
     
     // Handle events
     client.on('open', () => {
-      console.log('[App] ✅ OpenAI connected');
+      console.log('[App] ✅ WebSocket connected');
       setIsConnected(true);
+      setIsConnecting(false);
     });
     
     client.on('microphoneStarted', () => {
@@ -88,10 +90,25 @@ function AppContent() {
     client.on('transcript', (data: { role: string; text: string }) => {
       console.log(`[App] 💬 ${data.role}: ${data.text}`);
       
-      // ONLY process student messages for evaluation
+      // Track speaking state
+      if (data.role === 'assistant') {
+        setIsSpeaking(true);
+        // Clear speaking state after a short delay (transcript is done)
+        setTimeout(() => setIsSpeaking(false), 500);
+      }
+      
+      // Track conversation and evaluate in background
       if (data.role === 'user') {
-        console.log('[App] 🎤 User message detected - will evaluate');
-        handleStudentMessage(data.text);
+        console.log('[App] 🎤 User message - adding to history');
+        conversationHistory.current.push({
+          role: 'student',
+          text: data.text,
+          timestamp: Date.now()
+        });
+        exchangeCount.current++;
+        
+        // Background evaluation (async, doesn't block conversation)
+        evaluateInBackground();
       } else if (data.role === 'assistant') {
         console.log('[App] 🤖 Pi response - adding to history');
         conversationHistory.current.push({
@@ -109,7 +126,9 @@ function AppContent() {
     client.on('close', () => {
       console.log('[App] Connection closed');
       setIsConnected(false);
+      setIsConnecting(false);
       setIsMicActive(false);
+      setIsSpeaking(false);
     });
     
     clientRef.current = client;
@@ -124,92 +143,101 @@ function AppContent() {
     };
   }, [studentName, sessionId, openaiKey]); // Minimal dependencies
   
-  // Connect button handler - ENSURE single connection only
+  // Connect button handler
   const handleConnect = useCallback(async () => {
     if (!clientRef.current) {
       console.error('[App] No client available');
       return;
     }
     
-    // CRITICAL: Check connection status - don't allow duplicate connections
-    const status = clientRef.current.getStatus();
-    if (status === 'connected') {
-      console.log('[App] ✅ Already connected - ignoring duplicate connect request');
-      return;
-    }
-    if (status === 'connecting') {
-      console.log('[App] ⏳ Connection in progress - ignoring duplicate connect request');
+    if (isConnected || isConnecting) {
+      console.log('[App] Already connected or connecting');
       return;
     }
     
-    console.log('[App] 🚀 Starting NEW connection...');
+    console.log('[App] 🚀 Starting WebRTC connection...');
+    setIsConnecting(true);
+    
     try {
       await clientRef.current.connect();
       console.log('[App] ✅ Connection initiated');
     } catch (error) {
       console.error('[App] ❌ Failed to connect:', error);
+      setIsConnecting(false);
     }
-  }, []);
+  }, [isConnected, isConnecting]);
   
-  // Send card context when card changes (DON'T update system prompt)
+  // Stop speaking handler
+  const handleStopSpeaking = useCallback(async () => {
+    if (!clientRef.current || !isConnected) return;
+    
+    console.log('[App] 🛑 User requested stop speaking');
+    // Cancel response (which also stops audio)
+    await clientRef.current.cancelResponse();
+    setIsSpeaking(false);
+  }, [isConnected]);
+  
+  // Send card context when card changes
   useEffect(() => {
-    if (!clientRef.current || !currentCard || !studentName || currentCard.cardNumber === 0) return;
-    if (clientRef.current.getStatus() !== 'connected') return;
+    if (!clientRef.current || !currentCard || !studentName) return;
+    if (!isConnected) return;
     
-    console.log(`[App] 📸 Card changed to: ${currentCard.title} - sending context`);
+    console.log(`[App] 📸 Card changed to: ${currentCard.title}`);
     
-    // Stop current audio to prevent overlaps
-    // But DON'T update system prompt - just send context message
-    const contextMessage = `[NEW CARD] ${currentCard.title}: ${currentCard.question}. Focus on the image showing: ${currentCard.imageDescription}`;
-    clientRef.current.sendSystemMessage(contextMessage);
+    // SPECIAL: Card 0 auto-advances after brief interaction
+    if (currentCard.cardNumber === 0) {
+      console.log('[App] 🎬 CARD 0 - Welcome card - will auto-advance');
+      // Listen for any response, then move to card 1
+      const autoAdvance = setTimeout(() => {
+        console.log('[App] ➡️ Auto-advancing from welcome card');
+        nextCard();
+      }, 10000); // 10 seconds or after they respond
+      
+      return () => clearTimeout(autoAdvance);
+    }
+    
+    console.log('[App] Cancelling and sending context...');
+    
+    // Send compact context (WebSocket client cancels response and stops audio)
+    const sendContext = async () => {
+      if (clientRef.current) {
+        const contextMessage = `[NEW CARD] ${currentCard.title}: ${currentCard.piStartingQuestion}. Image: ${currentCard.imageDescription}`;
+        await clientRef.current.sendSystemMessage(contextMessage);
+        console.log('[App] ✅ Context sent after cancel');
+      }
+    };
+    
+    sendContext();
     
     // Reset tracking
     conversationHistory.current = [];
     exchangeCount.current = 0;
-  }, [currentCard, studentName, points, currentLevel]);
+  }, [currentCard, studentName, isConnected, nextCard]);
   
-  // Handle student message - MUST evaluate with Claude on EVERY response
-  const handleStudentMessage = useCallback(async (text: string) => {
-    // Get fresh card reference from store (avoid stale closure)
+  // Background evaluation - doesn't block conversation
+  const evaluateInBackground = useCallback(async () => {
     const card = useSessionStore.getState().currentCard;
     
-    if (!card || evaluating.current) return;
-    
-    exchangeCount.current++;
-    
-    conversationHistory.current.push({
-      role: 'student',
-      text,
-      timestamp: Date.now()
-    });
-    
-    console.log(`\n[App] 👤 Student (exchange ${exchangeCount.current}): ${text}`);
-    console.log(`[App] 📍 Current card: #${card.cardNumber} - ${card.title}`);
-    
-    // SPECIAL: Card 0 ONLY - auto-advance (no evaluation needed)
-    if (card.cardNumber === 0) {
-      console.log('[App] 🎬 CARD 0 DETECTED - Welcome card - auto-advancing to first learning card');
-      setTimeout(() => {
-        nextCard();
-        console.log('[App] ➡️ Moved from Card 0 to Card 1');
-      }, 2000);
+    // Skip evaluation if:
+    // - No card
+    // - Already evaluating
+    // - Not enough exchanges (min 2)
+    // - Card 0 (welcome card)
+    if (!card || evaluating.current || exchangeCount.current < 2 || card.cardNumber === 0) {
       return;
     }
-    
-    // ALL OTHER CARDS - Must evaluate with Claude
-    console.log(`[App] 🎯 CARD ${card.cardNumber} - Evaluating with Claude...`);
     
     // Check Claude key
     if (!claudeKey || claudeKey === 'your_claude_api_key_here' || claudeKey === '') {
-      console.error('[App] ❌ Claude API key not configured! Cannot evaluate.');
-      console.error('[App] ❌ Set VITE_CLAUDE_API_KEY in .env file');
+      console.error('[App] ❌ Claude API key not configured!');
       return;
     }
     
-    // CRITICAL: Evaluate with Claude on EVERY student response (except Card 0)
     evaluating.current = true;
-    
-    console.log('[Judge] 🔮 Calling Claude judge NOW...');
+    console.log(`\n[App] 🎯 Background evaluation starting...`);
+    console.log(`[App] 📍 Current card: #${card.cardNumber} - ${card.title}`);
+    console.log(`[App] 📊 Exchanges: ${exchangeCount.current}`);
+    console.log('[Judge] 🔮 Calling Claude judge...');
     
     try {
       const evaluation = await evaluateMastery(
@@ -226,11 +254,11 @@ function AppContent() {
       console.log(`[Judge] 📊 Reasoning: ${evaluation.reasoning}`);
       console.log(`[Judge] 📊 ============================\n`);
       
-      // ONLY change cards when Claude says so
+      // Handle card progression based on judgment
       switch (evaluation.suggestedAction) {
         case 'award_and_next':
           if (evaluation.points) {
-            console.log(`[App] ✨ Claude approved: Award ${evaluation.points} points and move to next card`);
+            console.log(`[App] ✨ Awarding ${evaluation.points} points`);
             const result = awardPoints(evaluation.points, getCelebration(evaluation.masteryLevel));
             
             if (result.leveledUp && result.newLevel) {
@@ -240,29 +268,38 @@ function AppContent() {
               });
               setShowLevelUp(true);
             }
+            
+            // Tell Pi to celebrate before moving card
+            const celebrationPrompt = `[SYSTEM NOTIFICATION] The student just demonstrated ${evaluation.masteryLevel}-level mastery and earned ${evaluation.points} points! Briefly celebrate their understanding in your Pi voice (1-2 sentences max). Be specific about what they explained well. The system will then move to the next card.`;
+            clientRef.current?.sendSystemMessage(celebrationPrompt);
           }
-          // ONLY move to next card when Claude says so
+          
+          // Wait for Pi to celebrate, then move to next card
           setTimeout(() => {
-            console.log(`[App] ➡️ Moving to next card (Claude approved: award_and_next)`);
+            console.log(`[App] ➡️ Moving to next card after celebration`);
             nextCard();
-          }, 1500);
+          }, 3000); // Give time for celebration
           break;
           
         case 'next_without_points':
-          console.log('[App] ➡️ Claude approved: Student stuck, move on without points');
+          console.log('[App] ➡️ Moving on without points');
+          // Tell Pi to acknowledge effort before moving on
+          const encouragementPrompt = `[SYSTEM NOTIFICATION] This concept is challenging. Acknowledge the student's effort (1 sentence), then say you'll come back to this idea later. The system will move to the next card.`;
+          clientRef.current?.sendSystemMessage(encouragementPrompt);
+          
           setTimeout(() => {
-            console.log('[App] ➡️ Moving to next card (Claude approved: next_without_points)');
             nextCard();
-          }, 1000);
+          }, 3000);
           break;
           
         case 'continue':
-          console.log('[App] 💬 Claude says: CONTINUE - Keep talking (NOT moving to next card)');
-          // Do NOT move to next card - keep talking
+          console.log('[App] 💬 Continuing conversation (not moving card)');
+          // Just let the conversation continue
           break;
       }
     } catch (error) {
       console.error('[Judge] ❌ Claude evaluation failed:', error);
+      // Silently continue on error - don't disrupt conversation
     } finally {
       evaluating.current = false;
     }
@@ -313,14 +350,26 @@ function AppContent() {
         {/* Voice Status */}
         <div className="control-tray">
           {!isConnected ? (
-            <button onClick={handleConnect} className="connect-button">
-              🎤 Start Conversation
+            <button 
+              onClick={handleConnect} 
+              className="connect-button"
+              disabled={isConnecting}
+            >
+              {isConnecting ? '⏳ Connecting...' : '🎤 Start Conversation'}
             </button>
           ) : (
-            <div className="status">
+            <div className="status-controls">
               <div className="status-indicator">
-                {isMicActive ? '🟢 Listening...' : '🔴 Connecting...'}
+                {isSpeaking ? '🔊 Pi is speaking...' : isMicActive ? '🎤 Listening...' : '⏸️ Paused'}
               </div>
+              {isSpeaking && (
+                <button 
+                  onClick={handleStopSpeaking} 
+                  className="stop-button"
+                >
+                  🛑 Stop Speaking
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -342,6 +391,7 @@ function AppContent() {
           <p><strong>Exchanges:</strong> {exchangeCount.current}</p>
           <p><strong>OpenAI:</strong> {isConnected ? '✓ Connected' : '✗ Disconnected'}</p>
           <p><strong>Mic:</strong> {isMicActive ? '✓ Active' : '✗ Inactive'}</p>
+          <p><strong>Speaking:</strong> {isSpeaking ? '✓ Yes' : '✗ No'}</p>
           <p style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
             Check console for Claude's decisions
           </p>

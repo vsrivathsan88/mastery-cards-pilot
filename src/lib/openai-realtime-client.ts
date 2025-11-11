@@ -22,6 +22,9 @@ export class OpenAIRealtimeClient extends EventEmitter {
   private audioContext: AudioContext | null = null;
   private mediaStream: MediaStream | null = null;
   private audioStreamer: AudioStreamer | null = null;
+  private isResponseActive: boolean = false;
+  private cancelPromise: Promise<void> | null = null;
+  private cancelResolve: (() => void) | null = null;
 
   constructor(config: RealtimeClientConfig) {
     super();
@@ -173,9 +176,26 @@ export class OpenAIRealtimeClient extends EventEmitter {
           // Don't emit - App doesn't need to handle audio
           break;
 
+        case 'response.created':
+          this.isResponseActive = true;
+          console.log('[OpenAI] Response started');
+          break;
+
         case 'response.done':
+          this.isResponseActive = false;
           console.log('[OpenAI] Response complete');
           this.emit('turncomplete');
+          break;
+
+        case 'response.cancelled':
+          this.isResponseActive = false;
+          console.log('[OpenAI] Response cancelled');
+          // Resolve the cancel promise if waiting
+          if (this.cancelResolve) {
+            this.cancelResolve();
+            this.cancelResolve = null;
+            this.cancelPromise = null;
+          }
           break;
 
         case 'error':
@@ -269,7 +289,14 @@ export class OpenAIRealtimeClient extends EventEmitter {
     });
   }
 
-  public sendSystemMessage(text: string): void {
+  public async sendSystemMessage(text: string): Promise<void> {
+    // CRITICAL: Cancel in-flight response and WAIT for confirmation
+    if (this.isResponseActive) {
+      console.log('[OpenAI] Cancelling in-flight response before context update');
+      await this.cancelResponse();
+      console.log('[OpenAI] Cancel confirmed, now sending context');
+    }
+    
     // CRITICAL: Stop all audio before sending new context
     this.stopAllAudio();
     
@@ -282,6 +309,44 @@ export class OpenAIRealtimeClient extends EventEmitter {
         content: [{ type: 'input_text', text }]
       }
     });
+  }
+
+  public async cancelResponse(): Promise<void> {
+    if (!this.ws || this.status !== 'connected') {
+      return;
+    }
+
+    if (!this.isResponseActive) {
+      return;
+    }
+
+    // If already cancelling, wait for that promise
+    if (this.cancelPromise) {
+      console.log('[OpenAI] Cancel already in progress, waiting...');
+      return this.cancelPromise;
+    }
+
+    // Create a promise that resolves when we get response.cancelled event
+    this.cancelPromise = new Promise<void>((resolve) => {
+      this.cancelResolve = resolve;
+      
+      // Timeout after 2 seconds in case we don't get the event
+      setTimeout(() => {
+        if (this.cancelResolve) {
+          console.warn('[OpenAI] Cancel timeout - forcing resolution');
+          this.cancelResolve();
+          this.cancelResolve = null;
+          this.cancelPromise = null;
+        }
+      }, 2000);
+    });
+
+    console.log('[OpenAI] Sending response.cancel');
+    this.send({
+      type: 'response.cancel',
+    });
+
+    return this.cancelPromise;
   }
 
   public updateInstructions(instructions: string): void {
@@ -334,6 +399,9 @@ export class OpenAIRealtimeClient extends EventEmitter {
     }
     this.ws = null;
     this.status = 'disconnected';
+    this.isResponseActive = false;
+    this.cancelPromise = null;
+    this.cancelResolve = null;
   }
 
   getStatus(): string {

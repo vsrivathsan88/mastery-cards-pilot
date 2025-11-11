@@ -193,7 +193,29 @@
   box-shadow: 2px 2px 0 #1A1D2E;
 }
 
+.connect-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.connect-button:disabled:hover {
+  transform: none;
+  box-shadow: 6px 6px 0 #1A1D2E;
+}
+
 .status {
+  padding: 20px 40px;
+  background: white;
+  border: 4px solid #1A1D2E;
+  border-radius: 12px;
+  box-shadow: 6px 6px 0 #1A1D2E;
+}
+
+.status-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   padding: 20px 40px;
   background: white;
   border: 4px solid #1A1D2E;
@@ -205,6 +227,30 @@
   font-size: 18px;
   font-weight: 700;
   color: #1A1D2E;
+}
+
+.stop-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #EF4444;
+  color: white;
+  border: 3px solid #1A1D2E;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #1A1D2E;
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-family: inherit;
+}
+
+.stop-button:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #1A1D2E;
+}
+
+.stop-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 #1A1D2E;
 }
 
 .app-loading {

@@ -21,6 +21,9 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
   private config: RealtimeWebRTCConfig;
   private status: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
   private isResponseActive: boolean = false;
+  private isSpeaking: boolean = false;
+  private cancelPromise: Promise<void> | null = null;
+  private cancelResolve: (() => void) | null = null;
 
   constructor(config: RealtimeWebRTCConfig) {
     super();
@@ -217,6 +220,8 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
 
       case 'response.audio_transcript.delta':
         // Model is speaking
+        this.isSpeaking = true;
+        this.emit('speaking', true);
         this.emit('transcript', event.delta);
         break;
 
@@ -237,11 +242,15 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
         const assistantText = event.transcript;
         console.log('[WebRTC] Model said:', assistantText);
         this.emit('assistant-message', assistantText);
+        this.isSpeaking = false;
+        this.emit('speaking', false);
         break;
 
       case 'response.done':
         this.isResponseActive = false;
+        this.isSpeaking = false;
         console.log('[WebRTC] Response complete');
+        this.emit('speaking', false);
         this.emit('response-complete');
         break;
 
@@ -252,8 +261,16 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
 
       case 'response.cancelled':
         this.isResponseActive = false;
+        this.isSpeaking = false;
         console.log('[WebRTC] Response cancelled');
+        this.emit('speaking', false);
         this.emit('response-cancelled');
+        // Resolve the cancel promise if waiting
+        if (this.cancelResolve) {
+          this.cancelResolve();
+          this.cancelResolve = null;
+          this.cancelPromise = null;
+        }
         break;
 
       case 'error':
@@ -282,13 +299,14 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
   }
 
   // Send system message (context without triggering response)
-  sendSystemMessage(text: string): void {
+  async sendSystemMessage(text: string): Promise<void> {
     if (!this.isConnected()) return;
 
-    // Cancel any in-flight response first
+    // Cancel any in-flight response first and WAIT for confirmation
     if (this.isResponseActive) {
       console.log('[WebRTC] Cancelling in-flight response before context update');
-      this.cancelResponse();
+      await this.cancelResponse();
+      console.log('[WebRTC] Cancel confirmed, now sending context');
     }
 
     this.sendEvent({
@@ -302,13 +320,42 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
   }
 
   // Cancel the current response (for "Stop Speaking" or context changes)
-  cancelResponse(): void {
-    if (!this.isConnected() || !this.isResponseActive) return;
+  async cancelResponse(): Promise<void> {
+    if (!this.isConnected()) {
+      return;
+    }
+
+    if (!this.isResponseActive) {
+      return;
+    }
+
+    // If already cancelling, wait for that promise
+    if (this.cancelPromise) {
+      console.log('[WebRTC] Cancel already in progress, waiting...');
+      return this.cancelPromise;
+    }
+
+    // Create a promise that resolves when we get response.cancelled event
+    this.cancelPromise = new Promise<void>((resolve) => {
+      this.cancelResolve = resolve;
+      
+      // Timeout after 2 seconds in case we don't get the event
+      setTimeout(() => {
+        if (this.cancelResolve) {
+          console.warn('[WebRTC] Cancel timeout - forcing resolution');
+          this.cancelResolve();
+          this.cancelResolve = null;
+          this.cancelPromise = null;
+        }
+      }, 2000);
+    });
 
     console.log('[WebRTC] Sending response.cancel');
     this.sendEvent({
       type: 'response.cancel',
     });
+
+    return this.cancelPromise;
   }
 
   private sendEvent(event: any): void {
@@ -348,6 +395,9 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
 
     this.status = 'disconnected';
     this.isResponseActive = false;
+    this.isSpeaking = false;
+    this.cancelPromise = null;
+    this.cancelResolve = null;
   }
 
   getStatus(): 'disconnected' | 'connecting' | 'connected' {
@@ -360,5 +410,9 @@ export class OpenAIRealtimeWebRTC extends EventEmitter {
 
   isResponseInProgress(): boolean {
     return this.isResponseActive;
+  }
+
+  isSpeakingNow(): boolean {
+    return this.isSpeaking;
   }
 }
