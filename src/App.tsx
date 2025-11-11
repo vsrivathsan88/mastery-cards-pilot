@@ -110,15 +110,15 @@ function AppContent() {
     
     clientRef.current = client;
     
-    // Cleanup
+    // Cleanup ONLY on unmount (not on every render)
     return () => {
+      console.log('[App] Component unmounting - cleaning up');
       if (clientRef.current) {
-        console.log('[App] 🧹 Cleaning up client');
         clientRef.current.disconnect();
         clientRef.current = null;
       }
     };
-  }, [studentName, sessionId, openaiKey]);
+  }, [studentName, sessionId, openaiKey]); // Minimal dependencies
   
   // Connect button handler
   const handleConnect = useCallback(async () => {
