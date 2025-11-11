@@ -16,6 +16,7 @@ export interface MasteryCard {
   title: string;
   context: string;
   imageUrl: string;
+  imageDescription: string; // What Pi "sees" in the image
   learningGoal: string;
   piStartingQuestion: string;
   
@@ -42,6 +43,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Welcome!',
     context: 'Let\'s wonder together',
     imageUrl: '/images/Equal-parts-cover.png',
+    imageDescription: 'A colorful welcome cover image showing the title "Equal Parts" with friendly fraction illustrations.',
     learningGoal: 'Introduce the session and set expectations',
     piStartingQuestion: 'This is just a casual intro - no assessment needed',
     milestones: {
@@ -60,6 +62,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Equal Cookies',
     context: 'Snack time at school',
     imageUrl: '/images/Cookie-1.png',
+    imageDescription: 'Four round chocolate chip cookies arranged in a row. All cookies are the same size and appear identical.',
     learningGoal: 'Recognize equal groups and one-to-one correspondence',
     piStartingQuestion: 'What do you notice about these cookies?',
     milestones: {
@@ -78,6 +81,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Brownie Halves',
     context: 'Dessert sharing',
     imageUrl: '/images/Brownie-4.png',
+    imageDescription: 'A rectangular brownie divided down the middle into two equal pieces with a vertical line.',
     learningGoal: 'Introduction to the term "one half" as 1 equal part of 2',
     piStartingQuestion: 'This brownie was split. What can you tell Pi about the two pieces?',
     milestones: {
@@ -101,6 +105,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Fraction Strip - Halves',
     context: 'Measuring ribbon for gift wrapping',
     imageUrl: '/images/Ribbon-7.png',
+    imageDescription: 'A horizontal ribbon strip divided into 2 equal sections. One section is labeled "1/2".',
     learningGoal: 'Understand 1/2 as the quantity formed by 1 part when a whole is partitioned into 2 equal parts',
     piStartingQuestion: 'Pi sees a ribbon cut in half. Can you explain what "1/2" means here?',
     milestones: {
@@ -119,6 +124,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Fraction Circle - Thirds',
     context: 'Sharing a pancake',
     imageUrl: '/images/Pancake-8.png',
+    imageDescription: 'A round pancake divided into 3 equal slices (like a pie chart with equal 120-degree angles). One slice is labeled "1/3".',
     learningGoal: 'Understand 1/3 as the quantity formed by 1 part when a whole is partitioned into 3 equal parts',
     piStartingQuestion: 'Three friends are sharing this pancake. What does the "1/3" label tell us?',
     milestones: {
@@ -137,6 +143,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Five Sixths of a Pizza',
     context: 'Pizza party',
     imageUrl: '/images/Pizza-10.png',
+    imageDescription: 'A round pizza divided into 6 equal slices. 5 slices remain (shown), and 1 slice is missing/eaten. The remaining portion is labeled "5/6".',
     learningGoal: 'Understand 5/6 as the quantity formed by 5 parts when a whole is partitioned into 6 equal parts',
     piStartingQuestion: 'Someone ate one slice of this pizza. What fraction is left?',
     milestones: {
@@ -160,6 +167,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Three Fourths of a Garden',
     context: 'Planting flowers',
     imageUrl: '/images/Garden-11.png',
+    imageDescription: 'A rectangular garden divided into 4 equal sections (2x2 grid). 3 sections have flowers planted (shown with plants/flowers), and 1 section is empty dirt.',
     learningGoal: 'Understand 3/4 as the quantity formed by 3 parts when a whole is partitioned into 4 equal parts',
     piStartingQuestion: 'A gardener planted 3 out of 4 sections. What fraction of the garden has flowers?',
     milestones: {
@@ -178,6 +186,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Misconception: Bigger Denominator',
     context: 'Lunch choices - Pi is confused!',
     imageUrl: '/images/Misconception-13.png',
+    imageDescription: 'Two identical circles side by side. Left circle: divided into 6 equal slices with one slice labeled "1/6". Right circle: divided into 3 equal slices with one slice labeled "1/3". The 1/3 slice is visibly larger than the 1/6 slice.',
     learningGoal: 'Correct the misconception that larger denominators mean larger fractions',
     piStartingQuestion: 'Pi is confused! Pi thinks 1/6 should be bigger than 1/3 because 6 is a bigger number than 3. Can you help Pi understand what\'s wrong with this thinking?',
     milestones: {
@@ -212,6 +221,7 @@ export const MVP_CARDS: MasteryCard[] = [
     title: 'Misconception: Unequal Parts',
     context: 'Sharing a brownie - Pi made a mistake!',
     imageUrl: '/images/Misconception-14.png',
+    imageDescription: 'A rectangular brownie divided into 4 pieces with 3 vertical lines, but the pieces are NOT equal sizes. One piece is large, two are medium, and one is small. It\'s labeled "1/4?" with a question mark.',
     learningGoal: 'Understand that fractions REQUIRE equal parts',
     piStartingQuestion: 'Pi cut this brownie into 4 pieces and thinks each piece is 1/4. But something seems wrong. What do you notice?',
     milestones: {

@@ -31,6 +31,8 @@ export function useLiveApi({
   const audioRecorderRef = useRef<AudioRecorder | null>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastResponseTimeRef = useRef<number>(Date.now());
+  const reconnectAttemptsRef = useRef<number>(0);
+  const maxReconnectAttempts = 3;
 
   const [volume, setVolume] = useState(0);
   const [connected, setConnected] = useState(false);
@@ -82,6 +84,7 @@ export function useLiveApi({
       console.log('[useLiveApi] ✅ Connection opened');
       setConnected(true);
       lastResponseTimeRef.current = Date.now();
+      reconnectAttemptsRef.current = 0; // Reset reconnect counter on successful connection
     };
 
     const onClose = (event: CloseEvent) => {
@@ -106,6 +109,25 @@ export function useLiveApi({
       
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
+      }
+      
+      // Auto-reconnect logic (unless it was a clean close)
+      if (!event.wasClean && reconnectAttemptsRef.current < maxReconnectAttempts) {
+        reconnectAttemptsRef.current += 1;
+        const delay = reconnectAttemptsRef.current * 2000; // Exponential backoff: 2s, 4s, 6s
+        
+        console.log(`[useLiveApi] 🔄 Attempting reconnect ${reconnectAttemptsRef.current}/${maxReconnectAttempts} in ${delay}ms...`);
+        
+        setTimeout(() => {
+          if (config) {
+            console.log('[useLiveApi] 🔄 Reconnecting...');
+            client.connect(config).catch(err => {
+              console.error('[useLiveApi] ❌ Reconnect failed:', err);
+            });
+          }
+        }, delay);
+      } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+        console.error('[useLiveApi] ⛔ Max reconnect attempts reached. Please refresh the page.');
       }
     };
     
@@ -222,14 +244,8 @@ export function useLiveApi({
         console.log('[useLiveApi] ✅ Microphone started');
       }
       
-      // Send initial message to trigger Pi to speak first
-      // Small delay to ensure everything is ready
-      setTimeout(() => {
-        console.log('[useLiveApi] 🎤 Triggering Pi to speak first...');
-        client.send([{
-          text: 'start',  // Minimal trigger - Pi's system prompt says "YOU SPEAK FIRST!"
-        }]);
-      }, 800);
+      // Don't send initial trigger here - App.tsx will handle it with card context
+      console.log('[useLiveApi] ✅ Connected and ready - waiting for App to send first card context');
     } catch (error) {
       console.error('[useLiveApi] ❌ Connection failed:', error);
       throw error;
