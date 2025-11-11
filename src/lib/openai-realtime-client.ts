@@ -35,8 +35,21 @@ export class OpenAIRealtimeClient extends EventEmitter {
   }
 
   async connect(): Promise<void> {
-    if (this.status === 'connected' || this.status === 'connecting') {
-      console.log('[OpenAI] Already connected or connecting, status:', this.status);
+    // CRITICAL: Prevent duplicate connections
+    if (this.status === 'connected') {
+      console.log('[OpenAI] Already connected - skipping');
+      return;
+    }
+    
+    if (this.status === 'connecting') {
+      console.log('[OpenAI] Connection in progress - skipping');
+      return;
+    }
+
+    // Check if WebSocket already exists and is open
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+      console.log('[OpenAI] WebSocket already exists and is active - skipping');
+      this.status = 'connected';
       return;
     }
 
