@@ -20,6 +20,7 @@ export class OpenAIRealtimeClient extends EventEmitter {
   private status: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
   private audioContext: AudioContext | null = null;
   private mediaStream: MediaStream | null = null;
+  private audioSources: AudioBufferSourceNode[] = [];
 
   constructor(config: RealtimeClientConfig) {
     super();
@@ -242,12 +243,28 @@ export class OpenAIRealtimeClient extends EventEmitter {
   }
 
   public updateInstructions(instructions: string): void {
+    // CRITICAL: Stop all playing audio before updating instructions
+    this.stopAllAudio();
+    
     this.send({
       type: 'session.update',
       session: {
         instructions
       }
     });
+  }
+  
+  private stopAllAudio(): void {
+    // Stop all currently playing audio sources
+    this.audioSources.forEach(source => {
+      try {
+        source.stop();
+        source.disconnect();
+      } catch (e) {
+        // Already stopped
+      }
+    });
+    this.audioSources = [];
   }
 
   private send(data: any): void {
@@ -340,9 +357,19 @@ export class OpenAIRealtimeClient extends EventEmitter {
       const source = this.audioContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(this.audioContext.destination);
-      source.start(0);
       
-      console.log('[OpenAI Audio] ✓ Playing chunk:', float32Array.length, 'samples');
+      // Track this source so we can stop it later
+      this.audioSources.push(source);
+      
+      // Remove from tracking when it ends
+      source.onended = () => {
+        const index = this.audioSources.indexOf(source);
+        if (index > -1) {
+          this.audioSources.splice(index, 1);
+        }
+      };
+      
+      source.start(0);
     } catch (error) {
       console.error('[OpenAI Audio] ❌ Playback error:', error);
     }

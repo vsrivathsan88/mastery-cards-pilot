@@ -151,15 +151,15 @@ function AppContent() {
     }
   }, []);
   
-  // Update instructions when card changes
+  // Update instructions when card changes (STOPS audio to prevent overlaps)
   useEffect(() => {
     if (!clientRef.current || !currentCard || !studentName || currentCard.cardNumber === 0) return;
     if (clientRef.current.getStatus() !== 'connected') return;
     
-    console.log(`[App] 📸 Card changed to: ${currentCard.title}`);
+    console.log(`[App] 📸 Card changed to: ${currentCard.title} - stopping audio and updating`);
     
     const newInstructions = getSimplePiPrompt(studentName, currentCard, points, currentLevel);
-    clientRef.current.updateInstructions(newInstructions);
+    clientRef.current.updateInstructions(newInstructions); // This now stops audio first
     
     // Reset tracking
     conversationHistory.current = [];
