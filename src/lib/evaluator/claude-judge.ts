@@ -23,13 +23,13 @@ export interface MasteryEvaluation {
 }
 
 /**
- * Evaluate mastery using Claude Haiku 4.5
+ * Evaluate mastery using Claude Haiku 4.5 via backend proxy
  */
 export async function evaluateMastery(
   card: MasteryCard,
   conversationHistory: ConversationTurn[],
   exchangeCount: number,
-  apiKey: string
+  _apiKey: string // Kept for backwards compatibility but not used
 ): Promise<MasteryEvaluation> {
   
   // Early exit: need at least 2 exchanges
@@ -57,12 +57,11 @@ export async function evaluateMastery(
   const prompt = buildJudgePrompt(card, conversationHistory, exchangeCount);
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Call backend proxy instead of Claude directly (fixes CORS + security)
+    const response = await fetch('http://localhost:3001/api/claude/evaluate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5',

@@ -73,6 +73,45 @@ app.post('/api/realtime/token', async (req, res) => {
   }
 });
 
+// Claude API proxy for mastery evaluation
+app.post('/api/claude/evaluate', async (req, res) => {
+  const claudeKey = process.env.CLAUDE_API_KEY;
+  
+  if (!claudeKey) {
+    return res.status(500).json({ error: 'CLAUDE_API_KEY not configured on server' });
+  }
+
+  try {
+    const response = await fetch(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'x-api-key': claudeKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(req.body),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Claude API error:', response.status, errorText);
+      return res.status(response.status).json({ 
+        error: 'Claude API error',
+        details: errorText 
+      });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Claude evaluation error:', error);
+    res.status(500).json({ error: 'Failed to evaluate with Claude' });
+  }
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -81,4 +120,5 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Token server running on http://localhost:${PORT}`);
   console.log(`📍 Ephemeral token endpoint: POST http://localhost:${PORT}/api/realtime/token`);
+  console.log(`📍 Claude proxy endpoint: POST http://localhost:${PORT}/api/claude/evaluate`);
 });
