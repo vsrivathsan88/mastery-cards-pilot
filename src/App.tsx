@@ -124,25 +124,25 @@ function AppContent() {
     };
   }, [studentName, sessionId, openaiKey]); // Minimal dependencies
   
-  // Connect button handler
+  // Connect button handler - ENSURE single connection only
   const handleConnect = useCallback(async () => {
     if (!clientRef.current) {
       console.error('[App] No client available');
       return;
     }
     
-    // Check if already connected or connecting
+    // CRITICAL: Check connection status - don't allow duplicate connections
     const status = clientRef.current.getStatus();
     if (status === 'connected') {
-      console.log('[App] Already connected');
+      console.log('[App] ✅ Already connected - ignoring duplicate connect request');
       return;
     }
     if (status === 'connecting') {
-      console.log('[App] Already connecting, please wait...');
+      console.log('[App] ⏳ Connection in progress - ignoring duplicate connect request');
       return;
     }
     
-    console.log('[App] 🚀 Starting connection...');
+    console.log('[App] 🚀 Starting NEW connection...');
     try {
       await clientRef.current.connect();
       console.log('[App] ✅ Connection initiated');
@@ -151,15 +151,17 @@ function AppContent() {
     }
   }, []);
   
-  // Update instructions when card changes (STOPS audio to prevent overlaps)
+  // Send card context when card changes (DON'T update system prompt)
   useEffect(() => {
     if (!clientRef.current || !currentCard || !studentName || currentCard.cardNumber === 0) return;
     if (clientRef.current.getStatus() !== 'connected') return;
     
-    console.log(`[App] 📸 Card changed to: ${currentCard.title} - stopping audio and updating`);
+    console.log(`[App] 📸 Card changed to: ${currentCard.title} - sending context`);
     
-    const newInstructions = getSimplePiPrompt(studentName, currentCard, points, currentLevel);
-    clientRef.current.updateInstructions(newInstructions); // This now stops audio first
+    // Stop current audio to prevent overlaps
+    // But DON'T update system prompt - just send context message
+    const contextMessage = `[NEW CARD] ${currentCard.title}: ${currentCard.question}. Focus on the image showing: ${currentCard.imageDescription}`;
+    clientRef.current.sendSystemMessage(contextMessage);
     
     // Reset tracking
     conversationHistory.current = [];

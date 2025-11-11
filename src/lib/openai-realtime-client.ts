@@ -242,6 +242,18 @@ export class OpenAIRealtimeClient extends EventEmitter {
     });
   }
 
+  public sendSystemMessage(text: string): void {
+    // Send a system message as context (doesn't trigger response)
+    this.send({
+      type: 'conversation.item.create',
+      item: {
+        type: 'message',
+        role: 'system',
+        content: [{ type: 'input_text', text }]
+      }
+    });
+  }
+
   public updateInstructions(instructions: string): void {
     // CRITICAL: Stop all playing audio before updating instructions
     this.stopAllAudio();
