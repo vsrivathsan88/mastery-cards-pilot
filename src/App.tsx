@@ -196,14 +196,18 @@ function AppContent() {
       return () => clearTimeout(autoAdvance);
     }
     
-    console.log('[App] Cancelling and sending context...');
+    console.log('[App] Waiting for Pi to finish, then sending context...');
     
-    // Send compact context (WebSocket client cancels response and stops audio)
+    // Send compact context - wait for current response to finish first
     const sendContext = async () => {
       if (clientRef.current) {
+        // Wait for Pi to finish current response (e.g., celebration)
+        await clientRef.current.waitForResponseComplete();
+        
         const contextMessage = `[NEW CARD] ${currentCard.title}: ${currentCard.piStartingQuestion}. Image: ${currentCard.imageDescription}`;
+        // Now cancel and send new context (cancelInFlight: true by default)
         await clientRef.current.sendSystemMessage(contextMessage);
-        console.log('[App] ✅ Context sent after cancel');
+        console.log('[App] ✅ Context sent after Pi finished');
       }
     };
     
