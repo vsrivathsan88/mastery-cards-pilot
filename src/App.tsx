@@ -45,10 +45,16 @@ function AppContent() {
   const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const claudeKey = import.meta.env.VITE_CLAUDE_API_KEY;
   
-  // Initialize OpenAI client when session starts
+  // Initialize OpenAI client ONCE when session starts
   useEffect(() => {
     if (!studentName || !sessionId || !currentCard || !openaiKey) {
       console.log('[App] Skipping client init - missing:', { studentName: !!studentName, sessionId: !!sessionId, currentCard: !!currentCard, openaiKey: !!openaiKey });
+      return;
+    }
+    
+    // ONLY create client if we don't have one
+    if (clientRef.current) {
+      console.log('[App] Client already exists, skipping creation');
       return;
     }
     
@@ -92,8 +98,6 @@ function AppContent() {
       }
     });
     
-    // Audio is handled entirely by OpenAI client - no need to listen here
-    
     client.on('error', (error: any) => {
       console.error('[App] ❌ Error:', error);
     });
@@ -109,6 +113,7 @@ function AppContent() {
     // Cleanup
     return () => {
       if (clientRef.current) {
+        console.log('[App] 🧹 Cleaning up client');
         clientRef.current.disconnect();
         clientRef.current = null;
       }
@@ -122,10 +127,23 @@ function AppContent() {
       return;
     }
     
+    // Check if already connected or connecting
+    const status = clientRef.current.getStatus();
+    if (status === 'connected') {
+      console.log('[App] Already connected');
+      return;
+    }
+    if (status === 'connecting') {
+      console.log('[App] Already connecting, please wait...');
+      return;
+    }
+    
+    console.log('[App] 🚀 Starting connection...');
     try {
       await clientRef.current.connect();
+      console.log('[App] ✅ Connection initiated');
     } catch (error) {
-      console.error('[App] Failed to connect:', error);
+      console.error('[App] ❌ Failed to connect:', error);
     }
   }, []);
   
