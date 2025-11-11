@@ -55,11 +55,13 @@ export class OpenAIRealtimeClient extends EventEmitter {
 
     this.status = 'connecting';
     console.log('[OpenAI] Connecting to Realtime API...');
-    console.log('[OpenAI] API Key format:', this.apiKey ? this.apiKey.substring(0, 15) + '...' : 'Missing');
     
-    // Warn if using project-scoped key
-    if (this.apiKey.startsWith('sk-proj-')) {
-      console.warn('[OpenAI] ⚠️ Using project-scoped key (sk-proj-). Realtime API may require a standard key (sk-...) or specific permissions.');
+    // Security warning - only log in development
+    if (import.meta.env.DEV) {
+      if (this.apiKey.startsWith('sk-proj-')) {
+        console.warn('[OpenAI] ⚠️ Using project-scoped key. Realtime API may require standard key.');
+      }
+      console.warn('[OpenAI] ⚠️ SECURITY: API key exposed in browser! Use ephemeral tokens in production.');
     }
 
     try {
