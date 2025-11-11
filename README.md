@@ -1,199 +1,232 @@
 # Mastery Cards App
 
-**Tinder-like swipeable cards for quick math mastery assessment**
+**Voice-based fraction learning with Pi (your friendly alien math tutor)**
 
 ## 🎯 Overview
 
-A mobile-first, gamified assessment tool where students quickly demonstrate mastery of math concepts through voice interaction with Pi. Cards are swiped right (mastered) or left (needs practice), with spaced repetition bringing back unmastered concepts.
+A voice-first learning app where students explore fraction concepts through natural conversation with Pi, an enthusiastic alien from Planet Geometrica. Uses a **dual-LLM architecture** for reliable assessment:
+- **Pi (OpenAI Realtime)**: Natural voice conversation with real-time audio
+- **Claude Haiku**: Mastery evaluator
+- **Simple orchestration**: No complex state machines
 
-**Status:** Phase 1 MVP Complete (Basic UI + State Management)
+**Status:** Production-ready with OpenAI Realtime + Claude architecture
 
 ## 🚀 Quick Start
 
+### 1. Install Dependencies
 ```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-
-# Build for production
-pnpm build
+npm install
 ```
 
-App runs on **http://localhost:5174** (port 5174 to avoid conflict with tutor-app)
+### 2. Set Up API Keys
 
-## 📦 What's Implemented (Phase 1)
+Create a `.env` file:
+```bash
+# OpenAI API Key (for Pi's voice conversation)
+VITE_OPENAI_API_KEY=your_openai_key_here
 
-### ✅ Complete Features:
+# Claude API Key (for mastery evaluation)
+VITE_CLAUDE_API_KEY=your_claude_key_here
+```
 
-- **10 Sample Cards** - Fractions (3.NF.A.1) scaffolded from foundational → advanced
-- **State Management** - Zustand stores for session tracking
-- **Points System** - Base points + bonuses (first try, streak, speed)
-- **Spaced Repetition** - SM-2 algorithm for review scheduling
-- **Neo-Brutalist UI** - Matching tutor-app design aesthetic
-- **Session Tracking** - Progress, points, streak, level
-- **Card Generation** - Extract from mastery goals
+Get keys:
+- **OpenAI**: https://platform.openai.com/api-keys
+- **Claude**: https://console.anthropic.com/
 
-### 🎴 Current UI:
+### 3. Start Development Server
+```bash
+npm run dev
+```
 
-- Session header (level, points, streak, progress bar)
-- Card display with difficulty badges
-- Manual swipe buttons (for testing)
-- Session complete screen
-- Responsive mobile design
+App runs on **http://localhost:3000**
+
+## ✨ Features
+
+### 🎯 Core Experience
+- **15 Fraction Cards** - Scaffolded learning from equal parts → comparing fractions
+- **Voice Conversation** - Natural dialogue with Pi (OpenAI Realtime API)
+- **Smart Assessment** - Claude Haiku evaluates understanding after each exchange
+- **Points & Levels** - Earn points for basic/advanced/teaching mastery
+- **Level-Up Animations** - Celebrate progress with visual rewards
+
+### 🏗️ Simplified Architecture
+- **OpenAI Realtime** - Built-in voice-to-voice with no audio processing needed
+- **No state machines** - Simple orchestration with clean code
+- **LLM-based evaluation** - Context-aware assessment vs keyword matching
+- **Minimal complexity** - Easier to maintain and debug
+
+### 🎨 UI Components
+- Session header (student name, points, level)
+- Visual card display with images
+- Pi avatar with speaking animation
+- Voice controls (mute/unmute)
+- Level-up celebration animations
 
 ## 🏗️ Architecture
 
+### Dual-LLM Flow
+
+```
+Student speaks → OpenAI Realtime (Pi) → Claude Judge → App Decision
+     ↓              ↓                      ↓              ↓
+ "4 cookies"    "Tell me more!"      Evaluates      Award points
+ transcribed    (natural voice)      mastery level   or continue
+```
+
+### File Structure
 ```
 src/
+├── App.tsx                        # Main orchestrator
 ├── components/
-│   ├── cards/          # MasteryCard component
-│   └── session/        # SessionHeader component
+│   ├── cards/                     # MasteryCard component
+│   ├── session/                   # SessionHeader component
+│   └── PiAvatar, NamePrompt, etc. # UI components
 ├── lib/
-│   ├── state/          # Zustand stores
-│   ├── tools/          # swipe_right, swipe_left tools
-│   ├── cards/          # Card generation from mastery goals
-│   ├── scoring/        # Points calculator
-│   ├── spaced-repetition/ # SR algorithm
-│   └── prompts/        # System prompt for Pi
-└── types/              # TypeScript types
+│   ├── openai-realtime-client.ts  # OpenAI Realtime connection
+│   ├── evaluator/
+│   │   └── claude-judge.ts        # Mastery evaluation logic
+│   ├── prompts/
+│   │   └── simple-pi-prompt.ts    # Pi's conversational personality
+│   ├── cards/                     # 15 fraction cards data
+│   └── state/                     # Session store (Zustand)
 ```
 
-## 📋 Next Phases
+## 🎮 How It Works
 
-### Phase 2: Swipe Gestures (Week 1)
-- [ ] Install @use-gesture/react
-- [ ] Implement touch/mouse swipe detection
-- [ ] Card animations (swipe left/right)
-- [ ] Stack of cards (preview next 2-3)
+### Student Experience
 
-### Phase 3: Voice Integration (Week 1-2)
-- [ ] Copy LiveAPI infrastructure from tutor-app
-- [ ] Connect Pi voice assessment
-- [ ] Implement tool handlers (swipe_right/left)
-- [ ] Test Pi assessment accuracy
+1. **Enter name** → Start personalized session
+2. **Card 0 (Welcome)** → Pi introduces itself
+3. **Card 1+** → Pi asks about fraction image
+4. **Student explains** → Natural voice conversation
+5. **Pi probes deeper** → "Tell me more", "What makes you think that?"
+6. **2+ exchanges** → Claude evaluates understanding
+7. **Decision made**:
+   - **Mastery achieved** → Award points + next card
+   - **Need more** → Continue conversation
+   - **Stuck (5+ exchanges)** → Move on without points
+8. **Repeat** → Progress through 15 cards
+9. **Session complete** → See total points and level
 
-### Phase 4: Spaced Repetition UI (Week 2)
-- [ ] Review queue display
-- [ ] Cards due indicator
-- [ ] Multi-session support
+### Under the Hood
 
-### Phase 5: Polish (Week 3-4)
-- [ ] Celebration animations
-- [ ] Level-up effects
-- [ ] Sound effects
-- [ ] Mobile gestures refinement
+**After each student response:**
+1. Transcription captured
+2. Added to conversation history
+3. Exchange count incremented
+4. Pi responds naturally (no tools to call)
+5. After 2s delay, Claude judge evaluates:
+   - Reads conversation history
+   - Checks against card learning goals
+   - Returns: `{ ready, masteryLevel, confidence, suggestedAction }`
+6. App takes action:
+   - `award_and_next`: Give points + move to next card
+   - `continue`: Keep talking
+   - `next_without_points`: Move on (stuck)
 
-## 🎮 How It Works (Design)
+## 🎯 Learning Cards
 
-1. **Card Presented** → Student sees mastery goal
-2. **Pi Asks** → "Explain what 1/2 means"
-3. **Student Responds** → Voice explanation
-4. **Pi Assesses** → Calls swipe_right or swipe_left
-5. **Points Awarded** → Base + bonuses for streak/speed
-6. **Next Card** → Continue or show review queue
+**15 scaffolded fraction cards:**
+- **Card 0**: Welcome (Pi introduces itself)
+- **Cards 1-3**: Equal parts foundation (4 cookies, 2 brownies, 3 sandwiches)
+- **Cards 4-6**: Part-whole relationships (1/2 ribbon, 1/3 pancake, 2/3 pizza slices)
+- **Cards 7-9**: Unit fractions (1/4, 1/5, 1/6 water glasses)
+- **Cards 10-12**: Numerator/denominator (5/6 pizza, 3/4 garden)
+- **Cards 13-14**: Misconception cards (Pi has wrong thinking, student teaches Pi)
+- **Card 15**: End of session celebration
 
-## 🎯 Sample Cards
+## 📊 Mastery Levels
 
-Currently includes 10 cards:
-- Foundational: 1/2, equal parts requirement
-- Intermediate: 1/3, 1/4, denominator/numerator meaning
-- Advanced: Comparing fractions, building 2/3, 3/4, whole as fraction
+**Basic (30 points)**: Student explains the concept clearly
+- Example: "There are 4 cookies and they're all equal size"
 
-## 🔧 Tools for Pi
+**Advanced (30 + 30 = 60 points)**: Deeper reasoning and connections
+- Example: "Equal sizes matter because if we share them, everyone gets the same amount"
 
-**Just 2 tools:**
+**Teaching (40 points)**: Correcting Pi's misconceptions
+- Example: "No Pi, 1/8 is smaller than 1/4 because when you cut something into more pieces, each piece gets smaller"
 
-1. `swipe_right(cardId, evidence, confidence)` - Mastered!
-   - Awards points
-   - Adds to mastered pile
-   - Continues streak
+## 💰 Cost
 
-2. `swipe_left(cardId, reason, difficulty)` - Needs practice
-   - Schedules review (5min, 15min, 1hour)
-   - Resets streak
-   - Queues for spaced repetition
+Per session (15 cards, ~4 exchanges each):
+- OpenAI Realtime: ~$0.06/minute (varies by usage)
+- Claude Haiku evaluations: ~$0.006 (60 calls × $0.0001)
+- **Total: ~$0.10-0.20 per session**
 
-## 📊 Scoring System
+Very affordable for production use!
 
-**Base Points:**
-- Easy card: 10 points
-- Medium: 15 points
-- Hard: 25 points
+## 🔧 Key Technical Decisions
 
-**Bonuses:**
-- First try: +5
-- Streak (3+): +2 to +10
-- Speed (<30s): +3
+### Why Dual-LLM?
 
-**Levels:** Every 100 points
+**Approach:**
+- **OpenAI Realtime** handles natural voice conversation (what it's built for)
+- **Claude judges** understanding with context-aware evaluation
+- **App orchestrates** the learning flow (what code is good at)
+- Clean separation of concerns, easy to maintain
 
-## 🎨 Design System
+### Architecture Benefits
 
-Matches tutor-app neo-brutalist aesthetic:
-- Thick borders (4px)
-- Offset shadows (6px 6px 0)
-- Chunky, playful style
-- Bold colors
-- High contrast
+✅ **Simplicity**: Clean, maintainable code
+✅ **Real-time voice**: Built-in audio processing with OpenAI Realtime
+✅ **Flexibility**: LLM understands context vs keywords
+✅ **Debuggability**: Clear logs, judge reasoning visible
+✅ **Cost-effective**: ~$0.10-0.20 per session
 
-## 🧪 Testing (Current)
+## 🧪 Testing
 
 ```bash
 # Start app
-pnpm dev
+npm run dev
 
-# Manual test:
-1. Click through cards with swipe buttons
-2. Watch points/streak increase
-3. Complete session → see summary
-4. Start new session
+# Check console for logs:
+[App] 🔧 Initializing OpenAI Realtime...
+[App] 👤 Student (exchange 1): ...
+[Judge] 🔍 Evaluating mastery...
+[Judge] 📊 Evaluation result: ...
+[App] ✨ Awarding X points
 ```
 
-## 📚 References
+## 🐛 Troubleshooting
 
-- **Plan**: `/MASTERY-CARDS-APP-PLAN.md` (1,429 lines)
-- **Tutor App**: `../tutor-app` (for reusable components)
-- **Packages**: `../../packages/shared`, `../../packages/lessons`
+**"Claude API key not configured"**
+- Check `.env` file exists and has valid key
+- Restart dev server after adding key
 
-## 🚧 Known Limitations (MVP)
+**"Evaluation error"**
+- Check Claude API key is valid
+- Check API status (rate limits on free tier)
+- Fallback: app will continue after 3 exchanges
 
-- ❌ No swipe gestures yet (using buttons)
-- ❌ No voice/Pi integration yet
-- ❌ No spaced repetition queue UI
-- ❌ No celebrations/animations
-- ❌ Cards hardcoded (not from lessons package yet)
-- ❌ No multi-session persistence
+**Pi not responding**
+- Check OpenAI API key is valid
+- Check browser console for WebSocket errors
+- Try refreshing the page
 
-**These are all planned for future phases!**
+## 🚀 Deployment
 
-## 🎉 MVP Demo Flow
+Ready for production! Just:
+1. Set up environment variables
+2. Build: `npm run build`
+3. Deploy `dist/` folder
+4. Monitor Claude judge accuracy
 
-1. Open app → See first card
-2. Read the prompt
-3. Click "Mastered!" → See points awarded
-4. Click through 10 cards
-5. See session summary
-6. Start new session
+## 📝 Development
 
-**This validates the core card → assessment → points flow!**
-
-## 📝 Development Notes
-
-**Environment:**
-- Port: 5174 (tutor-app uses 5173)
-- Packages: Reuses shared, agents, lessons
-- State: Zustand (same as tutor-app)
-- Styling: CSS modules + global styles
+**Tech Stack:**
+- React 19 + TypeScript
+- Zustand (state management)
+- OpenAI Realtime API (voice)
+- Claude API (evaluation)
+- Vite (build tool)
 
 **Key Files:**
-- `App.tsx` - Main app component
-- `session-store.ts` - Session state management
-- `card-generator.ts` - 10 sample cards
-- `swipe-tools.ts` - Tool definitions for Pi
-- `cards-system-prompt.ts` - Simplified prompt
+- `src/App.tsx` - Main orchestrator
+- `src/lib/openai-realtime-client.ts` - OpenAI Realtime connection
+- `src/lib/evaluator/claude-judge.ts` - Assessment logic
+- `src/lib/prompts/simple-pi-prompt.ts` - Pi's personality
+- `src/lib/cards/mvp-cards-data.ts` - Card content
 
 ---
 
-Built with ❤️ as part of the Simili monorepo
+**Built with ❤️ for curious math learners**

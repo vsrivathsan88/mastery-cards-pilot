@@ -1,0 +1,325 @@
+/**
+ * OpenAI Realtime API Client
+ * Minimal wrapper matching our needs
+ */
+
+import { EventEmitter } from 'eventemitter3';
+
+export interface RealtimeClientConfig {
+  apiKey: string;
+  model?: string;
+  voice?: string;
+  instructions?: string;
+  temperature?: number;
+}
+
+export class OpenAIRealtimeClient extends EventEmitter {
+  private ws: WebSocket | null = null;
+  private apiKey: string;
+  private config: RealtimeClientConfig;
+  private status: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
+  private audioContext: AudioContext | null = null;
+  private mediaStream: MediaStream | null = null;
+
+  constructor(config: RealtimeClientConfig) {
+    super();
+    this.apiKey = config.apiKey;
+    this.config = {
+      model: config.model || 'gpt-4o-realtime-preview-2024-10-01',
+      voice: config.voice || 'alloy',
+      instructions: config.instructions || '',
+      temperature: config.temperature || 0.8,
+      ...config
+    };
+  }
+
+  async connect(): Promise<void> {
+    if (this.status === 'connected' || this.status === 'connecting') {
+      console.log('[OpenAI] Already connected or connecting');
+      return;
+    }
+
+    this.status = 'connecting';
+    console.log('[OpenAI] Connecting to Realtime API...');
+
+    try {
+      const url = 'wss://api.openai.com/v1/realtime?model=' + this.config.model;
+      
+      this.ws = new WebSocket(url, [
+        'realtime',
+        `openai-insecure-api-key.${this.apiKey}`,
+        'openai-beta.realtime-v1'
+      ]);
+
+      this.ws.addEventListener('open', this.handleOpen.bind(this));
+      this.ws.addEventListener('message', this.handleMessage.bind(this));
+      this.ws.addEventListener('error', this.handleError.bind(this));
+      this.ws.addEventListener('close', this.handleClose.bind(this));
+
+    } catch (error) {
+      console.error('[OpenAI] Connection failed:', error);
+      this.status = 'disconnected';
+      this.emit('error', error);
+      throw error;
+    }
+  }
+
+  private async handleOpen() {
+    console.log('[OpenAI] ✅ Connected');
+    this.status = 'connected';
+    this.emit('open');
+
+    // Send session configuration
+    this.send({
+      type: 'session.update',
+      session: {
+        modalities: ['text', 'audio'],
+        instructions: this.config.instructions,
+        voice: this.config.voice,
+        input_audio_format: 'pcm16',
+        output_audio_format: 'pcm16',
+        input_audio_transcription: {
+          model: 'whisper-1'
+        },
+        turn_detection: {
+          type: 'server_vad',
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 500
+        },
+        temperature: this.config.temperature
+      }
+    });
+
+    // Start microphone
+    await this.startMicrophone();
+  }
+
+  private handleMessage(event: MessageEvent) {
+    try {
+      const data = JSON.parse(event.data);
+      
+      // console.log('[OpenAI] Message:', data.type);
+
+      switch (data.type) {
+        case 'session.created':
+        case 'session.updated':
+          console.log('[OpenAI] Session ready');
+          break;
+
+        case 'conversation.item.input_audio_transcription.completed':
+          // Student speech transcribed
+          const studentText = data.transcript;
+          console.log('[OpenAI] Student said:', studentText);
+          this.emit('transcript', { role: 'user', text: studentText });
+          break;
+
+        case 'response.audio_transcript.delta':
+          // Pi speaking (partial)
+          this.emit('audio_transcript_delta', data.delta);
+          break;
+
+        case 'response.audio_transcript.done':
+          // Pi finished speaking
+          const piText = data.transcript;
+          console.log('[OpenAI] Pi said:', piText);
+          this.emit('transcript', { role: 'assistant', text: piText });
+          break;
+
+        case 'response.audio.delta':
+          // Audio data from OpenAI (PCM16 at 24kHz)
+          const audioData = this.base64ToArrayBuffer(data.delta);
+          
+          // ONLY play through OpenAI client - nowhere else!
+          this.playAudio(audioData);
+          
+          // Don't emit - App doesn't need to handle audio
+          break;
+
+        case 'response.done':
+          console.log('[OpenAI] Response complete');
+          this.emit('turncomplete');
+          break;
+
+        case 'error':
+          console.error('[OpenAI] Error:', data.error);
+          this.emit('error', new Error(data.error.message));
+          break;
+
+        default:
+          // Ignore other events
+          break;
+      }
+    } catch (error) {
+      console.error('[OpenAI] Failed to parse message:', error);
+    }
+  }
+
+  private handleError(event: Event) {
+    console.error('[OpenAI] WebSocket error:', event);
+    this.emit('error', event);
+  }
+
+  private handleClose(event: CloseEvent) {
+    console.log('[OpenAI] Connection closed:', event.code, event.reason);
+    this.status = 'disconnected';
+    this.emit('close', event);
+    this.cleanup();
+  }
+
+  private async startMicrophone(): Promise<void> {
+    try {
+      this.audioContext = new AudioContext({ sampleRate: 24000 });
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const source = this.audioContext.createMediaStreamSource(this.mediaStream);
+      const processor = this.audioContext.createScriptProcessor(4096, 1, 1);
+
+      processor.onaudioprocess = (e) => {
+        if (this.status !== 'connected') return;
+
+        const inputData = e.inputBuffer.getChannelData(0);
+        const pcm16 = this.floatTo16BitPCM(inputData);
+        const base64 = this.arrayBufferToBase64(pcm16.buffer);
+
+        this.send({
+          type: 'input_audio_buffer.append',
+          audio: base64
+        });
+      };
+
+      source.connect(processor);
+      processor.connect(this.audioContext.destination);
+
+      console.log('[OpenAI] ✅ Microphone started');
+      this.emit('microphoneStarted');
+
+    } catch (error) {
+      console.error('[OpenAI] Failed to start microphone:', error);
+      this.emit('error', error);
+      throw error;
+    }
+  }
+
+  public sendText(text: string): void {
+    this.send({
+      type: 'conversation.item.create',
+      item: {
+        type: 'message',
+        role: 'user',
+        content: [{ type: 'input_text', text }]
+      }
+    });
+
+    this.send({
+      type: 'response.create'
+    });
+  }
+
+  public updateInstructions(instructions: string): void {
+    this.send({
+      type: 'session.update',
+      session: {
+        instructions
+      }
+    });
+  }
+
+  private send(data: any): void {
+    if (!this.ws || this.status !== 'connected') {
+      console.warn('[OpenAI] Cannot send - not connected');
+      return;
+    }
+    this.ws.send(JSON.stringify(data));
+  }
+
+  public disconnect(): void {
+    console.log('[OpenAI] Disconnecting...');
+    if (this.ws) {
+      this.ws.close();
+    }
+    this.cleanup();
+  }
+
+  private cleanup(): void {
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = null;
+    }
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
+    this.ws = null;
+    this.status = 'disconnected';
+  }
+
+  getStatus(): string {
+    return this.status;
+  }
+
+  // Utility functions
+  private floatTo16BitPCM(float32Array: Float32Array): Int16Array {
+    const int16Array = new Int16Array(float32Array.length);
+    for (let i = 0; i < float32Array.length; i++) {
+      const s = Math.max(-1, Math.min(1, float32Array[i]));
+      int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    return int16Array;
+  }
+
+  private arrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferLike): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
+  // CLEAN AUDIO PLAYBACK - Single source of truth
+  private async playAudio(audioData: ArrayBuffer): Promise<void> {
+    if (!this.audioContext) {
+      console.error('[OpenAI Audio] No audio context available');
+      return;
+    }
+
+    try {
+      // Convert Int16 PCM (from OpenAI) to Float32 (for Web Audio API)
+      const int16Array = new Int16Array(audioData);
+      const float32Array = new Float32Array(int16Array.length);
+      
+      for (let i = 0; i < int16Array.length; i++) {
+        float32Array[i] = int16Array[i] / 32768.0; // Normalize to -1.0 to 1.0
+      }
+
+      // Create audio buffer at OpenAI's sample rate (24kHz)
+      const audioBuffer = this.audioContext.createBuffer(
+        1, // mono channel
+        float32Array.length,
+        24000 // 24kHz sample rate
+      );
+
+      audioBuffer.getChannelData(0).set(float32Array);
+
+      // Create source and play
+      const source = this.audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.audioContext.destination);
+      source.start(0);
+      
+      console.log('[OpenAI Audio] ✓ Playing chunk:', float32Array.length, 'samples');
+    } catch (error) {
+      console.error('[OpenAI Audio] ❌ Playback error:', error);
+    }
+  }
+}

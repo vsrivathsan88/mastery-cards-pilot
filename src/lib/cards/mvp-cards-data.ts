@@ -35,22 +35,22 @@ export interface MasteryCard {
 }
 
 export const MVP_CARDS: MasteryCard[] = [
-  // Welcome/Cover Card
+  // Welcome/Cover Card (Intro Only - Auto-advances)
   {
     id: 'card-0-welcome',
     cardNumber: 0,
     phase: 'prerequisites',
     title: 'Welcome!',
-    context: 'Let\'s wonder together',
+    context: 'Session Introduction',
     imageUrl: '/images/Equal-parts-cover.png',
-    imageDescription: 'A colorful welcome cover image showing the title "Equal Parts" with friendly fraction illustrations.',
-    learningGoal: 'Introduce the session and set expectations',
-    piStartingQuestion: 'This is just a casual intro - no assessment needed',
+    imageDescription: 'Welcome cover image with "Equal Parts" title - this is just the session intro, not a learning card.',
+    learningGoal: 'Greet student and introduce Pi (spelt like Pie) - auto-advances after acknowledgment',
+    piStartingQuestion: 'Hey! I\'m Pi from Planet Geometrica and I\'m so curious about how you think about some fun things! Ready to explore together?',
     milestones: {
       basic: {
-        description: 'Student acknowledges they are ready to start',
+        description: 'Student says anything (yes, ready, okay, etc.) - auto-advances',
         points: 0, // No points for welcome card
-        evidenceKeywords: ['ready', 'yes', 'okay', 'sure', 'let\'s go', 'yeah'],
+        evidenceKeywords: [], // Not used - auto-advances on any response
       },
     },
   },

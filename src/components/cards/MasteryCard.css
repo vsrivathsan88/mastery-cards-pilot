@@ -98,6 +98,20 @@
   line-height: 1.4;
 }
 
+.welcome-badge {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #6C5CE7;
+  border: 3px solid #1A1D2E;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  text-align: center;
+  box-shadow: 4px 4px 0 #1A1D2E;
+  margin-top: 4px;
+}
+
 .misconception-badge {
   display: inline-block;
   padding: 10px 20px;

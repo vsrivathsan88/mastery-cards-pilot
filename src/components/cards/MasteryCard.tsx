@@ -53,6 +53,13 @@ export function MasteryCard({ card, isCurrent, style }: MasteryCardProps) {
         <h2 className="card-title">{card.title}</h2>
         <p className="card-context">{card.context}</p>
         
+        {/* Welcome card indicator */}
+        {isWelcomeCard && (
+          <div className="welcome-badge">
+            🎬 Starting Session
+          </div>
+        )}
+        
         {/* Misconception indicator */}
         {card.misconception && (
           <div className="misconception-badge">
