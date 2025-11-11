@@ -448,6 +448,12 @@ function AppContent() {
           
           const { currentCard: newCard } = useSessionStore.getState();
           
+          // Special case: Welcome card (card 0) can advance immediately
+          if (newCard?.cardNumber === 0) {
+            cardStateMachine.current.masteryAchieved();
+            console.log('[App] ℹ️ Welcome card - auto-advanced to READY_TO_ADVANCE');
+          }
+          
           if (newCard) {
             addToTranscript('system', `Advanced to card: ${newCard.title}`);
             
@@ -714,29 +720,51 @@ Follow the guidance above for your next action.
       const timer = setTimeout(() => {
         console.log('[App] 📤 Sending initial card context to Pi');
         
+        // Special case: Welcome card should be ready to advance immediately
+        if (currentCard.cardNumber === 0) {
+          cardStateMachine.current.masteryAchieved();
+          console.log('[App] ℹ️ Welcome card - auto-advanced to READY_TO_ADVANCE');
+        }
+        
+        // Get state context
+        const stateContext = cardStateMachine.current.getStateContext();
+        
         const cardContext = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CURRENT CARD: ${currentCard.title}
+📋 INITIAL CARD: ${currentCard.title}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-WHAT YOU SEE:
+${stateContext}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📸 CARD DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**WHAT YOU SEE:**
 ${currentCard.imageDescription}
 
-WHAT YOU'RE ASSESSING:
+**WHAT YOU'RE ASSESSING:**
 ${currentCard.learningGoal}
 
-YOUR STARTING QUESTION:
+**YOUR STARTING QUESTION:**
 "${currentCard.piStartingQuestion}"
 
-MASTERY CRITERIA (score 1-5):
+**MASTERY CRITERIA:**
+
 Basic (${currentCard.milestones.basic.points} pts): ${currentCard.milestones.basic.description}
-Evidence for score 4-5: ${currentCard.milestones.basic.evidenceKeywords.join(', ')}
+Evidence signals: ${currentCard.milestones.basic.evidenceKeywords.join(', ')}
 ${currentCard.milestones.advanced ? `
 Advanced (${currentCard.milestones.advanced.points} pts BONUS): ${currentCard.milestones.advanced.description}
-Evidence for score 4-5: ${currentCard.milestones.advanced.evidenceKeywords.join(', ')}
+Evidence signals: ${currentCard.milestones.advanced.evidenceKeywords.join(', ')}
 ` : ''}
+${currentCard.cardNumber === 0 ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 WELCOME CARD - SPECIAL INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${currentCard.cardNumber === 0 ? `This is the WELCOME card - greet the student and call show_next_card()` : `NOW: Ask your starting question to begin assessing.`}
+You are in READY_TO_ADVANCE state.
+Greet the student warmly and immediately call show_next_card() to start.
+` : ''}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
         
         try {
