@@ -289,16 +289,26 @@ export class OpenAIRealtimeClient extends EventEmitter {
     });
   }
 
-  public async sendSystemMessage(text: string): Promise<void> {
-    // CRITICAL: Cancel in-flight response and WAIT for confirmation
+  public async sendSystemMessage(text: string, options?: { cancelInFlight?: boolean }): Promise<void> {
+    const shouldCancel = options?.cancelInFlight !== false; // Default true for backward compatibility
+
+    // CRITICAL: Either cancel OR wait for response to finish
     if (this.isResponseActive) {
-      console.log('[OpenAI] Cancelling in-flight response before context update');
-      await this.cancelResponse();
-      console.log('[OpenAI] Cancel confirmed, now sending context');
+      if (shouldCancel) {
+        console.log('[OpenAI] Cancelling in-flight response before context update');
+        await this.cancelResponse();
+        console.log('[OpenAI] Cancel confirmed, now sending context');
+      } else {
+        console.log('[OpenAI] Waiting for response to complete before sending message...');
+        await this.waitForResponseComplete();
+        console.log('[OpenAI] Response complete, now sending message');
+      }
     }
     
-    // CRITICAL: Stop all audio before sending new context
-    this.stopAllAudio();
+    // CRITICAL: Stop all audio before sending new context (only if cancelling)
+    if (shouldCancel) {
+      this.stopAllAudio();
+    }
     
     // Send a system message as context (doesn't trigger response)
     this.send({
@@ -308,6 +318,27 @@ export class OpenAIRealtimeClient extends EventEmitter {
         role: 'system',
         content: [{ type: 'input_text', text }]
       }
+    });
+  }
+
+  public waitForResponseComplete(): Promise<void> {
+    if (!this.isResponseActive) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const handler = () => {
+        this.off('turncomplete', handler);
+        resolve();
+      };
+      this.on('turncomplete', handler);
+      
+      // Timeout after 5 seconds
+      setTimeout(() => {
+        this.off('turncomplete', handler);
+        console.warn('[OpenAI] Wait timeout - proceeding anyway');
+        resolve();
+      }, 5000);
     });
   }
 

@@ -270,8 +270,9 @@ function AppContent() {
             }
             
             // Tell Pi to celebrate before moving card
+            // Use cancelInFlight: false to wait for current response to finish
             const celebrationPrompt = `[SYSTEM NOTIFICATION] The student just demonstrated ${evaluation.masteryLevel}-level mastery and earned ${evaluation.points} points! Briefly celebrate their understanding in your Pi voice (1-2 sentences max). Be specific about what they explained well. The system will then move to the next card.`;
-            clientRef.current?.sendSystemMessage(celebrationPrompt);
+            clientRef.current?.sendSystemMessage(celebrationPrompt, { cancelInFlight: false });
           }
           
           // Wait for Pi to celebrate, then move to next card
@@ -284,8 +285,9 @@ function AppContent() {
         case 'next_without_points':
           console.log('[App] ➡️ Moving on without points');
           // Tell Pi to acknowledge effort before moving on
+          // Use cancelInFlight: false to wait for current response to finish
           const encouragementPrompt = `[SYSTEM NOTIFICATION] This concept is challenging. Acknowledge the student's effort (1 sentence), then say you'll come back to this idea later. The system will move to the next card.`;
-          clientRef.current?.sendSystemMessage(encouragementPrompt);
+          clientRef.current?.sendSystemMessage(encouragementPrompt, { cancelInFlight: false });
           
           setTimeout(() => {
             nextCard();
