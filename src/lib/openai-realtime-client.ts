@@ -258,6 +258,9 @@ export class OpenAIRealtimeClient extends EventEmitter {
   }
 
   public sendSystemMessage(text: string): void {
+    // CRITICAL: Stop all audio before sending new context
+    this.stopAllAudio();
+    
     // Send a system message as context (doesn't trigger response)
     this.send({
       type: 'conversation.item.create',
