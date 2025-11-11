@@ -47,20 +47,24 @@ function AppContent() {
   
   // Initialize OpenAI client ONCE when session starts
   useEffect(() => {
-    if (!studentName || !sessionId || !currentCard || !openaiKey) {
-      console.log('[App] Skipping client init - missing:', { studentName: !!studentName, sessionId: !!sessionId, currentCard: !!currentCard, openaiKey: !!openaiKey });
-      return;
+    if (!studentName || !sessionId || !openaiKey) {
+      return; // Only check minimum required
     }
     
     // ONLY create client if we don't have one
     if (clientRef.current) {
-      console.log('[App] Client already exists, skipping creation');
-      return;
+      return; // Already have client
     }
     
-    console.log('[App] 🔧 Initializing OpenAI Realtime client...');
+    console.log('[App] 🔧 Creating OpenAI client ONE TIME');
     
-    const instructions = getSimplePiPrompt(studentName, currentCard, points, currentLevel);
+    // Get everything from store to avoid prop dependencies
+    const card = useSessionStore.getState().currentCard;
+    if (!card) return;
+    const pts = useSessionStore.getState().points;
+    const lvl = useSessionStore.getState().currentLevel;
+    
+    const instructions = getSimplePiPrompt(studentName, card, pts, lvl);
     
     const client = new OpenAIRealtimeClient({
       apiKey: openaiKey,
