@@ -4,6 +4,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+import { AudioStreamer } from './audio-streamer';
 
 export interface RealtimeClientConfig {
   apiKey: string;
@@ -20,7 +21,7 @@ export class OpenAIRealtimeClient extends EventEmitter {
   private status: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
   private audioContext: AudioContext | null = null;
   private mediaStream: MediaStream | null = null;
-  private audioSources: AudioBufferSourceNode[] = [];
+  private audioStreamer: AudioStreamer | null = null;
 
   constructor(config: RealtimeClientConfig) {
     super();
@@ -211,7 +212,18 @@ export class OpenAIRealtimeClient extends EventEmitter {
   private async startMicrophone(): Promise<void> {
     try {
       this.audioContext = new AudioContext({ sampleRate: 24000 });
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Create AudioStreamer for proper audio playback
+      this.audioStreamer = new AudioStreamer(this.audioContext);
+      
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          channelCount: 1,
+          sampleRate: 24000,
+          echoCancellation: true,
+          noiseSuppression: true,
+        } 
+      });
 
       const source = this.audioContext.createMediaStreamSource(this.mediaStream);
       const processor = this.audioContext.createScriptProcessor(4096, 1, 1);
@@ -285,16 +297,10 @@ export class OpenAIRealtimeClient extends EventEmitter {
   }
   
   private stopAllAudio(): void {
-    // Stop all currently playing audio sources
-    this.audioSources.forEach(source => {
-      try {
-        source.stop();
-        source.disconnect();
-      } catch (e) {
-        // Already stopped
-      }
-    });
-    this.audioSources = [];
+    // Stop AudioStreamer properly
+    if (this.audioStreamer) {
+      this.audioStreamer.stop();
+    }
   }
 
   private send(data: any): void {
@@ -314,6 +320,10 @@ export class OpenAIRealtimeClient extends EventEmitter {
   }
 
   private cleanup(): void {
+    if (this.audioStreamer) {
+      this.audioStreamer.stop();
+      this.audioStreamer = null;
+    }
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
@@ -358,50 +368,19 @@ export class OpenAIRealtimeClient extends EventEmitter {
     return bytes.buffer;
   }
 
-  // CLEAN AUDIO PLAYBACK - Single source of truth
+  // PROPER AUDIO PLAYBACK - Use AudioStreamer for gapless playback
   private async playAudio(audioData: ArrayBuffer): Promise<void> {
-    if (!this.audioContext) {
-      console.error('[OpenAI Audio] No audio context available');
+    if (!this.audioStreamer) {
+      console.error('[OpenAI Audio] AudioStreamer not initialized');
       return;
     }
 
     try {
-      // Convert Int16 PCM (from OpenAI) to Float32 (for Web Audio API)
-      const int16Array = new Int16Array(audioData);
-      const float32Array = new Float32Array(int16Array.length);
-      
-      for (let i = 0; i < int16Array.length; i++) {
-        float32Array[i] = int16Array[i] / 32768.0; // Normalize to -1.0 to 1.0
-      }
-
-      // Create audio buffer at OpenAI's sample rate (24kHz)
-      const audioBuffer = this.audioContext.createBuffer(
-        1, // mono channel
-        float32Array.length,
-        24000 // 24kHz sample rate
-      );
-
-      audioBuffer.getChannelData(0).set(float32Array);
-
-      // Create source and play
-      const source = this.audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(this.audioContext.destination);
-      
-      // Track this source so we can stop it later
-      this.audioSources.push(source);
-      
-      // Remove from tracking when it ends
-      source.onended = () => {
-        const index = this.audioSources.indexOf(source);
-        if (index > -1) {
-          this.audioSources.splice(index, 1);
-        }
-      };
-      
-      source.start(0);
+      // AudioStreamer expects Uint8Array of PCM16 data
+      const uint8Array = new Uint8Array(audioData);
+      this.audioStreamer.addPCM16(uint8Array);
     } catch (error) {
-      console.error('[OpenAI Audio] ❌ Playback error:', error);
+      console.error('[OpenAI Audio] Playback error:', error);
     }
   }
 }
