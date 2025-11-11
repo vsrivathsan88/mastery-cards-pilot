@@ -47,9 +47,12 @@ function AppContent() {
   
   // Initialize OpenAI client when session starts
   useEffect(() => {
-    if (!studentName || !sessionId || !currentCard || !openaiKey) return;
+    if (!studentName || !sessionId || !currentCard || !openaiKey) {
+      console.log('[App] Skipping client init - missing:', { studentName: !!studentName, sessionId: !!sessionId, currentCard: !!currentCard, openaiKey: !!openaiKey });
+      return;
+    }
     
-    console.log('[App] 🔧 Initializing OpenAI Realtime...');
+    console.log('[App] 🔧 Initializing OpenAI Realtime client...');
     
     const instructions = getSimplePiPrompt(studentName, currentCard, points, currentLevel);
     

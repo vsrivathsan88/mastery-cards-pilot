@@ -35,15 +35,22 @@ export class OpenAIRealtimeClient extends EventEmitter {
 
   async connect(): Promise<void> {
     if (this.status === 'connected' || this.status === 'connecting') {
-      console.log('[OpenAI] Already connected or connecting');
+      console.log('[OpenAI] Already connected or connecting, status:', this.status);
       return;
     }
 
     this.status = 'connecting';
     console.log('[OpenAI] Connecting to Realtime API...');
+    console.log('[OpenAI] API Key format:', this.apiKey ? this.apiKey.substring(0, 15) + '...' : 'Missing');
+    
+    // Warn if using project-scoped key
+    if (this.apiKey.startsWith('sk-proj-')) {
+      console.warn('[OpenAI] ⚠️ Using project-scoped key (sk-proj-). Realtime API may require a standard key (sk-...) or specific permissions.');
+    }
 
     try {
       const url = 'wss://api.openai.com/v1/realtime?model=' + this.config.model;
+      console.log('[OpenAI] WebSocket URL:', url);
       
       this.ws = new WebSocket(url, [
         'realtime',
@@ -55,6 +62,19 @@ export class OpenAIRealtimeClient extends EventEmitter {
       this.ws.addEventListener('message', this.handleMessage.bind(this));
       this.ws.addEventListener('error', this.handleError.bind(this));
       this.ws.addEventListener('close', this.handleClose.bind(this));
+
+      console.log('[OpenAI] WebSocket created, waiting for connection...');
+      
+      // Set timeout for connection
+      setTimeout(() => {
+        if (this.status === 'connecting') {
+          console.error('[OpenAI] ❌ Connection timeout after 10 seconds');
+          console.error('[OpenAI] ❌ Check: 1) API key is valid, 2) API key has Realtime API access, 3) Network connection');
+          this.status = 'disconnected';
+          this.ws?.close();
+          this.emit('error', new Error('Connection timeout'));
+        }
+      }, 10000);
 
     } catch (error) {
       console.error('[OpenAI] Connection failed:', error);
@@ -156,12 +176,17 @@ export class OpenAIRealtimeClient extends EventEmitter {
   }
 
   private handleError(event: Event) {
-    console.error('[OpenAI] WebSocket error:', event);
+    console.error('[OpenAI] ❌ WebSocket error event:', event);
+    console.error('[OpenAI] ❌ WebSocket readyState:', this.ws?.readyState);
+    this.status = 'disconnected';
     this.emit('error', event);
   }
 
   private handleClose(event: CloseEvent) {
-    console.log('[OpenAI] Connection closed:', event.code, event.reason);
+    console.log('[OpenAI] ❌ Connection closed');
+    console.log('[OpenAI] Close code:', event.code);
+    console.log('[OpenAI] Close reason:', event.reason || 'No reason provided');
+    console.log('[OpenAI] Clean close:', event.wasClean);
     this.status = 'disconnected';
     this.emit('close', event);
     this.cleanup();
