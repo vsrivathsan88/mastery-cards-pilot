@@ -5,7 +5,6 @@
   "installCommand": "echo 'Skipping root install'",
   "framework": "vite",
   "outputDirectory": "apps/mastery-cards-app/native-audio-function-call-sandbox/dist",
-  "ignoreCommand": "bash -c 'if [[ $VERCEL_GIT_COMMIT_REF != \"main\" ]] ; then exit 1; else exit 0; fi'",
   "rewrites": [
     {
       "source": "/(.*)",
