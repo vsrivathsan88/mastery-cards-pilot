@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd apps/mastery-cards-app/native-audio-function-call-sandbox && npx vite build",
-  "installCommand": "pnpm install --ignore-scripts",
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "framework": "vite",
   "outputDirectory": "apps/mastery-cards-app/native-audio-function-call-sandbox/dist",
   "rewrites": [

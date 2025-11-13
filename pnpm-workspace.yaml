@@ -1,3 +1,4 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+  - 'apps/mastery-cards-app/native-audio-function-call-sandbox'
