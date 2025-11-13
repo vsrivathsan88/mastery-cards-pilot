@@ -59,7 +59,11 @@ export async function evaluateMastery(
 
   try {
     // Call backend proxy instead of Claude directly (fixes CORS + security)
-    const response = await fetch('http://localhost:3001/api/claude/evaluate', {
+    // Use environment variable for backend URL, with fallback for local development
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const evaluateEndpoint = `${backendUrl}/api/claude/evaluate`;
+
+    const response = await fetch(evaluateEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
