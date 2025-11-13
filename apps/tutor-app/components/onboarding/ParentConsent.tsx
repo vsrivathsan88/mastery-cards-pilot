@@ -47,7 +47,11 @@ export function ParentConsent({ onAgree }: ParentConsentProps) {
           </div>
         </div>
 
-        <button className="cozy-button cozy-button-primary onboarding-button-large" onClick={onAgree}>
+        <button 
+          className="cozy-button cozy-button-primary onboarding-button-large" 
+          onClick={onAgree}
+          data-testid="parent-consent-button"
+        >
           Begin the Adventure ✨
         </button>
       </div>

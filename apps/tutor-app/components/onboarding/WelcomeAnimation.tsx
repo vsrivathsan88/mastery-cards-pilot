@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { createAvatar } from '@dicebear/core';
-import { avataaars } from '@dicebear/collection';
+import { generateAvatarUrl } from '../../lib/avatar-utils';
 
 interface WelcomeAnimationProps {
   name: string;
@@ -18,15 +17,7 @@ export function WelcomeAnimation({ name, avatar, onComplete }: WelcomeAnimationP
   }, [onComplete]);
 
   const getAvatarSvg = () => {
-    const [type, seed] = avatar.split('-');
-    const skinColor = seed === '1' ? 'light' : seed === '2' ? 'brown' : seed === '3' ? 'dark' : 'pale';
-    const avatarData = createAvatar(avataaars, {
-      seed: seed,
-      skinColor: [skinColor],
-      backgroundColor: ['transparent'],
-      size: 200,
-    });
-    return avatarData.toDataUri();
+    return generateAvatarUrl(avatar, 200);
   };
 
   return (
@@ -60,6 +51,7 @@ export function WelcomeAnimation({ name, avatar, onComplete }: WelcomeAnimationP
         <button
           className="cozy-button cozy-button-primary onboarding-button-large pulse-button"
           onClick={onComplete}
+          data-testid="start-learning-button"
         >
           Start Learning! 🚀
         </button>

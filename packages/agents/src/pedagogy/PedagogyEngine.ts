@@ -61,6 +61,9 @@ export class PedagogyEngine extends EventEmitter<PedagogyEvents> {
 
   /**
    * Process transcription and detect milestone completion
+   * 
+   * For Milestone 0 (warmup): This IS the prerequisite check!
+   * Keywords like "different", "bigger" prove understanding - no LLM needed
    */
   public processTranscription(text: string, isFinal: boolean): void {
     if (!isFinal || !this.currentLesson) return;
@@ -68,24 +71,56 @@ export class PedagogyEngine extends EventEmitter<PedagogyEvents> {
     const currentMilestone = this.getCurrentMilestone();
     if (!currentMilestone || currentMilestone.completed) return;
 
-    // Simple keyword matching
+    // Simple keyword matching (instant, no LLM call)
     const matchedKeywords = this.detectKeywords(text, currentMilestone.keywords || []);
     
     if (matchedKeywords.length > 0) {
-      console.log(`[PedagogyEngine] Detected keywords: ${matchedKeywords.join(', ')}`);
+      console.log(`[PedagogyEngine] 🎯 Milestone progress: "${currentMilestone.title}"`);
+      console.log(`[PedagogyEngine]   Keywords: ${matchedKeywords.join(', ')}`);
+      console.log(`[PedagogyEngine]   Student: "${text}"`);
       
       // Track detection attempts
       const detectionKey = `${currentMilestone.id}_${Date.now()}`;
       this.detectionHistory.set(detectionKey, matchedKeywords.length);
       
-      // Emit detection event
+      // Emit detection event (even for 1 keyword - let system guide student)
       this.emit('milestone_detected', currentMilestone, text);
       
-      // If multiple keywords matched, consider it a completion
-      if (matchedKeywords.length >= 2) {
+      // ✅ CRITICAL FIX: Emit progress update so UI updates in real-time
+      // This triggers LessonProgress component and teacher panel to update
+      console.log(`[PedagogyEngine] 📊 Emitting progress update for UI...`);
+      this.emitProgress();
+      
+      // For Milestone 0: ANY keyword match = PASS (it's a simple warmup)
+      // For other milestones: 1 strong keyword OR 2 weak keywords
+      const isWarmup = currentMilestone.id === 'milestone-0-warmup' || 
+                       (currentMilestone as any).purpose === 'prerequisite-assessment';
+      const hasStrongKeyword = this.hasStrongKeyword(matchedKeywords, currentMilestone);
+      
+      if (isWarmup || hasStrongKeyword || matchedKeywords.length >= 2) {
+        console.log(`[PedagogyEngine] ✅ Milestone complete!`);
         this.completeMilestone();
+      } else {
+        console.log(`[PedagogyEngine] 💭 Good progress, need a bit more...`);
+      }
+    } else if (currentMilestone.id === 'milestone-0-warmup') {
+      // Special handling for warmup - give hints if stuck
+      const attempts = this.detectionHistory.size;
+      if (attempts > 2) {
+        console.log(`[PedagogyEngine] 💡 Student might need a hint on warmup`);
+        // The AI tutor will handle this via context
       }
     }
+  }
+
+  /**
+   * Check if any matched keyword is a "strong" indicator
+   * Strong keywords are longer or more specific
+   */
+  private hasStrongKeyword(matchedKeywords: string[], milestone: Milestone): boolean {
+    // Keywords with 8+ characters are usually more specific
+    // e.g., "one-third", "equal parts", "rectangle"
+    return matchedKeywords.some(kw => kw.length >= 8);
   }
 
   /**

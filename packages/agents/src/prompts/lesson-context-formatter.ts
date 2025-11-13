@@ -23,6 +23,14 @@ export interface LessonContextOptions {
 export function formatLessonContext(options: LessonContextOptions): string {
   const { lesson, milestone, milestoneIndex, isFirstMilestone = true } = options;
 
+  // Extract available images from lesson assets
+  const availableImages = (lesson as any).assets?.map((asset: any) => ({
+    id: asset.id,
+    description: asset.description || asset.alt,
+    usage: asset.usage || 'general',
+    difficulty: asset.difficulty,
+  })) || [];
+
   const contextData = {
     type: 'LESSON_CONTEXT',
     action: isFirstMilestone ? 'START_LESSON' : 'CONTINUE_LESSON',
@@ -33,18 +41,26 @@ export function formatLessonContext(options: LessonContextOptions): string {
       objectives: lesson.objectives,
       standards: (lesson as any).standards || [],
       gradeLevel: (lesson as any).gradeLevel,
+      availableImages, // ✅ NOW Pi knows what images exist!
     },
     currentMilestone: {
       title: milestone.title,
       description: milestone.description,
       keywords: milestone.keywords || [],
+      storyGuide: milestone.prompt || '',  // ✅ Story narrative with image switching cues
       index: milestoneIndex,
       total: lesson.milestones.length,
       teachingTips: (milestone as any).teachingTips || [],
     },
     instructions: isFirstMilestone
-      ? `Warmly greet the student and introduce the lesson "${lesson.title}". Guide them toward understanding "${milestone.title}" using concrete examples.`
-      : `Move to milestone "${milestone.title}". Celebrate their progress, then guide them toward this new concept.`,
+      ? `Warmly greet the student and introduce the lesson "${lesson.title}". 
+
+CRITICAL: Follow the storyGuide! When you see [Call show_image('id') here], call that tool IMMEDIATELY at that exact moment in the story. Images are NOT optional - they are essential for student understanding. 
+
+Guide them toward "${milestone.title}" using concrete examples and VISUAL AIDS.`
+      : `Move to milestone "${milestone.title}". Celebrate their progress!
+
+CRITICAL: Follow the storyGuide for this new milestone! Call show_image() when you see [Call show_image(...)] instructions. Use visuals to support this new concept - images help students learn!`,
   };
 
   return JSON.stringify(contextData, null, 2);
@@ -58,8 +74,16 @@ export function formatMilestoneTransition(
   completedMilestone: Milestone,
   nextMilestone: Milestone,
   nextMilestoneIndex: number,
-  totalMilestones: number
+  totalMilestones: number,
+  availableImages?: Array<{ id: string; description: string; usage: string }> // ✅ NEW: Image list
 ): string {
+  // Extract suggested images for next milestone based on usage hints
+  const suggestedImages = availableImages?.filter(img => 
+    img.usage === (nextMilestone as any).id || 
+    img.usage?.includes(nextMilestone.title.toLowerCase()) ||
+    img.description?.toLowerCase().includes(nextMilestone.title.toLowerCase().split(' ')[0])
+  ) || [];
+
   const transitionData = {
     type: 'MILESTONE_TRANSITION',
     completed: {
@@ -70,10 +94,22 @@ export function formatMilestoneTransition(
       title: nextMilestone.title,
       description: nextMilestone.description,
       keywords: nextMilestone.keywords || [],
+      storyGuide: nextMilestone.prompt || '',  // ✅ Story narrative for new milestone
       index: nextMilestoneIndex,
       total: totalMilestones,
+      suggestedImages: suggestedImages.length > 0 ? suggestedImages : undefined, // ✅ NEW: Images for this milestone
     },
-    instructions: `Enthusiastically celebrate completing "${completedMilestone.title}", then transition to "${nextMilestone.title}". Guide them toward this new concept with fresh examples.`,
+    instructions: suggestedImages.length > 0
+      ? `Enthusiastically celebrate completing "${completedMilestone.title}"! 🎉
+
+Then transition to "${nextMilestone.title}". 
+
+**REQUIRED: Call show_image() with one of the suggested images RIGHT NOW to introduce this milestone visually!** Then follow the storyGuide with [Call show_image(...)] instructions. Images are ESSENTIAL - students need visuals to learn!`
+      : `Enthusiastically celebrate completing "${completedMilestone.title}"! 🎉
+
+Then transition to "${nextMilestone.title}". 
+
+**IMPORTANT: Follow the storyGuide! Call show_image() when you see [Call show_image(...)] instructions.** Use visuals to teach this concept!`,
   };
 
   return JSON.stringify(transitionData, null, 2);

@@ -38,29 +38,32 @@ export function PiPresence({ isConnected, isSpeaking, lastMessage }: PiPresenceP
       alignItems: 'center',
       gap: '16px',
     }}>
-      {/* Pi Blob Container */}
+      {/* Pi Character Container */}
       <div className="cozy-pi-container">
-        {/* Pi Blob - will be replaced with user's illustration */}
         <div className={`cozy-pi-blob ${isSpeaking ? 'speaking' : ''}`}>
           <img 
-            src="/illustrations/pi-blob.svg" 
+            src="/illustrations/pi.png" 
             alt="Pi"
-            style={{ width: '100%', height: '100%' }}
+            style={{ 
+              width: '100%', 
+              height: '100%',
+              objectFit: 'contain',
+            }}
             onError={(e) => {
-              // Fallback if image not found - show emoji blob
+              // Fallback if image not found
               e.currentTarget.style.display = 'none';
               const fallback = e.currentTarget.parentElement?.querySelector('.fallback-blob') as HTMLElement;
               if (fallback) fallback.style.display = 'flex';
             }}
           />
-          {/* Fallback blob if image doesn't exist yet */}
+          {/* Fallback if image doesn't load */}
           <div 
             className="fallback-blob"
             style={{
-              display: 'none', // Hidden until image errors
+              display: 'none',
               width: '160px',
               height: '160px',
-              borderRadius: '60% 40% 50% 50% / 60% 50% 50% 40%',
+              borderRadius: '50%',
               background: 'linear-gradient(135deg, #7EB5E8, #5A9BD5)',
               alignItems: 'center',
               justifyContent: 'center',

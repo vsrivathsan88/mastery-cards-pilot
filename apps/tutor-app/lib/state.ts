@@ -9,14 +9,25 @@ import { customerSupportTools } from './tools/customer-support';
 import { personalAssistantTools } from './tools/personal-assistant';
 import { navigationSystemTools } from './tools/navigation-system';
 import { lessonTools } from './tools/lesson-tools';
+import { pilotTools } from './tools/pilot-tools';
+import { PILOT_MODE } from './pilot-config';
 
 export type Template = 'customer-support' | 'personal-assistant' | 'navigation-system' | 'lesson-tutor';
+
+// Conditionally add pilot tools if pilot mode is enabled
+const getLessonTools = () => {
+  if (PILOT_MODE.enabled) {
+    console.log('[state] 🧪 Pilot mode: Adding pilot tools to lesson tools');
+    return [...lessonTools, ...pilotTools];
+  }
+  return lessonTools;
+};
 
 const toolsets: Record<Template, FunctionCall[]> = {
   'customer-support': customerSupportTools,
   'personal-assistant': personalAssistantTools,
   'navigation-system': navigationSystemTools,
-  'lesson-tutor': lessonTools,  // Lesson interaction tools (show_image, etc.)
+  'lesson-tutor': getLessonTools(),  // Lesson interaction tools (+ pilot tools if enabled)
 };
 
 const systemPrompts: Record<Template, string> = {
@@ -84,7 +95,7 @@ export const useTools = create<{
   removeTool: (toolName: string) => void;
   updateTool: (oldName: string, updatedTool: FunctionCall) => void;
 }>(set => ({
-  tools: lessonTools,  // Default to lesson tools for tutor app
+  tools: getLessonTools(),  // ✅ Use merged tools (lesson + pilot if enabled)
   template: 'lesson-tutor',
   setTemplate: (template: Template) => {
     set({ tools: toolsets[template], template });

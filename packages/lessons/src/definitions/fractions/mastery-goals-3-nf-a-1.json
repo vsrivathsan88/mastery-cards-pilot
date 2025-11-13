@@ -1,0 +1,305 @@
+{
+  "$schema": "../../schemas/mastery-goals-schema.json",
+  "standard": "3.NF.A.1",
+  "standardDescription": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts; understand a fraction a/b as the quantity formed by a parts of size 1/b.",
+  "gradeLevel": "3",
+  "subject": "fractions",
+  "scope": "unit-fractions",
+  "totalMasteryGoals": 7,
+  "progression": "concrete-to-abstract",
+  "masteryGoals": [
+    {
+      "id": "mg-1-partition-equal",
+      "order": 1,
+      "goal": "Partition shapes into equal parts",
+      "description": "Student can physically or visually divide a shape (circle, rectangle, bar) into b equal-sized parts (where b = 2, 3, 4, or 6)",
+      "cognitiveLevel": "apply",
+      "difficulty": "foundational",
+      "assessmentCriteria": [
+        "Divides a circle into 2, 3, or 4 equal parts using lines from center",
+        "Divides a rectangle into 2, 3, 4, or 6 equal parts using evenly-spaced lines",
+        "Can explain WHY parts are equal (same size, same area, same amount)",
+        "Uses visual strategies (symmetry, measurement, folding) to ensure equality"
+      ],
+      "milestoneMapping": [
+        "milestone-0-warmup",
+        "act-2a-circle",
+        "act-2b-rectangle",
+        "act-2c-bar"
+      ],
+      "evidenceOfMastery": [
+        "Student draws dividing lines that create equal parts",
+        "Student can check their work by comparing part sizes",
+        "Student adjusts unequal partitions when prompted",
+        "Student transfers skill across different shapes"
+      ],
+      "commonErrors": [
+        "Creates unequal parts but doesn't notice",
+        "Counts parts without checking size",
+        "Partitions asymmetrically"
+      ],
+      "scaffolding": {
+        "low": "Show me how to divide this circle into 2 equal parts. Use a line from top to bottom!",
+        "medium": "Draw a circle and divide it into 3 equal parts. How can you check they're equal?",
+        "high": "Choose any shape and partition it into equal fourths. Explain your strategy."
+      }
+    },
+    {
+      "id": "mg-2-recognize-equal-requirement",
+      "order": 2,
+      "goal": "Recognize that fractions require equal parts",
+      "description": "Student understands that fractions can ONLY describe situations where a whole is divided into equal-sized parts, and can discriminate equal from unequal partitioning",
+      "cognitiveLevel": "evaluate",
+      "difficulty": "intermediate",
+      "assessmentCriteria": [
+        "Identifies when a partitioned shape does NOT show equal parts",
+        "Explains why unequal parts cannot be called fractions",
+        "Rejects incorrect fraction labels on unequal partitions",
+        "Articulates the 'equal parts rule' in their own words"
+      ],
+      "milestoneMapping": [
+        "act-2-checkpoint",
+        "act-3c-retrieval"
+      ],
+      "evidenceOfMastery": [
+        "Student correctly identifies unequal partitions in checkpoint task",
+        "Student says 'those can't be thirds because they're different sizes'",
+        "Student critiques incorrect examples with reasoning",
+        "Student checks their own work for equal-ness before labeling fractions"
+      ],
+      "commonErrors": [
+        "Thinks any division creates fractions",
+        "Focuses on number of parts, not size of parts",
+        "Accepts unequal partitions as valid fractions"
+      ],
+      "scaffolding": {
+        "low": "Look at these pieces - are they ALL the same size? If not, can we call them fractions?",
+        "medium": "Is this really one-fourth? How can you tell if the parts are equal?",
+        "high": "Someone says this is 1/3. Are they correct? Prove your answer."
+      }
+    },
+    {
+      "id": "mg-3-unit-fraction-concept",
+      "order": 3,
+      "goal": "Understand unit fractions as 'one part out of b equal parts'",
+      "description": "Student grasps that a unit fraction (1/b) represents taking ONE of the equal parts when a whole is divided into b equal parts",
+      "cognitiveLevel": "understand",
+      "difficulty": "foundational",
+      "assessmentCriteria": [
+        "Can identify 'one part' when shown a partitioned whole",
+        "Connects the idea of 'one piece' to fraction language (one-third, one-fourth)",
+        "Understands that ALL unit fractions follow this pattern (1/2, 1/3, 1/4, 1/6)",
+        "Can explain what 1/b means in concrete terms"
+      ],
+      "milestoneMapping": [
+        "act-3a-naming",
+        "act-3b-notation"
+      ],
+      "evidenceOfMastery": [
+        "Student correctly identifies 'one-third' as one of three equal parts",
+        "Student can generate unit fraction names (one-half, one-fourth, one-sixth)",
+        "Student explains 'each friend gets one-third' in sharing context",
+        "Student connects visual representation to unit fraction concept"
+      ],
+      "commonErrors": [
+        "Confuses unit fraction with the whole",
+        "Thinks 1/3 means '1 and 3'",
+        "Doesn't connect fraction to equal partitioning"
+      ],
+      "scaffolding": {
+        "low": "If we cut into 3 equal parts, each part is called... what?",
+        "medium": "Point to one-third in this picture. Now tell me what one-third means.",
+        "high": "Create your own example of one-fifth and explain what it represents."
+      }
+    },
+    {
+      "id": "mg-4-denominator-meaning",
+      "order": 4,
+      "goal": "Understand denominator as 'total number of equal parts'",
+      "description": "Student understands that the bottom number (denominator) in a fraction tells HOW MANY equal parts the whole is divided into",
+      "cognitiveLevel": "understand",
+      "difficulty": "intermediate",
+      "assessmentCriteria": [
+        "Can identify the denominator in fraction notation (1/3, 1/4, etc.)",
+        "Explains that denominator = number of equal parts in the whole",
+        "Connects denominator to the partitioning action (divided into 4 → denominator is 4)",
+        "Can predict denominator by counting equal parts in a visual"
+      ],
+      "milestoneMapping": [
+        "act-3b-notation"
+      ],
+      "evidenceOfMastery": [
+        "Student says 'the 3 in 1/3 means we cut it into 3 equal pieces'",
+        "Student writes correct denominator when shown partitioned shape",
+        "Student can answer 'Why is the bottom number 4?' with correct reasoning",
+        "Student connects symbolic notation to visual representation"
+      ],
+      "commonErrors": [
+        "Confuses numerator and denominator roles",
+        "Thinks denominator is 'how many we have'",
+        "Can't explain what the bottom number represents"
+      ],
+      "scaffolding": {
+        "low": "See this 1/3? The bottom number is 3. What does that 3 tell us?",
+        "medium": "If I divide a circle into 6 equal parts, what will the bottom number be?",
+        "high": "Why is the denominator 4 in this picture? Connect the visual to the symbol."
+      }
+    },
+    {
+      "id": "mg-5-numerator-meaning",
+      "order": 5,
+      "goal": "Understand numerator as 'number of parts we have'",
+      "description": "Student understands that the top number (numerator) in a fraction tells HOW MANY of those equal parts we're talking about",
+      "cognitiveLevel": "understand",
+      "difficulty": "intermediate",
+      "assessmentCriteria": [
+        "Can identify the numerator in fraction notation",
+        "Explains that numerator = number of parts we're counting or have",
+        "Distinguishes between numerator (parts we have) and denominator (total parts)",
+        "For unit fractions, recognizes numerator is always 1"
+      ],
+      "milestoneMapping": [
+        "act-3b-notation"
+      ],
+      "evidenceOfMastery": [
+        "Student says 'the 1 in 1/3 means we have 1 of those pieces'",
+        "Student can explain both top and bottom numbers correctly",
+        "Student recognizes pattern: unit fractions always have numerator 1",
+        "Student connects notation to real-world context (1 piece out of 3 total)"
+      ],
+      "commonErrors": [
+        "Reverses numerator/denominator meanings",
+        "Thinks top number is total parts",
+        "Doesn't see connection between 1 (top) and 'one piece'"
+      ],
+      "scaffolding": {
+        "low": "In 1/4, what does the top number (1) mean?",
+        "medium": "If each friend gets one piece, why is the numerator 1?",
+        "high": "Explain why unit fractions always have 1 on top."
+      }
+    },
+    {
+      "id": "mg-6-symbolic-visual-connection",
+      "order": 6,
+      "goal": "Connect symbolic notation to visual representations",
+      "description": "Student can fluently move between fraction symbols (1/3) and visual diagrams (circle divided into 3 equal parts with 1 shaded)",
+      "cognitiveLevel": "apply",
+      "difficulty": "intermediate",
+      "assessmentCriteria": [
+        "Given a symbol (1/4), can draw correct visual representation",
+        "Given a visual, can write correct fraction notation",
+        "Explains how symbol and visual connect",
+        "Can identify mismatches between notation and visual"
+      ],
+      "milestoneMapping": [
+        "act-3b-notation",
+        "act-3c-retrieval",
+        "act-4a-transfer"
+      ],
+      "evidenceOfMastery": [
+        "Student draws accurate visual when given 1/3",
+        "Student writes 1/6 when shown appropriate diagram",
+        "Student catches errors (e.g., unequal parts labeled as 1/4)",
+        "Student uses both representations interchangeably"
+      ],
+      "commonErrors": [
+        "Draws wrong number of parts",
+        "Forgets to shade/indicate which part",
+        "Writes fraction that doesn't match visual"
+      ],
+      "scaffolding": {
+        "low": "Show me what 1/2 looks like. Draw it!",
+        "medium": "What fraction does this diagram show? Write the symbol.",
+        "high": "Is this diagram really showing 1/4? Why or why not?"
+      }
+    },
+    {
+      "id": "mg-7-transfer-generalize",
+      "order": 7,
+      "goal": "Transfer and generalize across contexts and shapes",
+      "description": "Student demonstrates deep understanding by applying fraction concepts to new shapes, situations, and self-chosen contexts; can articulate invariant principles",
+      "cognitiveLevel": "create",
+      "difficulty": "advanced",
+      "assessmentCriteria": [
+        "Can partition ANY shape (including irregular ones) into equal parts",
+        "Applies understanding to self-chosen contexts (student picks shape, fraction)",
+        "Articulates the invariant rule: 'equal parts ALWAYS means same size, regardless of shape'",
+        "Demonstrates metacognition about their own understanding"
+      ],
+      "milestoneMapping": [
+        "act-4a-transfer",
+        "act-4b-reflection"
+      ],
+      "evidenceOfMastery": [
+        "Student successfully partitions triangle, hexagon, or other non-standard shape",
+        "Student explains their reasoning and strategy",
+        "Student says things like 'It doesn't matter what shape, they have to be equal'",
+        "Student teaches back the concept to demonstrate full understanding"
+      ],
+      "commonErrors": [
+        "Struggles with non-rectangular shapes",
+        "Can't articulate the general principle",
+        "Only works with practiced examples"
+      ],
+      "scaffolding": {
+        "low": "Try dividing this new shape into equal parts. What strategy will you use?",
+        "medium": "Pick your own shape and fraction. Show me 1/3 of your shape.",
+        "high": "What's the ONE rule that's always true about fractions, no matter what?"
+      }
+    }
+  ],
+  "progressionPath": {
+    "description": "Concrete → Representational → Abstract → Transfer",
+    "stages": [
+      {
+        "stage": "concrete",
+        "masteryGoals": ["mg-1-partition-equal"],
+        "description": "Hands-on partitioning with visual shapes"
+      },
+      {
+        "stage": "representational",
+        "masteryGoals": ["mg-2-recognize-equal-requirement", "mg-3-unit-fraction-concept"],
+        "description": "Connecting visuals to fraction language and concepts"
+      },
+      {
+        "stage": "abstract",
+        "masteryGoals": ["mg-4-denominator-meaning", "mg-5-numerator-meaning", "mg-6-symbolic-visual-connection"],
+        "description": "Understanding symbolic notation and its meaning"
+      },
+      {
+        "stage": "transfer",
+        "masteryGoals": ["mg-7-transfer-generalize"],
+        "description": "Applying to new contexts and articulating principles"
+      }
+    ]
+  },
+  "overallMasteryIndicators": {
+    "fullMastery": [
+      "Student can partition any shape into b equal parts",
+      "Student correctly uses fraction notation with understanding",
+      "Student can explain what numerator and denominator represent",
+      "Student recognizes equal parts requirement",
+      "Student transfers understanding to novel contexts",
+      "Student can teach concept to others"
+    ],
+    "partialMastery": [
+      "Student can partition simple shapes (circles, rectangles) into equal parts",
+      "Student uses some fraction language correctly",
+      "Student sometimes identifies unequal parts",
+      "Student needs scaffolding for symbolic notation"
+    ],
+    "emerging": [
+      "Student attempts partitioning but creates unequal parts",
+      "Student confuses numerator and denominator",
+      "Student struggles to explain fraction meaning",
+      "Student needs significant scaffolding"
+    ]
+  },
+  "metadata": {
+    "createdAt": "2025-10-28",
+    "author": "Simili Pedagogy Team",
+    "version": "1.0",
+    "alignedTo": ["3.NF.A.1", "2.G.A.3"],
+    "notes": "Mastery goals ladder from concrete partitioning to abstract understanding to transfer and generalization. Each goal has clear assessment criteria and scaffolding levels."
+  }
+}

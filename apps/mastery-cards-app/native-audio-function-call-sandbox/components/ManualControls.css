@@ -1,0 +1,105 @@
+.manual-controls {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.manual-controls-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.manual-controls-icon {
+  font-size: 18px;
+}
+
+.manual-controls-title {
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.manual-controls-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manual-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.manual-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.manual-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.manual-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.manual-btn-points {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.manual-btn-bonus {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.manual-btn-next {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.manual-controls-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #999;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .manual-controls {
+    right: 10px;
+    bottom: 80px;
+    padding: 10px;
+  }
+  
+  .manual-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}

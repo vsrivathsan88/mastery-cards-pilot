@@ -1,11 +1,51 @@
-import { ReactNode } from 'react';
+import { ReactNode, RefObject, useState, useEffect } from 'react';
 import { TeacherPanelContainer } from '../teacher-panel';
+// import { SpeechBubbles } from './SpeechBubbles'; // REMOVED: Too cluttered
+import { LessonProgressBar } from './LessonProgressBar';
+import { LessonCanvasRef } from '../LessonCanvas';
+import { useUser } from '../../contexts/UserContext';
+import { generateAvatarUrl } from '../../lib/avatar-utils';
 import '../../styles/cozy-theme.css';
+import './StartButton.css';
+import './WelcomeAnimations.css';
+
+// Filter out Gemini's inner dialogue
+const filterThinkingContent = (text: string): string => {
+  if (!text) return text;
+  
+  let filtered = text;
+  
+  // Remove explicit thinking tags
+  filtered = filtered.replace(/<think>.*?<\/think>/gis, ' ');
+  filtered = filtered.replace(/:::thinking:::.*?:::/gis, ' ');
+  filtered = filtered.replace(/\[THINKING\].*?\[\/THINKING\]/gis, ' ');
+  
+  // Remove meta-commentary about crafting responses
+  filtered = filtered.replace(/\*\*[^*]+\*\*\s*(?:I've|I'm|The|This|Now|Let me).{0,500}?(?=(?:[.!?]\s+(?:[A-Z]|$))|$)/gis, ' ');
+  
+  // Remove specific thinking patterns
+  filtered = filtered.replace(/(?:^|\.\s+)(?:I've acknowledged|I'm now|I've crafted|The plan is|I can hear you|I should|I need to|I'll|Let me think|First,? I|The strategy|My approach).{0,300}?(?=[.!?](?:\s|$)|$)/gis, ' ');
+  
+  // Remove parenthetical thinking
+  filtered = filtered.replace(/\([^)]*(?:strategy|approach|thinking|reasoning|plan|internally)[^)]*\)/gi, ' ');
+  
+  // Remove "Okay" or "Alright" sentence fragments that are thinking artifacts
+  filtered = filtered.replace(/^(?:Okay|Alright|Right|Got it)[.,!]\s*/i, '');
+  
+  // Clean up whitespace
+  filtered = filtered.replace(/\s+/g, ' ').trim();
+  
+  // If we filtered out everything, return empty
+  if (!filtered || filtered.length < 3) return '';
+  
+  return filtered;
+};
 
 interface CozyWorkspaceProps {
   // Lesson info
   lessonTitle?: string;
   onBack?: () => void;
+  currentMilestoneName?: string;
   
   // Progress for constellation
   totalMilestones?: number;
@@ -20,6 +60,8 @@ interface CozyWorkspaceProps {
   // Content
   lessonImage: ReactNode;
   canvas: ReactNode;
+  canvasRef?: RefObject<LessonCanvasRef>;
+  onCanvasChange?: (hasContent: boolean) => void;
   
   // Control handlers
   onConnect: () => void;
@@ -29,17 +71,16 @@ interface CozyWorkspaceProps {
   onExport: () => void;
   onReset: () => void;
   isMuted: boolean;
-}
-
-// Avatar generator using DiceBear
-function generateAvatar(seed: string, type: 'pi' | 'student') {
-  const baseUrl = 'https://api.dicebear.com/7.x';
-  const style = type === 'pi' ? 'bottts-neutral' : 'adventurer';
-  return `${baseUrl}/${style}/svg?seed=${seed}&backgroundColor=transparent`;
+  
+  // Agent indicators
+  isAnalyzing?: boolean;
+  emotionalState?: string;
+  hasActiveMisconceptions?: boolean;
 }
 
 export function CozyWorkspace({
   lessonTitle = 'Learning Session',
+  currentMilestoneName,
   onBack,
   isConnected,
   piSpeaking,
@@ -57,24 +98,124 @@ export function CozyWorkspace({
   isMuted,
   totalMilestones = 0,
   completedMilestones = 0,
+  isAnalyzing = false,
+  emotionalState,
+  hasActiveMisconceptions = false,
 }: CozyWorkspaceProps) {
-  const piAvatarUrl = generateAvatar('pi-tutor', 'pi');
-  const studentAvatarUrl = generateAvatar('student-' + Date.now(), 'student');
+  const { userData } = useUser();
+  
+  // Use the actual Pi illustration and student's selected avatar
+  const piAvatarUrl = '/illustrations/pi.png';
+  const studentAvatarUrl = userData?.avatar 
+    ? generateAvatarUrl(userData.avatar, 80)
+    : generateAvatarUrl('adventurer-1', 80); // Fallback
+  
+  // Transcription display state (fades after 5 seconds)
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [displayMessage, setDisplayMessage] = useState('');
+  const [displayRole, setDisplayRole] = useState<'pi' | 'student'>('pi');
+  
+  // Update display when Pi's message changes
+  useEffect(() => {
+    if (piLastMessage && piLastMessage.trim()) {
+      const filtered = filterThinkingContent(piLastMessage);
+      if (filtered && filtered.trim()) {
+        setDisplayRole('pi');
+        setDisplayMessage(filtered);
+        setShowTranscript(true);
+        
+        // Fade out after 5 seconds
+        const timer = setTimeout(() => {
+          setShowTranscript(false);
+        }, 5000);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [piLastMessage]);
+  
+  // Update display when student's message changes
+  useEffect(() => {
+    if (studentLastMessage && studentLastMessage.trim()) {
+      const filtered = filterThinkingContent(studentLastMessage);
+      if (filtered && filtered.trim()) {
+        setDisplayRole('student');
+        setDisplayMessage(filtered);
+        setShowTranscript(true);
+        
+        // Fade out after 5 seconds
+        const timer = setTimeout(() => {
+          setShowTranscript(false);
+        }, 5000);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [studentLastMessage]);
 
   return (
-    <div className="clean-workspace clean-text">
-      {/* Header */}
-      <div className="clean-workspace-header">
-        {onBack && (
-          <button className="clean-icon-button" onClick={onBack}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        )}
-        <h1 className="clean-workspace-title">{lessonTitle}</h1>
-        <div style={{ width: '48px' }} /> {/* Spacer for center alignment */}
-      </div>
+    <div className="clean-workspace clean-text" style={{ paddingTop: '80px' }}>
+      {/* Header removed - info shown in GameHeader instead */}
+
+      {/* Agent Status Indicators */}
+      {isConnected && (
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          marginBottom: '12px',
+          flexWrap: 'wrap',
+        }}>
+          {/* Analyzing Indicator */}
+          {isAnalyzing && (
+            <div className="clean-badge clean-badge-primary" style={{ 
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}>
+              <span style={{ fontSize: '14px' }}>🔄</span>
+              <span>Analyzing...</span>
+            </div>
+          )}
+
+          {/* Emotional State Indicator */}
+          {emotionalState && emotionalState !== 'neutral' && (
+            <div className={`clean-badge ${
+              emotionalState === 'confused' || emotionalState === 'frustrated' 
+                ? 'clean-badge-danger' 
+                : 'clean-badge-success'
+            }`}>
+              <span style={{ fontSize: '14px' }}>
+                {emotionalState === 'confused' ? '😕' : 
+                 emotionalState === 'frustrated' ? '😤' :
+                 emotionalState === 'excited' ? '😊' : '🙂'}
+              </span>
+              <span>{emotionalState}</span>
+            </div>
+          )}
+
+          {/* Misconception Alert */}
+          {hasActiveMisconceptions && (
+            <div className="clean-badge" style={{
+              background: '#FF6B6B',
+              color: 'white',
+            }}>
+              <span style={{ fontSize: '14px' }}>⚠️</span>
+              <span>Needs Support</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Progress Bar */}
+      {isConnected && totalMilestones > 0 && (
+        <div style={{ marginBottom: '12px' }}>
+          <LessonProgressBar
+            completedMilestones={completedMilestones}
+            totalMilestones={totalMilestones}
+            currentMilestoneName={currentMilestoneName}
+          />
+        </div>
+      )}
+
+      {/* Speech Bubbles - REMOVED: Too cluttered, transcription available in Chat Log tab */}
 
       {/* Main Content: Image + Canvas */}
       <div className="clean-workspace-top">
@@ -133,8 +274,38 @@ export function CozyWorkspace({
           </div>
         </div>
 
-        {/* Center: Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        {/* Center: Transcription + Controls */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+          {/* Transcription Display */}
+          {isConnected && showTranscript && displayMessage && (
+            <div style={{
+              padding: '8px 16px',
+              backgroundColor: displayRole === 'pi' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+              border: `1px solid ${displayRole === 'pi' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+              borderRadius: '8px',
+              fontSize: '13px',
+              lineHeight: '1.5',
+              color: '#1e293b',
+              maxWidth: '600px',
+              maxHeight: '4.5em', // ~3 lines
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              animation: 'fadeIn 0.3s ease-in',
+              transition: 'opacity 0.5s ease-out',
+              opacity: showTranscript ? 1 : 0,
+            }}>
+              <span style={{ fontWeight: '600', marginRight: '6px' }}>
+                {displayRole === 'pi' ? '💬 Pi:' : '💬 You:'}
+              </span>
+              {displayMessage}
+            </div>
+          )}
+          
+          {/* Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           {/* Progress Badge */}
           {totalMilestones > 0 && (
             <div className="clean-badge clean-badge-primary">
@@ -144,9 +315,27 @@ export function CozyWorkspace({
 
           {/* Primary Actions */}
           {!isConnected ? (
-            <button onClick={onConnect} className="clean-button clean-button-primary">
-              🎮 Start Learning
-            </button>
+            <div className="start-button-container">
+              {/* Call-to-action text */}
+              <div className="start-button-cta">
+                <div className="start-button-cta-text">Click here to begin! ⭐</div>
+              </div>
+              
+              {/* Sparkles around button */}
+              <div className="start-button-sparkles">
+                <span className="sparkle">✨</span>
+                <span className="sparkle">✨</span>
+                <span className="sparkle">✨</span>
+                <span className="sparkle">✨</span>
+              </div>
+              
+              <button 
+                onClick={onConnect} 
+                className="start-learning-button start-learning-button-shimmer"
+              >
+                🎮 Start Learning
+              </button>
+            </div>
           ) : (
             <>
               <button onClick={onDisconnect} className="clean-button clean-button-danger">
@@ -169,6 +358,7 @@ export function CozyWorkspace({
           <button onClick={onReset} className="clean-button" title="Reset session">
             🔄
           </button>
+          </div>
         </div>
 
         {/* Right: Student Avatar + Status */}

@@ -13,8 +13,10 @@ export function MilestoneMasteryView() {
   if (milestoneLogs.length === 0) {
     return (
       <div className="empty-state">
-        <p>🎯 No milestones tracked yet</p>
-        <p className="empty-subtitle">Milestone progress will appear as the lesson advances</p>
+        <p>🎯 Ready to track progress</p>
+        <p className="empty-subtitle">
+          Milestones will appear here as the student works through the lesson. Each milestone shows what concepts they're learning and their responses.
+        </p>
       </div>
     );
   }
@@ -35,7 +37,12 @@ export function MilestoneMasteryView() {
   );
 }
 
-function MilestoneCard({ log }: { log: MasteryMilestoneLog }) {
+interface MilestoneCardProps {
+  log: MasteryMilestoneLog;
+  key?: string;
+}
+
+function MilestoneCard({ log }: MilestoneCardProps) {
   const getStatusIcon = (status: MasteryMilestoneLog['status']) => {
     switch (status) {
       case 'completed': return '✅';

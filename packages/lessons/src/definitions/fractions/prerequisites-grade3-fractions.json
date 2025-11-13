@@ -1,0 +1,300 @@
+{
+  "$schema": "../../schemas/prerequisites-schema.json",
+  "gradeLevel": "3",
+  "subject": "fractions",
+  "targetStandard": "3.NF.A.1",
+  "requiredPriorStandards": [
+    {
+      "code": "2.G.A.3",
+      "description": "Partition circles and rectangles into two, three, or four equal shares, describe the shares using the words halves, thirds, half of, a third of, etc., and describe the whole as two halves, three thirds, four fourths. Recognize that equal shares of identical wholes need not have the same shape."
+    },
+    {
+      "code": "2.MD.A.2",
+      "description": "Measure the length of an object twice, using length units of different lengths for the two measurements; describe how the two measurements relate to the size of the unit chosen."
+    }
+  ],
+  "prerequisites": [
+    {
+      "id": "prereq-counting-1-10",
+      "concept": "Counting 1-10",
+      "description": "Can count objects and recognize quantities from 1 to 10",
+      "mappedToStandard": "K.CC.A.3",
+      "difficulty": "foundational",
+      "requiredFor": ["equal-parts-challenge"],
+      "assessmentStrategy": "conversational-canvas",
+      "wonderHookQuestion": "Luna has 3 friends coming to her party! Can you hold up 3 fingers?",
+      "alternativeAssessments": [
+        "Can you draw 3 cookies on your canvas?",
+        "How many friends do you see in this picture? Let's count together!"
+      ],
+      "passSignals": [
+        "holds up 3 fingers correctly",
+        "draws exactly 3 objects",
+        "counts '1, 2, 3' correctly",
+        "says 'three' confidently"
+      ],
+      "gapSignals": [
+        "holds up wrong number of fingers",
+        "draws 1, 2, or many objects (not 3)",
+        "says 'I don't know'",
+        "skips numbers while counting",
+        "looks confused by counting request"
+      ],
+      "microLesson": {
+        "approach": "guided-counting",
+        "script": "Let's count together! Watch my fingers: One finger... [pause] Two fingers... [pause] Three fingers! Now you try - show me 3 fingers!",
+        "duration": 30,
+        "reAssessQuestion": "Great! Now can you show me 4 fingers?",
+        "visualAid": "counting-fingers-1-to-6.svg"
+      }
+    },
+    {
+      "id": "prereq-equal-different",
+      "concept": "Equal vs. Different (Comparison)",
+      "description": "Can distinguish between objects that are the same size vs. different sizes",
+      "mappedToStandard": "K.MD.A.2",
+      "difficulty": "foundational",
+      "requiredFor": ["equal-parts-challenge"],
+      "assessmentStrategy": "conversational-visual",
+      "wonderHookQuestion": "Look at these cookie pieces Luna cut! Are they the SAME size or DIFFERENT sizes?",
+      "alternativeAssessments": [
+        "If YOU got this tiny piece and your friend got this BIG piece, would that be fair?",
+        "Which piece is bigger - this one or that one?"
+      ],
+      "passSignals": [
+        "different",
+        "not the same",
+        "one is bigger",
+        "unequal",
+        "this one is huge and that one is tiny",
+        "not fair"
+      ],
+      "gapSignals": [
+        "same",
+        "equal",
+        "they're the same size",
+        "I don't know",
+        "I'm not sure",
+        "they look the same to me"
+      ],
+      "microLesson": {
+        "approach": "visual-comparison",
+        "script": "Let me show you! Look at THIS piece - it's BIG like this [gesture]. Now THIS piece - it's tiny like this [gesture]. See how one is HUGE and one is small? They're DIFFERENT sizes! When things are different sizes, we say they're NOT the same.",
+        "duration": 45,
+        "reAssessQuestion": "Now look again at these pieces - are they the same size or different sizes?",
+        "visualAid": "unequal-pieces-comparison-obvious.svg"
+      }
+    },
+    {
+      "id": "prereq-fairness-sharing",
+      "concept": "Fairness in Sharing",
+      "description": "Understands that fair sharing means everyone gets the same amount",
+      "mappedToStandard": "Social-Emotional",
+      "difficulty": "foundational",
+      "requiredFor": ["equal-parts-challenge"],
+      "assessmentStrategy": "conversational-story",
+      "wonderHookQuestion": "Luna cut the cookie but Carlos got a tiny piece and Maya got a HUGE piece. How do you think Carlos feels?",
+      "alternativeAssessments": [
+        "If you had to share with your best friend, what would 'fair' mean?",
+        "Look at these pieces - is this fair for everyone? Why or why not?"
+      ],
+      "passSignals": [
+        "sad",
+        "not fair",
+        "unfair",
+        "mad",
+        "angry",
+        "upset",
+        "everyone should get the same",
+        "that's not right"
+      ],
+      "gapSignals": [
+        "happy",
+        "fine",
+        "okay",
+        "doesn't matter",
+        "I don't care",
+        "I don't know"
+      ],
+      "microLesson": {
+        "approach": "empathy-building",
+        "script": "Think about your favorite treat - maybe cookies or pizza. If your friend got a HUGE piece and you got a teeny tiny piece, would you feel good? Probably not! Fair means everyone gets the SAME AMOUNT. That way, nobody feels sad.",
+        "duration": 40,
+        "reAssessQuestion": "So if we want to be fair, should everyone's piece be the same size or different sizes?",
+        "visualAid": "fairness-scenario-kids-faces.svg"
+      }
+    },
+    {
+      "id": "prereq-shapes-recognition",
+      "concept": "Basic Shape Recognition",
+      "description": "Can identify and name circles, rectangles, and squares",
+      "mappedToStandard": "2.G.A.1",
+      "difficulty": "foundational",
+      "requiredFor": ["equal-parts-challenge"],
+      "assessmentStrategy": "conversational-canvas",
+      "wonderHookQuestion": "Can you draw a circle on your canvas? That'll be Luna's cookie!",
+      "alternativeAssessments": [
+        "What shape is a pizza? Can you draw one?",
+        "Point to the circle in this picture!"
+      ],
+      "passSignals": [
+        "draws a circle (even imperfect)",
+        "says 'circle' when asked",
+        "draws round shape",
+        "attempts circular shape"
+      ],
+      "gapSignals": [
+        "draws square or rectangle when asked for circle",
+        "says 'I don't know what a circle is'",
+        "random scribbles",
+        "refuses to draw",
+        "asks 'what's a circle?'"
+      ],
+      "microLesson": {
+        "approach": "visual-demonstration",
+        "script": "A circle is a round shape - like a wheel, or a pizza, or the sun! Watch me trace one with my finger: round and round, no corners. Now you try! Make a round shape on your canvas.",
+        "duration": 35,
+        "reAssessQuestion": "Awesome! Now can you draw a square? That's a shape with 4 corners.",
+        "visualAid": "shapes-examples-circle-square-rectangle.svg"
+      }
+    },
+    {
+      "id": "prereq-half-concept",
+      "concept": "Half (Part-Whole Understanding)",
+      "description": "Understands 'half' means splitting something into 2 equal parts",
+      "mappedToStandard": "2.G.A.3",
+      "difficulty": "intermediate",
+      "requiredFor": ["equal-parts-challenge"],
+      "assessmentStrategy": "conversational-visual",
+      "wonderHookQuestion": "If Luna cuts her cookie right down the middle into 2 equal pieces, what do we call each piece?",
+      "alternativeAssessments": [
+        "If you split your sandwich with a friend, how many pieces is that?",
+        "What does 'half' mean to you?"
+      ],
+      "passSignals": [
+        "half",
+        "one half",
+        "halves",
+        "two pieces",
+        "split in the middle",
+        "cut it in two equal parts"
+      ],
+      "gapSignals": [
+        "I don't know",
+        "one piece",
+        "the whole thing",
+        "unsure",
+        "what's half?",
+        "confused response"
+      ],
+      "microLesson": {
+        "approach": "visual-splitting",
+        "script": "When you cut something EXACTLY down the middle into 2 equal parts, each part is called a HALF. Like if you split a cookie right down the middle - you get 2 halves! Each person gets half of the cookie. Half means 'one of two equal parts.'",
+        "duration": 50,
+        "reAssessQuestion": "So if I split this into 2 equal parts, how many halves do I have?",
+        "visualAid": "circle-split-in-half-labeled.svg"
+      }
+    },
+    {
+      "id": "prereq-more-less-comparison",
+      "concept": "More vs. Less (Quantity Comparison)",
+      "description": "Can compare quantities and identify which is more or less",
+      "mappedToStandard": "K.CC.C.6",
+      "difficulty": "foundational",
+      "requiredFor": ["equal-parts-challenge"],
+      "assessmentStrategy": "conversational-visual",
+      "wonderHookQuestion": "Look at these two pieces - which one has MORE cookie? Point to it!",
+      "alternativeAssessments": [
+        "If you wanted the biggest piece, which one would you pick?",
+        "Which friend got more - Carlos with the tiny piece or Maya with the big piece?"
+      ],
+      "passSignals": [
+        "points to larger piece",
+        "says 'this one is bigger'",
+        "Maya got more",
+        "the big one has more",
+        "correctly identifies larger quantity"
+      ],
+      "gapSignals": [
+        "points to smaller piece",
+        "says 'they're the same'",
+        "I don't know",
+        "confused",
+        "picks randomly"
+      ],
+      "microLesson": {
+        "approach": "visual-comparison",
+        "script": "MORE means bigger or greater amount. Look at these two pieces side by side. THIS one [point to big] takes up lots of space - that's MORE. THIS one [point to small] is tiny - that's LESS. Which one would give you more cookie to eat?",
+        "duration": 40,
+        "reAssessQuestion": "Point to the piece that has LESS cookie.",
+        "visualAid": "size-comparison-big-vs-small.svg"
+      }
+    },
+    {
+      "id": "prereq-partitioning-concept",
+      "concept": "Partitioning (Dividing Wholes)",
+      "description": "Understands that wholes can be divided into parts",
+      "mappedToStandard": "2.G.A.3",
+      "difficulty": "intermediate",
+      "requiredFor": ["equal-parts-challenge"],
+      "assessmentStrategy": "conversational-canvas",
+      "wonderHookQuestion": "If Luna wants to share her cookie with 3 friends, what does she need to do?",
+      "alternativeAssessments": [
+        "Show me on the canvas how you'd cut this cookie for 3 people.",
+        "What happens when we need to share one thing with many friends?"
+      ],
+      "passSignals": [
+        "cut it",
+        "divide it",
+        "split it",
+        "make pieces",
+        "break it into parts",
+        "share it"
+      ],
+      "gapSignals": [
+        "I don't know",
+        "give the whole thing to one person",
+        "make more cookies",
+        "confused",
+        "doesn't mention dividing"
+      ],
+      "microLesson": {
+        "approach": "problem-solving",
+        "script": "When we have ONE whole thing (like a cookie) and we need to share with MANY friends, we need to CUT it or DIVIDE it into pieces. That's called partitioning - making a whole into parts. Luna needs to cut her cookie into 3 pieces so each friend gets one!",
+        "duration": 45,
+        "reAssessQuestion": "If there were 4 friends, how many pieces would Luna need to cut?",
+        "visualAid": "whole-to-parts-progression.svg"
+      }
+    }
+  ],
+  "assessmentFlow": {
+    "strategy": "invisible-progressive",
+    "description": "Prerequisites are assessed invisibly through wonder hooks and natural conversation. Start with foundational (counting, equal/different) and progress to intermediate (half, partitioning) only if needed.",
+    "phases": [
+      {
+        "phase": "wonder-hook",
+        "timing": "lesson-start",
+        "prerequisites": ["prereq-equal-different", "prereq-fairness-sharing"],
+        "description": "First story engagement assesses comparison and fairness concepts through Luna's unequal cookie scenario"
+      },
+      {
+        "phase": "early-interaction",
+        "timing": "milestone-0-warmup",
+        "prerequisites": ["prereq-counting-1-10", "prereq-shapes-recognition"],
+        "description": "Canvas drawing requests assess counting and shape recognition naturally"
+      },
+      {
+        "phase": "pre-teaching",
+        "timing": "before-milestone-1",
+        "prerequisites": ["prereq-half-concept", "prereq-partitioning-concept"],
+        "description": "Conversational probing before formal partitioning tasks checks part-whole understanding"
+      }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2025-10-28",
+    "author": "Simili Pedagogy Team",
+    "version": "1.0",
+    "notes": "Invisible assessment strategies aligned with pedagogy design principles - assessment feels like wonder, not testing"
+  }
+}

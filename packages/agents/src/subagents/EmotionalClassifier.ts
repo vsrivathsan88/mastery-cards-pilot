@@ -41,8 +41,8 @@ export class EmotionalClassifier {
           return await generateText({
             model: this.model('gemini-2.0-flash-exp'),
             prompt,
-            temperature: 0.3, // Lower temperature for consistent analysis
-            maxOutputTokens: 500,
+            temperature: 0.2, // Low for consistent, fast analysis
+            maxOutputTokens: 250, // Short output for speed
           });
         },
         {
@@ -75,45 +75,45 @@ export class EmotionalClassifier {
 
   private buildPrompt(transcript: string, history?: string[]): string {
     const historyContext = history && history.length > 0
-      ? `\n\nRecent conversation:\n${history.slice(-3).join('\n')}`
+      ? `\nRECENT: ${history.slice(-2).join(' → ')}`
       : '';
 
-    return `You are an expert educational psychologist analyzing student emotional state during tutoring.
+    // OPTIMIZED PROMPT: Concise, structured, fast for Gemini 2.0 Flash
+    return `Analyze student's emotional state. Return JSON ONLY.
 
-Analyze this student's utterance for emotional cues:
-"${transcript}"${historyContext}
+STUDENT SAID: "${transcript}"${historyContext}
 
-Detect the student's emotional state and engagement:
+EMOTIONAL STATES:
+- frustrated: "I don't know", giving up, repetitive errors
+- confused: uncertainty, "wait", "I'm not sure"
+- excited: enthusiasm, "cool!", "I get it!"
+- confident: clear explanations, certainty
+- bored: very short responses, disengaged
+- neutral: normal engagement
 
-**Emotional States:**
-- **frustrated**: Signs of irritation, giving up, "I don't know", "this is hard", repetitive errors
-- **confused**: Uncertainty, asking for clarification, hesitation, "I'm not sure", "wait"
-- **excited**: Enthusiasm, eagerness, "cool!", "I get it!", quick responses
-- **confident**: Certainty, clear explanations, building on concepts
-- **bored**: Disengagement, short responses, lack of elaboration, monotone
-- **neutral**: Normal engagement, no strong emotional indicators
-
-**Response Format (JSON only):**
+OUTPUT JSON FORMAT:
 {
   "state": "frustrated|confused|excited|confident|bored|neutral",
   "engagementLevel": 0.0-1.0,
   "frustrationLevel": 0.0-1.0,
   "confusionLevel": 0.0-1.0,
   "confidence": 0.0-1.0,
-  "evidence": ["specific phrases or patterns"],
-  "recommendation": "brief teaching adjustment suggestion"
+  "evidence": ["phrases"],
+  "recommendation": "one-sentence guidance"
 }
 
-**Guidelines:**
+SCORING:
 - engagement: 0=disengaged, 0.5=normal, 1=highly engaged
-- frustration: 0=none, 0.5=some, 1=very frustrated
-- confusion: 0=clear understanding, 0.5=some uncertainty, 1=very confused
-- confidence: How confident you are in this assessment (0-1)
-- Be sensitive but accurate
-- Short responses might just be thinking, not disengagement
-- Look for patterns if conversation history is provided
+- frustration: 0=none, 1=very frustrated
+- confusion: 0=clear, 1=very confused
+- confidence: your assessment confidence (0-1)
 
-Respond with JSON only:`;
+RULES:
+- Short responses might be thinking, not boredom
+- Be accurate but quick
+- Return valid JSON only
+
+JSON:`;
   }
 
   private parseResponse(text: string, transcript: string): EmotionalState {

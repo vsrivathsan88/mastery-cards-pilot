@@ -1,0 +1,542 @@
+{
+  "standard": "3.NF.A.1",
+  "standard_description": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts; understand a fraction a/b as the quantity formed by a parts of size 1/b",
+  "progression_overview": {
+    "phase_1": "Prerequisites: Equal groups and fair sharing (Images 1-3)",
+    "phase_2": "Introduction to equal parts (Images 4-6)",
+    "phase_3": "Unit fractions 1/b (Images 7-9)",
+    "phase_4": "Non-unit fractions a/b (Images 10-12)",
+    "phase_5": "Advanced understanding (Images 13-15)"
+  },
+  "image_prompts": [
+    {
+      "id": 1,
+      "phase": "prerequisites",
+      "title": "Equal Cookie Sharing",
+      "context": "Snack time at school",
+      "image_prompt": "Photograph-style image showing a white ceramic plate on a light wooden table. On the plate are 4 identical chocolate chip cookies, arranged in a square pattern with equal spacing between them. The cookies are round, golden-brown, with visible chocolate chips. Natural lighting from a window creates soft shadows. The image should be taken from a 45-degree angle to show depth. Include a subtle pattern on the plate edge for visual interest.",
+      "learning_goal": "Recognize equal groups and one-to-one correspondence",
+      "pi_starting_question": "What do you notice about these cookies?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student notices there are 4 cookies that look the same size",
+          "evidence": "Uses language like 'same', 'equal', 'four cookies'"
+        },
+        "green_gem": {
+          "trigger": "Student explains how to share fairly among 4 friends",
+          "evidence": "Describes one-to-one distribution: 'everyone gets one cookie'"
+        }
+      },
+      "prerequisite_skills": ["Counting to 10", "Visual comparison"],
+      "mathematical_focus": "Equal groups, fair sharing"
+    },
+    {
+      "id": 2,
+      "phase": "prerequisites",
+      "title": "Granola Bar Halves",
+      "context": "Lunch box sharing",
+      "image_prompt": "Top-down photograph of a rectangular granola bar on a light blue lunch container. The granola bar is 6 inches long, 2 inches wide, with visible oats, honey drizzle, and dried cranberries. The bar has a clear indented line down the exact middle, showing it can snap into two equal pieces. The texture should be realistic with visible grain and slight glossiness from honey. Place on a solid-colored surface to minimize distractions.",
+      "learning_goal": "Understand splitting one whole into two equal parts",
+      "pi_starting_question": "Someone wants to share this granola bar with a friend. What do you see that could help?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student notices the line in the middle",
+          "evidence": "Points out 'the line' or 'it can break'"
+        },
+        "green_gem": {
+          "trigger": "Student explains the two pieces will be the same size",
+          "evidence": "Uses language like 'equal', 'fair', 'same amount', 'split in half'"
+        }
+      },
+      "prerequisite_skills": ["Understanding of 'same size'", "Concept of sharing"],
+      "mathematical_focus": "Halving, equal partitioning"
+    },
+    {
+      "id": 3,
+      "phase": "prerequisites",
+      "title": "Pizza Slice Arrangement",
+      "context": "Pizza party planning",
+      "image_prompt": "Overhead photograph of a 12-inch round pizza on a wooden cutting board. The pizza has been cut into 8 equal triangular slices, with cut lines clearly visible. The pizza has melted mozzarella cheese, red tomato sauce, and basil leaves visible on each slice. The slices are still arranged in their original circular formation, not separated. Each slice is identical in size. Shot with good lighting to show the geometry clearly, with slight shadows between slices to emphasize the divisions.",
+      "learning_goal": "Recognize a whole divided into equal parts",
+      "pi_starting_question": "Tell Pi about this pizza. What do you see?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies 8 slices or pieces",
+          "evidence": "Counts slices, mentions 'cut up' or 'pieces'"
+        },
+        "green_gem": {
+          "trigger": "Student recognizes all slices are the same size",
+          "evidence": "Says 'equal slices', 'same shape', 'fair for everyone'"
+        },
+        "purple_gem": {
+          "trigger": "Student explains how 8 slices make one whole pizza",
+          "evidence": "Describes that 'all together it's one pizza' or 'if you put them together'"
+        }
+      },
+      "prerequisite_skills": ["Counting to 8", "Understanding 'whole'"],
+      "mathematical_focus": "Partitioning, equal parts forming a whole"
+    },
+    {
+      "id": 4,
+      "phase": "equal_parts_introduction",
+      "title": "Rectangular Brownie Halves",
+      "context": "Dessert sharing",
+      "image_prompt": "Photograph of a rectangular chocolate brownie (6 inches x 4 inches) on a white square plate. The brownie has a single straight cut line down the exact center lengthwise, creating two equal rectangular pieces. Each piece is 3 inches x 4 inches. The brownie has a rich chocolate color with a slightly cracked top surface and visible texture. The two pieces are separated by about 1/4 inch to clearly show they are two parts. Soft overhead lighting creates gentle shadows.",
+      "learning_goal": "Introduction to the term 'one half' as 1 equal part of 2",
+      "pi_starting_question": "This brownie was split. What can you tell Pi about the two pieces?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student describes two equal pieces",
+          "evidence": "Says 'two pieces', 'same size', 'split down the middle'"
+        },
+        "green_gem": {
+          "trigger": "Student uses or understands 'half' or 'one half'",
+          "evidence": "Says 'each person gets half' or accepts Pi's use of 'half'"
+        },
+        "purple_gem": {
+          "trigger": "Student explains what 'one half' means",
+          "evidence": "Describes that it's '1 out of 2 equal pieces' or 'one of the two parts'"
+        }
+      },
+      "prerequisite_skills": ["Recognizing equal parts"],
+      "mathematical_focus": "Introduction to unit fraction 1/2"
+    },
+    {
+      "id": 5,
+      "phase": "equal_parts_introduction",
+      "title": "Square Sandwich Quarters",
+      "context": "Lunch preparation",
+      "image_prompt": "Top-down photograph of a square sandwich (5 inches x 5 inches) on a wooden cutting board. The sandwich has been cut with two perpendicular lines through the center, creating 4 equal square pieces. Each piece is 2.5 inches x 2.5 inches. The sandwich appears to be peanut butter and jelly on whole wheat bread, with the layers visible from the side. The four pieces are slightly separated (about 1/2 inch apart) to clearly show they are distinct parts, but still maintain the original square formation. Natural lighting from the side.",
+      "learning_goal": "Understand dividing a whole into 4 equal parts",
+      "pi_starting_question": "Someone cut this sandwich. What happened to it?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies 4 pieces",
+          "evidence": "Counts and says 'four pieces' or 'four squares'"
+        },
+        "green_gem": {
+          "trigger": "Student recognizes all 4 pieces are equal",
+          "evidence": "Says 'same size', 'equal parts', 'fair for 4 people'"
+        },
+        "purple_gem": {
+          "trigger": "Student can name one piece as 'one fourth' or 'one quarter'",
+          "evidence": "Uses fractional language or understands '1 out of 4 equal parts'"
+        }
+      },
+      "prerequisite_skills": ["Understanding halves", "Counting to 4"],
+      "mathematical_focus": "Introduction to unit fraction 1/4"
+    },
+    {
+      "id": 6,
+      "phase": "equal_parts_introduction",
+      "title": "Circle Divided Three Ways",
+      "context": "Art class sharing",
+      "image_prompt": "Overhead photograph of a circular paper plate (9 inches diameter) with three lines drawn from the center to the edge, dividing it into 3 equal triangular sections. Each section is colored with watercolor paint in different colors: one section light blue, one section light yellow, one section light pink. The lines are drawn with black marker and are clearly visible. Each triangular section has the same angle (120 degrees) and the same area. The plate sits on a white surface with natural lighting.",
+      "learning_goal": "Understand dividing a whole into 3 equal parts",
+      "pi_starting_question": "Three friends want to share this plate equally. What do you notice about how it's divided?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies 3 sections or parts",
+          "evidence": "Counts and mentions 'three parts' or 'three colors'"
+        },
+        "green_gem": {
+          "trigger": "Student recognizes the parts are equal",
+          "evidence": "Says 'same size', 'fair', or 'equal for everyone'"
+        },
+        "purple_gem": {
+          "trigger": "Student can identify one section as 'one third'",
+          "evidence": "Uses language like 'one out of three' or accepts/uses 'one third'"
+        }
+      },
+      "prerequisite_skills": ["Understanding equal parts", "Counting to 3"],
+      "mathematical_focus": "Introduction to unit fraction 1/3"
+    },
+    {
+      "id": 7,
+      "phase": "unit_fractions",
+      "title": "Fraction Strip with Halves",
+      "context": "Measuring ribbon for gift wrapping",
+      "image_prompt": "Photograph of a rectangular strip of ribbon (12 inches long, 2 inches wide) on a white background. The ribbon is teal blue with a subtle satin sheen. There is one vertical line marked exactly in the center (at 6 inches), dividing the ribbon into 2 equal sections. Each section is 6 inches long. Above the ribbon, there are small measurement marks at 0, 6, and 12 inches. The left section has a small label that reads '1/2'. The photograph is taken from directly above with even lighting.",
+      "learning_goal": "Understand 1/2 as the quantity formed by 1 part when a whole is partitioned into 2 equal parts",
+      "pi_starting_question": "Pi sees a ribbon cut in half. Can you explain what '1/2' means here?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student describes the ribbon being split into 2 parts",
+          "evidence": "Says 'two pieces', 'divided in half', 'split'"
+        },
+        "green_gem": {
+          "trigger": "Student explains what 1/2 represents",
+          "evidence": "Says 'one of the two pieces' or 'one half of the whole ribbon'"
+        },
+        "purple_gem": {
+          "trigger": "Student can generalize the concept",
+          "evidence": "Explains 'when you split something in 2, each part is 1/2' or 'the bottom number tells you how many parts'"
+        }
+      },
+      "prerequisite_skills": ["Understanding equal parts", "Recognition of halves"],
+      "mathematical_focus": "Unit fraction 1/2 as 1 part of 2 equal parts"
+    },
+    {
+      "id": 8,
+      "phase": "unit_fractions",
+      "title": "Fraction Circle - Thirds",
+      "context": "Sharing a pancake",
+      "image_prompt": "Top-down photograph of a circular pancake (8 inches diameter) on a white plate. The pancake has a golden-brown color with visible bubbles and slight caramelization. Two straight cuts from the center to the edge divide the pancake into 3 equal triangular sections (120 degrees each). One section has a small flag or toothpick label reading '1/3'. The sections are still arranged in their original circular formation with small visible gaps between them (1/4 inch) to show the divisions. Soft natural lighting creates gentle shadows.",
+      "learning_goal": "Understand 1/3 as the quantity formed by 1 part when a whole is partitioned into 3 equal parts",
+      "pi_starting_question": "Three friends are sharing this pancake. What does the '1/3' label tell us?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies 3 equal parts",
+          "evidence": "Says 'three pieces', 'split three ways'"
+        },
+        "green_gem": {
+          "trigger": "Student explains 1/3 means one of those parts",
+          "evidence": "Says 'one person gets one third' or 'one out of three pieces'"
+        },
+        "purple_gem": {
+          "trigger": "Student explains the relationship between the numbers",
+          "evidence": "Says 'the 3 tells how many total parts' and 'the 1 tells you one of them'"
+        }
+      },
+      "prerequisite_skills": ["Understanding equal parts", "Division into 3"],
+      "mathematical_focus": "Unit fraction 1/3 as 1 part of 3 equal parts"
+    },
+    {
+      "id": 9,
+      "phase": "unit_fractions",
+      "title": "Fraction Rectangle - Eighths",
+      "context": "Chocolate bar sharing",
+      "image_prompt": "Photograph of a rectangular chocolate bar (8 inches long, 2 inches wide) on a light marble surface. The chocolate bar is divided into 8 equal rectangular sections by 7 vertical score lines. Each section is 1 inch wide. The chocolate is dark brown with a slight shine. One section on the left end has a small paper label reading '1/8'. The sections are not broken apart but the score lines are clearly visible, creating slight indentations. Overhead lighting creates subtle shadows along the score lines.",
+      "learning_goal": "Understand 1/8 as the quantity formed by 1 part when a whole is partitioned into 8 equal parts",
+      "pi_starting_question": "This chocolate bar is divided into 8 pieces. What does one piece represent?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student counts or identifies 8 sections",
+          "evidence": "Says 'eight pieces', 'divided into 8 parts'"
+        },
+        "green_gem": {
+          "trigger": "Student explains what 1/8 means",
+          "evidence": "Says 'one out of eight pieces' or 'one eighth of the whole bar'"
+        },
+        "purple_gem": {
+          "trigger": "Student compares to other unit fractions",
+          "evidence": "Says '1/8 is smaller than 1/4' or 'more pieces means smaller parts'"
+        }
+      },
+      "prerequisite_skills": ["Understanding unit fractions", "Counting to 8"],
+      "mathematical_focus": "Unit fraction 1/8 and inverse relationship (more parts = smaller pieces)"
+    },
+    {
+      "id": 10,
+      "phase": "non_unit_fractions",
+      "title": "Two Thirds of a Pizza",
+      "context": "Pizza party",
+      "image_prompt": "Overhead photograph of a circular pizza (12 inches diameter) on a round wooden board. The pizza is divided into 3 equal triangular slices. Two of the slices remain in place, showing melted cheese, pepperoni, and visible texture. One slice space is empty (removed), creating a visible wedge-shaped gap. The two remaining slices together form about 240 degrees of the circle. A small label near the pizza reads '2/3'. The lighting emphasizes the 3D texture of the remaining slices and the empty space.",
+      "learning_goal": "Understand 2/3 as the quantity formed by 2 parts when a whole is partitioned into 3 equal parts",
+      "pi_starting_question": "Someone ate one slice of this pizza. What fraction is left?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies 2 pieces remaining out of 3 total",
+          "evidence": "Says 'two out of three' or 'one is missing'"
+        },
+        "green_gem": {
+          "trigger": "Student explains what 2/3 means",
+          "evidence": "Says 'two thirds' or 'two of the three equal pieces'"
+        },
+        "purple_gem": {
+          "trigger": "Student connects to unit fraction understanding",
+          "evidence": "Says '2/3 is two 1/3 pieces' or 'it's like 1/3 plus 1/3'"
+        }
+      },
+      "prerequisite_skills": ["Understanding unit fractions", "Understanding 1/3"],
+      "mathematical_focus": "Non-unit fraction as multiple unit fractions (2/3 = two 1/3s)"
+    },
+    {
+      "id": 11,
+      "phase": "non_unit_fractions",
+      "title": "Three Fourths of a Garden",
+      "context": "Planting flowers",
+      "image_prompt": "Top-down photograph of a square raised garden bed (4 feet x 4 feet) divided into 4 equal square sections by two intersecting wooden dividers. Three of the sections contain planted flowers (red tulips, yellow daffodils, and purple pansies). One section is empty dark soil with no plants. Each planted section is 2 feet x 2 feet. A small garden stake in the corner reads '3/4 planted'. Natural outdoor lighting with slight shadows from the plants.",
+      "learning_goal": "Understand 3/4 as the quantity formed by 3 parts when a whole is partitioned into 4 equal parts",
+      "pi_starting_question": "A gardener planted 3 out of 4 sections. What fraction of the garden has flowers?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies 3 planted sections and 1 empty",
+          "evidence": "Says 'three have flowers', 'one is empty', 'three out of four'"
+        },
+        "green_gem": {
+          "trigger": "Student identifies this as 3/4",
+          "evidence": "Says 'three fourths' or 'three quarters of the garden'"
+        },
+        "purple_gem": {
+          "trigger": "Student explains the composition",
+          "evidence": "Says '3/4 means three 1/4 pieces' or 'three of the four equal parts'"
+        }
+      },
+      "prerequisite_skills": ["Understanding 1/4", "Understanding non-unit fractions"],
+      "mathematical_focus": "Non-unit fraction as multiple unit fractions (3/4 = three 1/4s)"
+    },
+    {
+      "id": 12,
+      "phase": "non_unit_fractions",
+      "title": "Five Sixths of a Juice Carton",
+      "context": "Measuring drinks",
+      "image_prompt": "Side-view photograph of a clear rectangular juice container (6 inches tall) with measurement lines dividing it into 6 equal horizontal sections (each 1 inch tall). The container is filled with orange juice to the 5/6 level (5 inches high). The top section is empty/clear. Each section line is marked with a number (1/6, 2/6, 3/6, 4/6, 5/6, 6/6). The orange juice is bright and slightly translucent. A label on the container reads '5/6 full'. Soft lighting creates highlights on the glass.",
+      "learning_goal": "Understand 5/6 as the quantity formed by 5 parts when a whole is partitioned into 6 equal parts",
+      "pi_starting_question": "This juice container shows different fraction levels. What does 5/6 mean here?",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies 5 filled sections out of 6 total",
+          "evidence": "Says 'five parts full', 'one part empty', 'five out of six'"
+        },
+        "green_gem": {
+          "trigger": "Student explains 5/6 as a fraction",
+          "evidence": "Says 'five sixths' or 'five of the six equal parts'"
+        },
+        "purple_gem": {
+          "trigger": "Student relates to unit fractions or other fractions",
+          "evidence": "Says '5/6 is almost full, just 1/6 away from full' or compares to other fractions"
+        }
+      },
+      "prerequisite_skills": ["Understanding unit and non-unit fractions", "Counting to 6"],
+      "mathematical_focus": "Non-unit fraction with larger denominator (5/6 = five 1/6s)"
+    },
+    {
+      "id": 13,
+      "phase": "advanced_understanding",
+      "title": "Pi's Confusion: Comparing 1/3 and 1/8",
+      "context": "Lunch choices",
+      "image_prompt": "Side-by-side photograph of two identical whole sandwiches (each 6 inches x 4 inches) on separate white plates. The left sandwich is cut into 3 equal pieces with one piece labeled '1/3'. The right sandwich is cut into 8 equal pieces with one piece labeled '1/8'. Both sandwiches are the same type (turkey and cheese on wheat bread). The 1/3 piece is visibly much larger than the 1/8 piece. Above the image is a speech bubble from Pi's avatar saying: 'Pi thinks 1/8 must be bigger than 1/3 because 8 is bigger than 3!' The pieces are slightly separated to show clear divisions. Overhead lighting makes the size comparison obvious.",
+      "learning_goal": "Identify and correct the misconception that larger denominators mean larger fractions",
+      "pi_starting_question": "Pi is confused! Pi thinks 1/8 should be bigger than 1/3 because 8 is a bigger number than 3. Can you help Pi understand what's wrong with this thinking?",
+      "misconception_targeted": "Larger denominator means larger fraction (treating denominator like whole numbers)",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student identifies that 1/3 is actually bigger by looking at the image",
+          "evidence": "Says 'No, the 1/3 piece is bigger' or 'Pi is wrong, that piece is larger'"
+        },
+        "green_gem": {
+          "trigger": "Student begins to explain why Pi's thinking is incorrect",
+          "evidence": "Says 'the more pieces you cut, the smaller each piece gets' or 'bigger bottom number means smaller pieces'"
+        },
+        "purple_gem": {
+          "trigger": "Student clearly articulates the inverse relationship and why the misconception is wrong",
+          "evidence": "Says 'the bottom number tells how many pieces the whole is split into - more pieces means each piece is smaller' or 'with fractions, bigger denominator means tinier pieces'"
+        },
+        "gold_gem": {
+          "trigger": "Student teaches Pi using their own example or analogy",
+          "evidence": "Creates teaching example: 'If you cut a pizza into 100 slices, each slice would be tiny! That's why 1/100 is really small' or uses comparison to help Pi understand"
+        }
+      },
+      "prerequisite_skills": ["Understanding unit fractions", "Visual comparison"],
+      "mathematical_focus": "Inverse size-partition relationship, correcting denominator misconception",
+      "pi_interaction_notes": "Pi should genuinely seem confused and grateful when student explains. Pi can say things like 'Ohhhh! So more cuts means smaller pieces! Pi gets it now thanks to you!'"
+    },
+    {
+      "id": 14,
+      "phase": "advanced_understanding",
+      "title": "Pi's Mistake: Unequal Parts",
+      "context": "Sharing a brownie",
+      "image_prompt": "Top-down photograph of a rectangular brownie (8 inches x 4 inches) on a white plate that has been cut into 4 pieces, but the pieces are NOT equal. The cuts are uneven: one large piece (4 inches x 3 inches), one medium piece (2 inches x 3 inches), and two small pieces (1 inch x 3 inches each). Above the brownie is Pi's avatar with a speech bubble saying: 'Pi cut this into 4 pieces, so each piece is 1/4!' The unequal sizes should be obviously visible. One piece has a label '1/4?' with a question mark. The brownie is chocolate with visible texture. Natural lighting shows the size differences clearly.",
+      "learning_goal": "Identify and correct the misconception that any division into parts creates unit fractions (understanding that parts must be EQUAL)",
+      "pi_starting_question": "Pi cut this brownie into 4 pieces and thinks each piece is 1/4. But something seems wrong. What do you notice?",
+      "misconception_targeted": "Any division into n parts creates fractions of 1/n (not recognizing equal parts requirement)",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student notices the pieces are not the same size",
+          "evidence": "Says 'those pieces are different sizes' or 'some are bigger than others' or 'that's not fair'"
+        },
+        "green_gem": {
+          "trigger": "Student explains that fractions require equal parts",
+          "evidence": "Says 'they have to be the same size to be 1/4' or 'for fractions, all the pieces need to be equal'"
+        },
+        "purple_gem": {
+          "trigger": "Student articulates why Pi's cutting doesn't create proper fractions",
+          "evidence": "Says 'just cutting into 4 pieces doesn't make them fourths - they have to be equal pieces' or 'the big piece is more than 1/4 and the small pieces are less than 1/4'"
+        },
+        "gold_gem": {
+          "trigger": "Student teaches Pi how to cut it correctly or explains what equal parts means",
+          "evidence": "Says 'Pi needs to measure and make all pieces exactly the same size' or demonstrates/describes how to create actual fourths"
+        }
+      },
+      "prerequisite_skills": ["Understanding equal parts requirement", "Visual comparison"],
+      "mathematical_focus": "Equal parts requirement for fractions, correcting division misconception",
+      "pi_interaction_notes": "Pi should seem genuinely surprised: 'Oh no! Pi thought cutting into 4 pieces was enough! What does Pi need to do differently?' This reinforces that Pi learns from the student."
+    },
+    {
+      "id": 15,
+      "phase": "advanced_understanding",
+      "title": "Pi's Adding Error: 1/4 + 1/4 = 2/8?",
+      "context": "Pizza party math",
+      "image_prompt": "Top-down photograph of a pizza (12 inches diameter) divided into 4 equal slices. Two of the slices are on a separate plate, clearly shown together. Above the image, Pi's avatar has a thought bubble showing: '1/4 + 1/4 = 2/8' with Pi looking proud. Below the two slices is a label showing '?'. The pizza has pepperoni and cheese, with clear divisions visible. The two slices together form half the pizza (180 degrees). Overhead lighting emphasizes the portions clearly.",
+      "learning_goal": "Identify and correct the misconception of adding fractions by adding numerators and denominators separately",
+      "pi_starting_question": "Pi ate one slice (1/4) and then ate another slice (1/4). Pi added them: 1/4 + 1/4 = 2/8. Pi thinks that makes sense because 1+1=2 and 4+4=8. Is Pi right? What did Pi actually eat?",
+      "misconception_targeted": "Adding fractions by separately adding numerators and denominators (1/a + 1/a = 2/2a)",
+      "mastery_milestone": {
+        "blue_gem": {
+          "trigger": "Student recognizes Pi's answer doesn't match what they see",
+          "evidence": "Says 'that's not 2/8, that's bigger' or 'that looks like half the pizza' or 'something's wrong'"
+        },
+        "green_gem": {
+          "trigger": "Student identifies the correct answer as 2/4 or 1/2",
+          "evidence": "Says 'it's 2/4' or 'that's half the pizza' or 'two fourths equals one half'"
+        },
+        "purple_gem": {
+          "trigger": "Student explains why Pi's method is incorrect",
+          "evidence": "Says 'you can't just add the bottom numbers' or 'the pizza is still divided into 4 pieces, not 8' or 'when you add fractions with the same bottom number, the bottom number stays the same'"
+        },
+        "gold_gem": {
+          "trigger": "Student teaches Pi the correct method with clear reasoning",
+          "evidence": "Explains 'When you add 1/4 + 1/4, you're adding one-fourth plus one-fourth, which is two-fourths. The 4 tells you the size of the pieces, and that doesn't change. You only add how many pieces you have' or creates own example to teach Pi"
+        }
+      },
+      "prerequisite_skills": ["Strong understanding of fraction notation", "Understanding of what numerator and denominator represent"],
+      "mathematical_focus": "Correct addition of fractions with like denominators, understanding denominator as partition size",
+      "pi_interaction_notes": "Pi should be confused when corrected: 'But Pi learned that 1+1=2 and 4+4=8! Why doesn't it work that way with fractions?' This creates a teaching moment for the student to explain the meaning of numerator vs denominator."
+    }
+  ],
+  "mastery_progression": {
+    "blue_gem_overall": {
+      "name": "Noticing & Describing",
+      "description": "Student can identify and describe what they see in the image",
+      "indicators": [
+        "Names objects and quantities",
+        "Describes visual patterns",
+        "Uses comparison language (same, different, bigger, smaller)"
+      ]
+    },
+    "green_gem_overall": {
+      "name": "Explaining & Connecting",
+      "description": "Student can explain their thinking and connect to fraction concepts",
+      "indicators": [
+        "Uses fraction vocabulary (half, third, fourth)",
+        "Explains equal parts",
+        "Connects visual to fraction notation"
+      ]
+    },
+    "purple_gem_overall": {
+      "name": "Reasoning & Justifying",
+      "description": "Student can provide mathematical reasoning for their understanding",
+      "indicators": [
+        "Explains why something is or isn't a fraction",
+        "Justifies comparisons with reasoning",
+        "Connects unit fractions to non-unit fractions",
+        "Articulates relationships between numerator and denominator"
+      ]
+    },
+    "gold_gem_overall": {
+      "name": "Teaching & Creating",
+      "description": "Student demonstrates mastery by teaching concept or creating own examples",
+      "indicators": [
+        "Can explain concept to Pi clearly",
+        "Creates their own fraction problems",
+        "Applies understanding to novel situations",
+        "Makes connections across different representations"
+      ]
+    }
+  },
+  "pi_interaction_framework": {
+    "voice_prompts_by_phase": {
+      "notice_wonder": [
+        "What do you notice about [the image]?",
+        "Tell me what you see",
+        "What's interesting here?",
+        "Describe what's happening in the picture"
+      ],
+      "explain_thinking": [
+        "How would you explain this?",
+        "Walk Pi through your thinking",
+        "What makes you say that?",
+        "Can you tell me more about that?"
+      ],
+      "deepen_understanding": [
+        "Why do you think that's true?",
+        "What would happen if...?",
+        "How do you know?",
+        "Can you show Pi what you mean?"
+      ],
+      "teach_back": [
+        "Can you teach this to Pi?",
+        "How would you explain this to a friend?",
+        "Can you create a similar problem?",
+        "Where else might you see this?"
+      ]
+    },
+    "pi_response_principles": [
+      "Pi is a curious peer, not a teacher",
+      "Pi asks focusing questions, not funneling questions",
+      "Pi celebrates understanding, not just correct answers",
+      "Pi shows genuine wonder at student explanations",
+      "Pi occasionally shares their own (sometimes incorrect) thinking to prompt student teaching"
+    ]
+  },
+  "misconception_based_learning": {
+    "pedagogical_rationale": "At the advanced level (images 13-15), Pi intentionally presents common misconceptions for students to identify and correct. This positions the student as the teacher, promoting deeper understanding through explanation and achieving gold gem mastery.",
+    "misconceptions_addressed": {
+      "image_13": {
+        "misconception": "Larger denominator means larger fraction",
+        "why_common": "Students apply whole number thinking to fractions, assuming 8 > 3 means 1/8 > 1/3",
+        "correct_understanding": "The denominator represents how many pieces the whole is divided into; more pieces means smaller individual pieces (inverse relationship)",
+        "pi_role": "Pi genuinely believes 8 is bigger than 3, so 1/8 must be bigger. Student must teach Pi about the inverse relationship."
+      },
+      "image_14": {
+        "misconception": "Any division into n parts creates fractions of 1/n",
+        "why_common": "Students focus on the number of pieces rather than the equal size requirement",
+        "correct_understanding": "Fractions require equal-sized parts; unequal division does not create valid unit fractions",
+        "pi_role": "Pi thinks cutting something into 4 pieces automatically makes each piece 1/4. Student must teach Pi about the equal parts requirement."
+      },
+      "image_15": {
+        "misconception": "Add fractions by adding numerators and denominators separately (1/4 + 1/4 = 2/8)",
+        "why_common": "Students overgeneralize addition rules from whole numbers without understanding what numerator and denominator represent",
+        "correct_understanding": "When adding fractions with like denominators, the denominator stays the same (represents piece size) and only numerators add (number of pieces)",
+        "pi_role": "Pi applies whole number addition logic to both parts of the fraction. Student must teach Pi the meaning of numerator (how many) vs denominator (what size)."
+      }
+    },
+    "teaching_progression": {
+      "student_as_teacher": "By image 13-15, students have enough foundational knowledge to identify errors in thinking. Having them teach Pi reinforces their own understanding.",
+      "pi_authentic_confusion": "Pi should not immediately concede - Pi should ask follow-up questions that make students clarify and deepen their explanations",
+      "celebration_of_teaching": "When student successfully teaches Pi, this earns the gold gem and Pi celebrates: 'You're such a good teacher! Pi understands now because of you!'",
+      "metacognitive_value": "Explaining why something is wrong requires deeper processing than just identifying the correct answer"
+    },
+    "interaction_examples": {
+      "productive_pi_questions": [
+        "But why doesn't it work that way?",
+        "Can you show Pi using the picture?",
+        "What if Pi tried it with a different number - would the same rule work?",
+        "How can Pi remember this for next time?"
+      ],
+      "student_teaching_indicators": [
+        "Uses analogies or creates new examples",
+        "References previous learning ('remember when we...')",
+        "Breaks down explanation into steps",
+        "Checks for Pi's understanding ('Does that make sense?')"
+      ]
+    }
+  },
+  "implementation_notes": {
+    "image_generation_requirements": [
+      "All images must show mathematically accurate equal parts",
+      "Use real, photographed objects when possible, not illustrations",
+      "Maintain consistent lighting and style across images",
+      "Ensure high contrast for visual clarity",
+      "Label fractions subtly but clearly",
+      "Show depth and texture to make images engaging"
+    ],
+    "progression_pacing": [
+      "Images 1-3: Foundation session (15-20 min)",
+      "Images 4-6: Introduction session (15-20 min)",
+      "Images 7-9: Unit fraction mastery (20-25 min across 2 problems)",
+      "Images 10-12: Non-unit fractions (20-25 min across 2 problems)",
+      "Images 13-15: Misconception-based teaching (30-35 min across 3 problems - requires more processing time)"
+    ],
+    "assessment_integration": "Track gem collection across images to determine when student is ready to progress to next phase. Gold gems on images 13-15 indicate true mastery - student can identify errors and teach correct concepts.",
+    "adaptive_pathways": "If student struggles with image, revisit previous image or add scaffolding image between current level and previous",
+    "misconception_implementation": {
+      "timing": "Only introduce misconception-based images (13-15) after student has demonstrated purple gem mastery on images 10-12",
+      "pi_character_consistency": "Pi must maintain authentic confusion, not just pretend. Pi should push back gently to make student really explain their reasoning.",
+      "avoid_negative_framing": "Never say 'Pi is wrong' or 'Pi made a mistake' - instead use 'Pi is confused' or 'Pi is thinking about this differently'",
+      "celebrate_teaching": "When student successfully teaches Pi, acknowledge their role: 'You helped Pi learn something really important!'",
+      "if_student_struggles": "If student doesn't identify the misconception, Pi can say 'Hmm, but when Pi looks at the picture, Pi sees...' to create cognitive conflict"
+    }
+  }
+}

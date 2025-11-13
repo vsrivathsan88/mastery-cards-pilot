@@ -68,12 +68,41 @@ export class AgentOrchestrator {
     });
 
     this.client.on('close', (event) => {
-      logger.warn('Connection closed', { 
-        code: event.code, 
-        reason: event.reason || 'No reason provided',
-        wasClean: event.wasClean
+      // Log with full details for debugging
+      const closeInfo = {
+        code: event.code,
+        reason: event.reason || '(no reason provided)',
+        wasClean: event.wasClean,
+        timestamp: new Date().toISOString(),
+      };
+      
+      // Map common close codes
+      const codeMessages: Record<number, string> = {
+        1000: 'Normal closure',
+        1001: 'Going away (page unload or server shutdown)',
+        1002: 'Protocol error',
+        1003: 'Unsupported data received',
+        1006: 'Abnormal closure (no close frame)',
+        1007: 'Invalid data (non-UTF8)',
+        1008: 'Policy violation',
+        1009: 'Message too large',
+        1010: 'Extension negotiation failed',
+        1011: 'Server error',
+        1015: 'TLS handshake failed',
+      };
+      
+      const codeMessage = codeMessages[event.code] || 'Unknown close code';
+      
+      console.error('[AgentOrchestrator] 🔴 Connection closed!', {
+        ...closeInfo,
+        meaning: codeMessage,
       });
-      console.log('[AgentOrchestrator] Close event details:', event);
+      
+      // Show user-friendly alert for critical errors
+      if (event.code !== 1000 && event.code !== 1001) {
+        console.error(`[AgentOrchestrator] ⚠️ Unexpected disconnect: ${codeMessage} (code ${event.code})`);
+      }
+      
       this.sessionState.status = 'disconnected';
       this.sessionState.endTime = Date.now();
     });

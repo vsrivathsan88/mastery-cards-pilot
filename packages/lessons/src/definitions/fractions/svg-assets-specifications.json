@@ -1,0 +1,398 @@
+{
+  "$schema": "../../schemas/svg-assets-schema.json",
+  "lessonId": "equal-parts-challenge",
+  "standard": "3.NF.A.1",
+  "totalAssets": 20,
+  "adaptiveDifficulty": true,
+  "description": "SVG assets for Equal Parts Challenge lesson with prerequisite assessment, wonder hooks, and adaptive scaffolding",
+  "assets": [
+    {
+      "id": "prereq-counting-fingers-1-to-6",
+      "filename": "counting-fingers-1-to-6.svg",
+      "purpose": "prerequisite-assessment",
+      "difficulty": "foundational",
+      "prerequisite": "prereq-counting-1-10",
+      "description": "Hand showing fingers for counting 1-6, used in prerequisite micro-lesson",
+      "usedIn": ["prerequisite-check", "micro-lesson-counting"],
+      "visualElements": [
+        "Hand outline",
+        "Fingers clearly numbered 1-6",
+        "Simple, kid-friendly style"
+      ],
+      "alt": "Hand showing fingers numbered 1 through 6 for counting practice"
+    },
+    {
+      "id": "prereq-unequal-pieces-obvious",
+      "filename": "unequal-pieces-comparison-obvious.svg",
+      "purpose": "prerequisite-assessment",
+      "difficulty": "foundational",
+      "prerequisite": "prereq-equal-different",
+      "description": "Two cookie pieces side-by-side with VERY obvious size difference (one huge, one tiny) for initial 'equal vs different' assessment",
+      "usedIn": ["wonder-hook", "prerequisite-check"],
+      "visualElements": [
+        "Large cookie piece (3x size)",
+        "Small cookie piece (1x size)",
+        "Clear visual contrast",
+        "Side-by-side placement"
+      ],
+      "alt": "Two cookie pieces with obvious size difference - one large, one tiny"
+    },
+    {
+      "id": "prereq-fairness-kids-faces",
+      "filename": "fairness-scenario-kids-faces.svg",
+      "purpose": "prerequisite-assessment",
+      "difficulty": "foundational",
+      "prerequisite": "prereq-fairness-sharing",
+      "description": "Three kids with different expressions based on piece sizes received (sad, neutral, happy) to assess fairness understanding",
+      "usedIn": ["wonder-hook", "prerequisite-check"],
+      "visualElements": [
+        "Carlos with sad face + tiny piece",
+        "Maya with neutral face + medium piece",
+        "Luna with guilty face + large piece",
+        "Emotional expressions clear"
+      ],
+      "alt": "Three children showing different emotions based on unequal cookie piece sizes"
+    },
+    {
+      "id": "prereq-shapes-examples",
+      "filename": "shapes-examples-circle-square-rectangle.svg",
+      "purpose": "prerequisite-assessment",
+      "difficulty": "foundational",
+      "prerequisite": "prereq-shapes-recognition",
+      "description": "Basic shapes (circle, square, rectangle) labeled for shape recognition prerequisite",
+      "usedIn": ["prerequisite-check", "micro-lesson-shapes"],
+      "visualElements": [
+        "Circle (labeled)",
+        "Square (labeled)",
+        "Rectangle (labeled)",
+        "Simple outlines, clear distinctions"
+      ],
+      "alt": "Three basic shapes - circle, square, and rectangle - clearly labeled"
+    },
+    {
+      "id": "prereq-half-labeled",
+      "filename": "circle-split-in-half-labeled.svg",
+      "purpose": "prerequisite-assessment",
+      "difficulty": "intermediate",
+      "prerequisite": "prereq-half-concept",
+      "description": "Circle divided into 2 equal parts with each half labeled '1/2' or 'one half'",
+      "usedIn": ["prerequisite-check", "micro-lesson-half"],
+      "visualElements": [
+        "Circle with center line",
+        "Two equal halves",
+        "Labels: 'Half' or '1/2'",
+        "Arrows pointing to each half"
+      ],
+      "alt": "Circle divided into two equal halves, each half labeled"
+    },
+    {
+      "id": "prereq-size-comparison",
+      "filename": "size-comparison-big-vs-small.svg",
+      "purpose": "prerequisite-assessment",
+      "difficulty": "foundational",
+      "prerequisite": "prereq-more-less-comparison",
+      "description": "Two objects (cookies/pieces) with clear size difference for more/less comparison",
+      "usedIn": ["prerequisite-check", "micro-lesson-comparison"],
+      "visualElements": [
+        "Large cookie",
+        "Small cookie",
+        "Labels: 'More' and 'Less'",
+        "Visual size contrast"
+      ],
+      "alt": "Two cookies showing size comparison - one large labeled 'more', one small labeled 'less'"
+    },
+    {
+      "id": "prereq-whole-to-parts",
+      "filename": "whole-to-parts-progression.svg",
+      "purpose": "prerequisite-assessment",
+      "difficulty": "intermediate",
+      "prerequisite": "prereq-partitioning-concept",
+      "description": "Visual showing progression from whole circle → divided into 2 parts → divided into 3 parts",
+      "usedIn": ["prerequisite-check", "micro-lesson-partitioning"],
+      "visualElements": [
+        "Whole circle",
+        "Arrow",
+        "Circle with 2 parts",
+        "Arrow",
+        "Circle with 3 parts",
+        "Labels: 'Whole', '2 parts', '3 parts'"
+      ],
+      "alt": "Progression showing a whole circle being divided into 2 parts, then 3 parts"
+    },
+    {
+      "id": "wonder-unequal-cookie-kids",
+      "filename": "unequal-cookie-share.svg",
+      "purpose": "wonder-hook",
+      "difficulty": "easy",
+      "masteryGoal": "mg-2-recognize-equal-requirement",
+      "description": "Luna's cutting attempt - three kids with unequal cookie pieces, faces showing emotions (disappointment, neutral, guilt)",
+      "usedIn": ["act-1-curiosity"],
+      "visualElements": [
+        "Luna, Maya, Carlos characters",
+        "Unequal cookie pieces (varied sizes)",
+        "Emotional facial expressions",
+        "Birthday party setting elements"
+      ],
+      "alt": "Three kids looking at a cookie cut into three unequal pieces - one piece is noticeably larger than the others",
+      "teachingMoment": "Introduces fairness problem and equal vs. unequal comparison"
+    },
+    {
+      "id": "milestone0-identify-difference",
+      "filename": "milestone-0-spot-the-difference.svg",
+      "purpose": "warmup-assessment",
+      "difficulty": "very-easy",
+      "masteryGoal": "mg-2-recognize-equal-requirement",
+      "description": "Simple warm-up: 3 circles with different divisions (1 equal, 2 unequal) for quick assessment",
+      "usedIn": ["milestone-0-warmup"],
+      "visualElements": [
+        "Three circles side by side",
+        "Circle A: 3 equal parts",
+        "Circle B: 3 unequal parts (obvious)",
+        "Circle C: 2 equal parts",
+        "Question: 'Which shows equal parts?'"
+      ],
+      "alt": "Three circles with different divisions - student identifies which has equal parts",
+      "teachingMoment": "Quick prerequisite check before main lesson"
+    },
+    {
+      "id": "act2a-circle-template",
+      "filename": "circle-template-blank.svg",
+      "purpose": "student-practice",
+      "difficulty": "easy",
+      "masteryGoal": "mg-1-partition-equal",
+      "description": "Blank circle template for students to practice dividing into equal parts",
+      "usedIn": ["act-2a-circle"],
+      "visualElements": [
+        "Clean circle outline",
+        "Center point marked (faint)",
+        "No divisions (student draws)"
+      ],
+      "alt": "Blank circle template for student to divide into equal parts",
+      "teachingMoment": "Hands-on practice with circular shapes"
+    },
+    {
+      "id": "act2a-circle-thirds-model",
+      "filename": "circle-divided-thirds-model.svg",
+      "purpose": "worked-example",
+      "difficulty": "easy",
+      "masteryGoal": "mg-1-partition-equal",
+      "description": "Model showing circle correctly divided into 3 equal parts (120° each)",
+      "usedIn": ["act-2a-circle", "scaffolding"],
+      "visualElements": [
+        "Circle with 3 equal sectors",
+        "Lines from center to edge",
+        "Equal angles (visual symmetry)",
+        "Optional: light angle markers"
+      ],
+      "alt": "Circle divided into three equal parts like pizza slices",
+      "teachingMoment": "Shows correct equal partitioning strategy for circles"
+    },
+    {
+      "id": "act2b-rectangle-template",
+      "filename": "rectangle-template-blank.svg",
+      "purpose": "student-practice",
+      "difficulty": "easy",
+      "masteryGoal": "mg-1-partition-equal",
+      "description": "Blank rectangle template for students to practice dividing into equal parts",
+      "usedIn": ["act-2b-rectangle"],
+      "visualElements": [
+        "Clean rectangle outline",
+        "Horizontal orientation",
+        "No divisions (student draws)"
+      ],
+      "alt": "Blank rectangle template for student to divide into equal parts",
+      "teachingMoment": "Transfer partitioning skill to rectangular shapes"
+    },
+    {
+      "id": "act2b-rectangle-fourths-model",
+      "filename": "rectangle-divided-fourths-model.svg",
+      "purpose": "worked-example",
+      "difficulty": "easy",
+      "masteryGoal": "mg-1-partition-equal",
+      "description": "Model showing rectangle correctly divided into 4 equal parts (vertical lines)",
+      "usedIn": ["act-2b-rectangle", "scaffolding"],
+      "visualElements": [
+        "Rectangle with 4 equal sections",
+        "Evenly-spaced vertical lines",
+        "Equal widths"
+      ],
+      "alt": "Rectangle divided into four equal parts with vertical lines",
+      "teachingMoment": "Shows spacing strategy for rectangular partitioning"
+    },
+    {
+      "id": "act2c-bar-sixths-model",
+      "filename": "bar-divided-sixths-model.svg",
+      "purpose": "worked-example",
+      "difficulty": "medium",
+      "masteryGoal": "mg-1-partition-equal",
+      "description": "Long rectangle (sub sandwich bar) divided into 6 equal parts",
+      "usedIn": ["act-2c-bar", "scaffolding"],
+      "visualElements": [
+        "Long horizontal bar",
+        "6 equal sections",
+        "Evenly-spaced vertical lines"
+      ],
+      "alt": "Long bar divided into six equal parts like a sub sandwich",
+      "teachingMoment": "Extends to larger numbers of equal parts"
+    },
+    {
+      "id": "checkpoint-equal-unequal-comparison",
+      "filename": "equal-unequal-comparison.svg",
+      "purpose": "checkpoint-assessment",
+      "difficulty": "medium",
+      "masteryGoal": "mg-2-recognize-equal-requirement",
+      "description": "Three shapes side by side: A has 4 equal quarters, B has 4 unequal parts, C has 3 equal thirds - student identifies which show equal parts",
+      "usedIn": ["act-2-checkpoint"],
+      "visualElements": [
+        "Shape A: rectangle with 4 equal parts (correct)",
+        "Shape B: rectangle with 4 unequal parts (incorrect)",
+        "Shape C: circle with 3 equal parts (correct)",
+        "Labels: A, B, C"
+      ],
+      "alt": "Three shapes for comparison - two show equal parts, one shows unequal parts",
+      "teachingMoment": "Tests discrimination between equal and unequal partitioning"
+    },
+    {
+      "id": "act3b-notation-visual",
+      "filename": "1-3-notation-visual.svg",
+      "purpose": "concept-teaching",
+      "difficulty": "medium",
+      "masteryGoal": "mg-6-symbolic-visual-connection",
+      "description": "Circle divided into 3 equal parts with one shaded, showing 1/3 symbol with arrows connecting to visual",
+      "usedIn": ["act-3b-notation"],
+      "visualElements": [
+        "Circle with 3 equal parts",
+        "One part shaded",
+        "Fraction notation: 1/3",
+        "Arrow from '1' to shaded part ('parts we have')",
+        "Arrow from '3' to whole circle ('total equal parts')"
+      ],
+      "alt": "Circle divided into thirds with notation 1/3 and arrows showing what numerator and denominator represent",
+      "teachingMoment": "Connects symbolic notation to visual meaning"
+    },
+    {
+      "id": "act3c-false-fraction-unequal",
+      "filename": "unequal-labeled-1-4.svg",
+      "purpose": "critical-thinking",
+      "difficulty": "medium",
+      "masteryGoal": "mg-2-recognize-equal-requirement",
+      "description": "Rectangle divided into 4 UNEQUAL parts, incorrectly labeled as '1/4' - student must critique",
+      "usedIn": ["act-3c-retrieval"],
+      "visualElements": [
+        "Rectangle with 4 unequal sections",
+        "Incorrect label: '1/4'",
+        "One part shaded",
+        "Obvious size differences"
+      ],
+      "alt": "Rectangle divided into 4 unequal parts, incorrectly labeled as 1/4",
+      "teachingMoment": "Critical thinking - can student identify and reject incorrect fraction usage?"
+    },
+    {
+      "id": "scaffolding-circle-halves-hint",
+      "filename": "circle-halves-folding-hint.svg",
+      "purpose": "scaffolding-hint",
+      "difficulty": "adaptive-easy",
+      "masteryGoal": "mg-1-partition-equal",
+      "description": "Circle with dotted line showing fold strategy for making halves",
+      "usedIn": ["adaptive-scaffolding"],
+      "visualElements": [
+        "Circle outline",
+        "Dotted vertical line down center",
+        "Small arrows showing 'fold' motion",
+        "Text hint: 'Try folding in half!'"
+      ],
+      "alt": "Circle with dotted line showing how to fold to create equal halves",
+      "teachingMoment": "Low-floor scaffold for struggling students"
+    },
+    {
+      "id": "extension-irregular-shape",
+      "filename": "irregular-shape-partitioning-challenge.svg",
+      "purpose": "extension-challenge",
+      "difficulty": "adaptive-hard",
+      "masteryGoal": "mg-7-transfer-generalize",
+      "description": "Irregular shape (trapezoid or hexagon) for advanced students to partition",
+      "usedIn": ["adaptive-extension"],
+      "visualElements": [
+        "Hexagon or trapezoid",
+        "No divisions (student figures out)",
+        "Challenge prompt"
+      ],
+      "alt": "Irregular hexagon shape for advanced partitioning challenge",
+      "teachingMoment": "High-ceiling challenge for advanced learners"
+    },
+    {
+      "id": "transfer-student-choice-shapes",
+      "filename": "shape-options-for-student-choice.svg",
+      "purpose": "transfer-activity",
+      "difficulty": "adaptive-medium",
+      "masteryGoal": "mg-7-transfer-generalize",
+      "description": "Multiple shape options (circle, square, rectangle, triangle, hexagon) for student to choose and partition",
+      "usedIn": ["act-4a-transfer"],
+      "visualElements": [
+        "5-6 different shapes",
+        "All blank (no divisions)",
+        "Equal size for comparison",
+        "Prompt: 'Pick your shape!'"
+      ],
+      "alt": "Collection of different shapes for student to choose and practice partitioning",
+      "teachingMoment": "Student agency + transfer assessment"
+    }
+  ],
+  "adaptiveDifficultyLevels": {
+    "foundational": {
+      "assetIds": [
+        "prereq-counting-fingers-1-to-6",
+        "prereq-unequal-pieces-obvious",
+        "prereq-fairness-kids-faces",
+        "prereq-shapes-examples",
+        "prereq-size-comparison"
+      ],
+      "description": "Prerequisite assessment and micro-lessons",
+      "whenToUse": "Gap detected in prerequisites"
+    },
+    "easy": {
+      "assetIds": [
+        "milestone0-identify-difference",
+        "act2a-circle-template",
+        "act2a-circle-thirds-model",
+        "act2b-rectangle-template",
+        "scaffolding-circle-halves-hint"
+      ],
+      "description": "Simple partitioning with scaffolding",
+      "whenToUse": "Initial learning, students building confidence"
+    },
+    "medium": {
+      "assetIds": [
+        "act2b-rectangle-fourths-model",
+        "act2c-bar-sixths-model",
+        "checkpoint-equal-unequal-comparison",
+        "act3b-notation-visual",
+        "act3c-false-fraction-unequal"
+      ],
+      "description": "Standard lesson content with challenges",
+      "whenToUse": "Prerequisites met, making progress"
+    },
+    "hard": {
+      "assetIds": [
+        "extension-irregular-shape",
+        "transfer-student-choice-shapes"
+      ],
+      "description": "Extension challenges for advanced students",
+      "whenToUse": "Student mastering quickly, needs challenge"
+    }
+  },
+  "usageGuidelines": {
+    "prerequisiteAssets": "Show immediately if gap detected during wonder hook",
+    "wonderHookAssets": "Use at lesson start for engagement + assessment",
+    "practiceAssets": "Provide as canvas backgrounds or reference images",
+    "checkpointAssets": "Show during milestone verification",
+    "scaffoldingAssets": "Show adaptively based on struggle detection",
+    "extensionAssets": "Offer to fast learners who complete early"
+  },
+  "metadata": {
+    "createdAt": "2025-10-28",
+    "author": "Simili Pedagogy Team",
+    "version": "1.0",
+    "notes": "20 adaptive SVG assets spanning prerequisites → core content → extensions. Designed for invisible assessment and differentiated instruction."
+  }
+}

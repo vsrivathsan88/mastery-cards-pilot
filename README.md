@@ -1,158 +1,158 @@
-# Simili Monorepo
+# Simili - AI-Powered Math Tutor for Kids
 
-A voice AI tutoring platform built with React, Gemini Live, and TypeScript.
+> Joyful, wonder-driven math learning for K-2 students powered by AI voice tutoring
+
+---
+
+## Overview
+
+Simili is an interactive math learning platform that uses **Gemini Live API** for real-time voice tutoring. It combines wonder-first pedagogy with AI-powered emotional intelligence and misconception detection to create personalized, engaging learning experiences for young children.
+
+### Key Features
+
+✨ **Voice-First Tutoring** - Natural conversation with Pi, your AI math companion  
+🎨 **Interactive Canvas** - Draw and explore math concepts visually  
+🧠 **Intelligent Agents** - Real-time emotional and misconception detection  
+📊 **Teacher Panel** - Live analytics for parents and educators  
+🎉 **Celebration System** - Positive reinforcement and encouragement  
+🌟 **Wonder-First Pedagogy** - Discovery-based learning that builds curiosity
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm 8+
+- Gemini API key ([Get one here](https://aistudio.google.com/app/apikey))
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Project-Simili/simili-v4.git
+cd simili-v4
+
+# Install dependencies
+pnpm install
+
+# Set up environment
+cp apps/tutor-app/.env.example apps/tutor-app/.env
+# Add your GEMINI_API_KEY to .env
+
+# Start development server
+pnpm dev
+```
+
+Visit `http://localhost:5173` to start learning!
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Student Input                      │
+│              (Voice/Text/Canvas)                    │
+└────────────────┬────────────────────────────────────┘
+                 │
+                 ▼
+      ┌──────────────────────┐
+      │   Agent System       │
+      │  - Emotional         │
+      │  - Misconception     │
+      │  - Vision            │
+      └──────────┬───────────┘
+                 │
+                 ▼
+      ┌──────────────────────┐
+      │  Gemini Live API     │
+      │   (Voice Tutor)      │
+      └──────────┬───────────┘
+                 │
+                 ▼
+      ┌──────────────────────┐
+      │   UI Components      │
+      │  + Teacher Panel     │
+      └──────────────────────┘
+```
+
+---
+
+## Documentation
+
+📚 **Core Documentation**:
+
+1. [**Design System**](./docs/DESIGN-SYSTEM.md) - Neobrutalist UI guidelines, components, and patterns
+2. [**Agent Architecture**](./docs/AGENT-ARCHITECTURE.md) - AI agent system for emotional intelligence and misconception detection
+3. [**Repository Setup**](./docs/REPOSITORY-SETUP.md) - Development environment and monorepo structure
+4. [**Gemini Live Setup**](./docs/GEMINI-LIVE-SETUP.md) - Voice API integration and configuration
+5. [**Next Steps**](./docs/NEXT-STEPS.md) - Roadmap and future enhancements
+
+---
 
 ## Project Structure
 
 ```
 simili-monorepo-v1/
-├── packages/
-│   ├── shared/           # Shared TypeScript types and utilities
-│   ├── core-engine/      # Gemini Live client and audio handling
-│   ├── agents/           # Pedagogy agent orchestration + prompt management
-│   └── lessons/          # Lesson content, schema, and loader
 ├── apps/
-│   └── tutor-app/        # Main tutoring application (React + Vite)
-├── docs/
-│   └── development-plan.md
-└── package.json          # Root workspace configuration
+│   └── tutor-app/           # React frontend
+│       ├── components/      # UI components
+│       ├── contexts/        # React contexts
+│       ├── hooks/           # Custom hooks
+│       ├── services/        # Agent services
+│       └── styles/          # Design system
+│
+├── packages/
+│   ├── agents/              # AI agent system
+│   └── shared/              # Shared types & lessons
+│
+└── docs/                    # Documentation
 ```
 
-## Package Overview
+---
 
-### @simili/shared
-Common TypeScript types used across all packages:
-- `Event`, `SessionState`, `AudioChunk`, `LessonData`
-- `Milestone`, `EmotionalState`, `TranscriptionEvent`
+## Technology Stack
 
-### @simili/core-engine
-Core Gemini Live integration:
-- `GenAILiveClient` - WebSocket client for Gemini Live API
-- `AudioStreamer` - Audio playback handling
-- `AudioRecorder` - Microphone capture
+- **Frontend**: React 18, TypeScript, Vite
+- **State Management**: Zustand
+- **AI**: Gemini 2.0 Flash (Live API)
+- **Canvas**: TLDraw
+- **Styling**: Custom neobrutalist design system
+- **Monorepo**: pnpm workspaces
 
-### @simili/agents
-Agent orchestration layer:
-- `AgentOrchestrator` - Manages session state and event handling
-- `PedagogyEngine` - Milestone detection and progress tracking
-- `PromptManager` - System prompt generation with lesson context
-- Subscribes to core-engine events and emits pedagogy events
+---
 
-### @simili/lessons
-Lesson content management:
-- `LessonLoader` - Load lessons by ID or subject
-- Lesson schema with objectives, milestones, scaffolding
-- First lesson: Understanding One Half with Chocolate (fractions)
+## Contributing
 
-### tutor-app
-Main React application with:
-- Voice interaction UI
-- Audio visualizer
-- Real-time transcription display
-- Function calling support
+We welcome contributions! Please see [REPOSITORY-SETUP.md](./docs/REPOSITORY-SETUP.md) for development guidelines.
 
-## Getting Started
+### Development Workflow
 
-### Prerequisites
-- Node.js 20+
-- pnpm 9.15+
-
-### Installation
-
+1. Create feature branch: `git checkout -b feat/your-feature`
+2. Make changes and test
+3. Commit with co-authorship:
 ```bash
-# Install dependencies for all packages
-pnpm install
+git commit -m "feat: your feature
 
-# Build all packages
-pnpm -r build
+Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>"
 ```
+4. Push and create pull request
 
-### Development
-
-```bash
-# Start the tutor app in dev mode
-pnpm dev
-
-# Or run from the app directory
-cd apps/tutor-app
-pnpm dev
-```
-
-The app will be available at http://localhost:3000
-
-### Building
-
-```bash
-# Build all packages
-pnpm build
-
-# Build specific package
-pnpm --filter @simili/core-engine build
-
-# Preview production build
-pnpm preview
-```
-
-## Environment Setup
-
-Create a `.env` file in `apps/tutor-app/`:
-
-```
-VITE_GEMINI_API_KEY=your_api_key_here
-```
-
-## Development Workflow
-
-1. **Make changes to packages**: Edit code in `packages/*`
-2. **Rebuild packages**: Run `pnpm -r build` or use watch mode with `pnpm --filter @simili/core-engine dev`
-3. **Test in app**: Changes will be reflected in the tutor-app
-
-## Phase 1 Complete ✅
-
-- [x] Monorepo structure with pnpm workspaces
-- [x] Shared types package
-- [x] Core engine with Gemini Live integration
-- [x] Agents package with orchestrator stub
-- [x] Tutor app migrated and working
-
-## Phase 2 Complete ✅
-
-- [x] Lesson structure package with schema and first lesson (fractions)
-- [x] PedagogyEngine with automatic milestone detection
-- [x] PromptManager with YAML templates and context injection
-- [x] LessonProgress UI component
-- [x] AgentOrchestrator integrated with pedagogy logic
-
-**See `apps/tutor-app/README-PHASE2.md` for usage examples and integration guide.**
-
-## Next Steps (Phase 3)
-
-See `docs/development-plan.md` for Phase 3:
-- Event logging and session replay
-- State snapshots to localStorage/Supabase
-- Latency metrics tracking
-- Session replay viewer
-
-## Scripts
-
-### Root Level
-- `pnpm dev` - Start tutor-app dev server
-- `pnpm build` - Build all packages
-- `pnpm preview` - Preview tutor-app production build
-- `pnpm clean` - Remove all node_modules and build artifacts
-
-### Package Level
-- `pnpm --filter <package-name> <command>` - Run command in specific package
-- `pnpm -r <command>` - Run command in all packages (recursive)
-
-## Architecture Notes
-
-- Uses pnpm workspaces for dependency management
-- TypeScript with strict mode enabled
-- Packages are built before app to ensure types are available
-- Core engine is framework-agnostic (can be used outside React)
-- Agent orchestrator pattern allows for future multi-agent expansion
+---
 
 ## License
 
-See individual package LICENSE files for details.
+[License details to be added]
+
+---
+
+## Contact
+
+- **GitHub**: [Project-Simili/simili-v4](https://github.com/Project-Simili/simili-v4)
+- **Issues**: [Report bugs or request features](https://github.com/Project-Simili/simili-v4/issues)
+
+---
+
+Made with ❤️ for curious young learners

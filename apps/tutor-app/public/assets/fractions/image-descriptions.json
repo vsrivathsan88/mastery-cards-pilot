@@ -1,0 +1,109 @@
+{
+  "description-cards": [
+    {
+      "id": "prereq-unequal-pieces-obvious",
+      "title": "Cookie Size Comparison",
+      "description": "Two rectangular cookies side-by-side:\n\nLarge Cookie (left): 180px × 120px tan rectangle\n• 5 chocolate chips (12px each)\n• Rounded corners\n• Dark navy border\n\nSmall Cookie (right): 60px × 40px tan rectangle  \n• 2 chocolate chips (same 12px size!)\n• Same rounded corners\n• Same dark navy border\n\nNotice: The chocolate chips are the SAME SIZE on both cookies. This helps you see how much bigger one cookie is!",
+      "math_question": "Are these cookies the same size?",
+      "type": "prerequisite"
+    },
+    {
+      "id": "prereq-fairness-kids-faces",
+      "title": "Is This Fair?",
+      "description": "Three friends at a party:\n\nCarlos (left): Sad face 😟\n• Holds tiny cookie (50px wide)\n• Green shirt, party hat\n\nMaya (center): Neutral face 😐\n• Holds medium cookie (90px wide)\n• Yellow shirt, party hat\n\nLuna (right): Guilty/worried face 😬\n• Holds large cookie (140px wide)\n• Purple shirt, party hat\n\nThey're supposed to share equally...",
+      "math_question": "Did everyone get a fair share?",
+      "type": "prerequisite"
+    },
+    {
+      "id": "milestone0-identify-difference",
+      "title": "Three Circles - Which Show Equal Parts?",
+      "description": "Three white circles with divisions:\n\nCircle A (left):\n• Divided into 3 parts from center\n• All three pieces exactly 120° each\n• Perfect symmetry - could rotate it!\n\nCircle B (center):\n• Divided into 3 parts from center  \n• One LARGE piece (170°)\n• One medium piece (105°)\n• One small piece (85°)\n• Clearly unequal!\n\nCircle C (right):\n• Divided into 2 parts\n• Vertical line through middle\n• Perfect halves (180° each)",
+      "math_question": "Which circles have equal parts?",
+      "type": "warmup"
+    },
+    {
+      "id": "act2a-circle-template",
+      "title": "Your Turn: Blank Circle",
+      "description": "A blank white circle for you to draw on:\n\n• 220px diameter\n• Small center dot (shows where to start)\n• Dark navy border\n• Ready for you to divide into equal parts!\n\nYou can draw lines from the center to the edge to create equal sections.",
+      "math_question": "How would you divide this into equal parts?",
+      "type": "practice"
+    },
+    {
+      "id": "act2a-circle-thirds-model",
+      "title": "Example: Circle Divided into Thirds",
+      "description": "White circle divided into 3 equal parts:\n\n• Three lines from center to edge\n• Each line exactly 120° apart\n• Line 1: Straight up (12 o'clock)\n• Line 2: Points to 4 o'clock\n• Line 3: Points to 8 o'clock\n\n• Center dot shows where lines meet\n• Light mint tint on 2 sections (for clarity)\n• All three sections are EXACTLY equal\n\nYou could rotate this circle 120° and it would look the same!",
+      "math_question": "How do you know these parts are equal?",
+      "type": "model"
+    },
+    {
+      "id": "act2b-rectangle-template",
+      "title": "Your Turn: Blank Rectangle",
+      "description": "A blank white rectangle for you to draw on:\n\n• 340px wide × 140px tall\n• Rounded corners\n• Dark navy border\n• Ready for you to divide into equal sections!\n\nYou can draw vertical lines to split it into equal parts.",
+      "math_question": "How would you divide this rectangle equally?",
+      "type": "practice"
+    },
+    {
+      "id": "act2b-rectangle-fourths-model",
+      "title": "Example: Rectangle Divided into Fourths",
+      "description": "White rectangle divided into 4 equal parts:\n\n• Three vertical lines create 4 sections\n• Line 1: At 100px from left\n• Line 2: At 200px from left (halfway!)\n• Line 3: At 300px from left\n\n• Each section is EXACTLY 100px wide\n• Light mint tint on sections 1 & 3\n• You can count: 100 + 100 + 100 + 100 = 400px total\n\nAll four sections are equal!",
+      "math_question": "How wide is each section?",
+      "type": "model"
+    },
+    {
+      "id": "act2c-bar-sixths-model",
+      "title": "Example: Sandwich Divided into Sixths",
+      "description": "Long rectangular sandwich bar divided into 6 equal pieces:\n\n• 480px wide × 100px tall\n• Tan color (like bread!)\n• Five vertical lines create 6 sections\n• Each section: EXACTLY 80px wide\n\n• Small dots suggest texture\n• Rounded ends (like a sub!)\n• All six pieces are equal\n\nPerfect for sharing with 6 friends!",
+      "math_question": "If each piece is 80px, how wide is the whole sandwich?",
+      "type": "model"
+    },
+    {
+      "id": "checkpoint-equal-unequal-comparison",
+      "title": "Assessment: Which Show Equal Parts?",
+      "description": "Three shapes to compare:\n\nShape A (rectangle):\n• Divided into 4 vertical sections\n• Each section: 45px wide\n• All perfectly equal!\n\nShape B (rectangle):\n• Divided into 4 vertical sections\n• Widths: 25px, 70px, 50px, 35px\n• Clearly unequal!\n\nShape C (circle):\n• Divided into 3 sections from center\n• Each section: exactly 120°\n• All perfectly equal!",
+      "math_question": "Which shapes show equal parts: A, B, or C?",
+      "type": "checkpoint"
+    },
+    {
+      "id": "act3b-notation-visual",
+      "title": "Connecting 1/3 to the Visual",
+      "description": "Left side: Circle divided into 3 equal parts\n• One section shaded mint green\n• Two sections white\n• All three parts equal (120° each)\n\nRight side: The fraction 1/3\n• Top number (1) = parts we have (shaded)\n• Bottom number (3) = total equal parts\n\nThe shaded section is ONE out of THREE equal parts = 1/3",
+      "math_question": "What does the top number tell us? What does the bottom number tell us?",
+      "type": "concept"
+    },
+    {
+      "id": "act3c-false-fraction-unequal",
+      "title": "Is This Correct? 🤔",
+      "description": "Rectangle divided into 4 parts and labeled \"1/4\":\n\nBUT WAIT...\n• Section 1: 45px wide\n• Section 2: 105px wide (more than TWICE as big!)\n• Section 3: 85px wide  \n• Section 4: 65px wide\n\nThe sections are NOT equal, but someone called the first section \"1/4\"\n\nFirst section is shaded coral red (to draw attention)",
+      "math_question": "Can we really call this 1/4? Why or why not?",
+      "type": "critical-thinking"
+    },
+    {
+      "id": "scaffolding-circle-halves-hint",
+      "title": "Hint: How to Make Halves",
+      "description": "White circle with a helpful hint:\n\n• Orange dotted line down the middle (vertical)\n• Small curved arrows on each side pointing inward\n• Very subtle shading: left half vs right half\n\nThe dotted line shows where you could fold or draw to make TWO EQUAL HALVES",
+      "math_question": "Where would you draw a line to split this in half?",
+      "type": "hint"
+    },
+    {
+      "id": "extension-irregular-shape",
+      "title": "🌟 Challenge: Hexagon",
+      "description": "Regular hexagon (6-sided shape):\n\n• 200px point-to-point\n• All sides equal length\n• All angles equal (60° each)\n• White fill, dark border\n\n• Small orange dots at each corner\n• Tiny orange dot at center\n\nBlank inside - no divisions yet!\n\nThis is ADVANCED - how would you divide this into equal parts?",
+      "math_question": "Can you figure out how to divide this hexagon into equal pieces?",
+      "type": "challenge"
+    },
+    {
+      "id": "transfer-student-choice-shapes",
+      "title": "Your Choice: Pick a Shape!",
+      "description": "Six different shapes to choose from:\n\nTop row:\n• Circle (140px diameter)\n• Square (130px × 130px)\n• Rectangle (190px × 100px)\n\nBottom row:\n• Triangle (equilateral, 150px sides)\n• Hexagon (130px across)\n• Oval (180px × 110px)\n\nAll shapes are white with dark borders.\nAll are blank inside - ready for YOU to divide!\n\nWhich shape will you choose to practice dividing into equal parts?",
+      "math_question": "Pick one shape and explain how you'd divide it equally!",
+      "type": "choice"
+    },
+    {
+      "id": "reflection-student-teaches-back",
+      "title": "Teach What You Learned!",
+      "description": "Large white rounded rectangle - your workspace:\n\n• 500px wide × 340px tall\n• Blank inside (ready for drawing + writing)\n\nBottom corners show tiny examples:\n• Left: Small circle in thirds (one section mint green)\n• Right: Small rectangle in fourths (one section mint green)\n\nThis is YOUR space to explain what you learned about fractions!\n\nYou can draw pictures and write words to teach someone else.",
+      "math_question": "How would you explain fractions to a friend?",
+      "type": "synthesis"
+    }
+  ]
+}

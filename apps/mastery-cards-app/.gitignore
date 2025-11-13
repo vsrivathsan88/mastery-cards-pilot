@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Replit
+.replit.nix
+.config/
+.upm/
+replit.nix
+.replit
+
+# Reference implementation (not part of product)
+gemini-live-reference/
+
+# Temporary/generated documentation (optional - uncomment if you don't want to commit these)
+# ARCHITECTURE-ANALYSIS.md
+# CRITICAL-FIXES-COMPLETE.md
+# EDGE-CASE-FIXES.md
+# GEMINI-IMPLEMENTATION-FIXES.md
+# IMPLEMENTATION-PLAN.md
+# MIGRATION-GUIDE.md
+# ROBUSTNESS-FIXES-COMPLETE.md
+# ROBUSTNESS-PRIORITIES.md
+# ROBUSTNESS-RECOMMENDATIONS.md
+# TEST-REPORT.md
+# TROUBLESHOOTING.md

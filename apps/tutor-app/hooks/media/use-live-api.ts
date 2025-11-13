@@ -31,6 +31,16 @@ import { LessonLoader } from '@simili/lessons';
 import { LessonData } from '@simili/shared';
 import { apiClient } from '../../lib/api-client';
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ⚠️ DEBUG ONLY - Agent Monitoring
+// TO REMOVE: Delete this import and all debug code blocks
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { useAgentDebugStore, debugLog } from '@/lib/agent-debug-store';
+import { canvasManipulationService } from '@/services/CanvasManipulationService';
+import { useEmojiReactionStore } from '@/lib/emoji-reaction-store';
+import { OutcomeTrackerService } from '@/services/OutcomeTrackerService';
+import { PILOT_MODE } from '@/lib/pilot-config';
+
 export type UseLiveApiResults = {
   client: GenAILiveClient;
   setConfig: (config: LiveConnectConfig) => void;
@@ -65,6 +75,106 @@ export function useLiveApi({
   // Connect orchestrator to client
   useEffect(() => {
     orchestrator.setClient(client);
+    
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ⚠️ DEBUG ONLY - Monitor Agent Activity
+    // TO REMOVE: Delete this entire block
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const setupAgentDebugMonitoring = () => {
+      // Check if getMultiAgentGraph exists (only in full orchestrator, not browser version)
+      const multiAgentGraph = typeof orchestrator.getMultiAgentGraph === 'function' 
+        ? orchestrator.getMultiAgentGraph() 
+        : null;
+      const contextManager = orchestrator.getContextManager();
+      
+      if (!contextManager) {
+        debugLog('Context manager not available for monitoring');
+        return;
+      }
+      
+      if (!multiAgentGraph) {
+        debugLog('Multi-agent graph not available (using browser-safe orchestrator)');
+        // Continue with context manager monitoring only
+      }
+      
+      debugLog('🔬 Agent debug monitoring enabled');
+      
+      // Monitor agent lifecycle events (if they exist and if multiAgentGraph exists)
+      // Note: These events don't exist yet - we'll add them next
+      if (multiAgentGraph) {
+        try {
+          // @ts-ignore - Events will be added to MultiAgentGraph
+          multiAgentGraph.on?.('agent:start', (data: any) => {
+          debugLog('Agent started', data);
+          useAgentDebugStore.getState().addActivity({
+            turn: data.turn,
+            timestamp: data.timestamp || Date.now(),
+            agent: data.agent,
+            status: 'running',
+          });
+        });
+        
+        // @ts-ignore
+        multiAgentGraph.on?.('agent:complete', (data: any) => {
+          debugLog('Agent completed', data);
+          useAgentDebugStore.getState().addActivity({
+            turn: data.turn,
+            timestamp: data.timestamp || Date.now(),
+            agent: data.agent,
+            status: 'complete',
+            duration: data.duration,
+            result: data.result,
+          });
+        });
+        
+        // @ts-ignore
+        multiAgentGraph.on?.('agent:error', (data: any) => {
+          debugLog('Agent error', data);
+          useAgentDebugStore.getState().addActivity({
+            turn: data.turn,
+            timestamp: Date.now(),
+            agent: data.agent,
+            status: 'error',
+          });
+        });
+        } catch (error) {
+          debugLog('Failed to attach agent event listeners (expected if events not implemented yet)');
+        }
+      }
+      
+      // Monitor prerequisite gaps (if events exist)
+      try {
+        // @ts-ignore - Events will be added to ContextManager
+        contextManager.on?.('prerequisite:gap', (gap: any) => {
+          debugLog('Prerequisite gap detected', gap);
+          useAgentDebugStore.getState().addPrerequisiteGap({
+            turn: gap.turn,
+            timestamp: Date.now(),
+            prerequisiteId: gap.prerequisiteId,
+            concept: gap.concept,
+            status: gap.status,
+            confidence: gap.confidence,
+            evidence: gap.evidence,
+            nextAction: gap.nextAction,
+            detectedGap: gap.detectedGap,
+            resolved: gap.resolved,
+          });
+        });
+        
+        // @ts-ignore
+        contextManager.on?.('prerequisite:resolved', (data: any) => {
+          debugLog('Prerequisite gap resolved', data);
+          useAgentDebugStore.getState().resolvePrerequisiteGap(data.prerequisiteId);
+        });
+      } catch (error) {
+        debugLog('Failed to attach prerequisite event listeners (expected if events not implemented yet)');
+      }
+    };
+    
+    setupAgentDebugMonitoring();
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // END DEBUG BLOCK
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   }, [client, orchestrator]);
 
   // register audio for streaming server -> speakers
@@ -131,10 +241,20 @@ export function useLiveApi({
         if (fc.name === 'show_image') {
           const { imageId, context } = fc.args;
           
-          console.log(`[useLiveApi] 🖼️ Showing image: ${imageId}`, context);
+          console.log(`[useLiveApi] 🖼️ TOOL CALL: show_image`, { imageId, context });
+          
+          // Verify image exists in lesson assets
+          const currentLesson = useLessonStore.getState().currentLesson;
+          const imageExists = currentLesson?.assets?.some((asset: any) => asset.id === imageId);
+          
+          if (!imageExists) {
+            console.warn(`[useLiveApi] ⚠️ Image "${imageId}" not found in lesson assets!`);
+            console.log('Available images:', currentLesson?.assets?.map((a: any) => a.id));
+          }
           
           // Update lesson store with current image
-          useLessonStore.getState().setCurrentImage(imageId);
+          useLessonStore.getState().setCurrentImage(imageId as string);
+          console.log(`[useLiveApi] ✅ Current image set to: ${imageId}`);
           
           // Prepare success response
           functionResponses.push({
@@ -143,10 +263,417 @@ export function useLiveApi({
             response: { 
               success: true,
               imageId,
-              message: `Image "${imageId}" is now displayed to the student.`
+              message: `Image "${imageId}" is now displayed to the student.`,
+              found: imageExists,
             },
           });
-        } else {
+        } else if (fc.name === 'mark_milestone_complete') {
+          const { milestoneId, evidence, confidence } = fc.args;
+          
+          console.log(`[useLiveApi] ✅ Tool call: mark_milestone_complete`, { milestoneId, evidence, confidence });
+          
+          // ✅ FIX: Use pedagogy engine as single source of truth
+          const pedagogyEngine = orchestrator.getPedagogyEngine();
+          const currentMilestone = pedagogyEngine.getCurrentMilestone();
+          
+          if (currentMilestone?.id === milestoneId) {
+            // This will trigger the 'milestone_completed' event
+            // which already has a handler that updates both stores
+            pedagogyEngine.completeMilestone();
+            
+            console.log(`[useLiveApi] ✅ Milestone completed via tool call: ${milestoneId}`);
+            
+            functionResponses.push({
+              id: fc.id,
+              name: fc.name,
+              response: { 
+                success: true,
+                milestoneId,
+                message: `Milestone "${milestoneId}" completed successfully (confidence: ${confidence})`
+              },
+            });
+          } else {
+            // Milestone ID mismatch - log warning
+            console.warn(`[useLiveApi] ⚠️ Milestone ID mismatch in tool call:`, {
+              requested: milestoneId,
+              current: currentMilestone?.id,
+            });
+            
+            functionResponses.push({
+              id: fc.id,
+              name: fc.name,
+              response: { 
+                success: false,
+                error: `Milestone mismatch: expected ${currentMilestone?.id}, got ${milestoneId}`
+              },
+            });
+          }
+        } else if (fc.name === 'update_milestone_progress') {
+          const { milestoneId, progressPercent, feedback } = fc.args;
+          
+          console.log(`[useLiveApi] 📈 Updating milestone progress: ${milestoneId}`, { progressPercent, feedback });
+          
+          // Extract concepts from feedback (simple heuristic)
+          const concepts = [feedback as string];
+          
+          // Update teacher panel
+          useTeacherPanel.getState().logMilestoneProgress(
+            milestoneId as string, 
+            feedback as string, 
+            concepts
+          );
+          
+          // Update lesson progress
+          const currentProgress = useLessonStore.getState().progress;
+          if (currentProgress) {
+            useLessonStore.getState().updateProgress({
+              ...currentProgress,
+              percentComplete: progressPercent as number,
+            });
+          }
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              milestoneId,
+              progressPercent,
+              message: `Progress updated to ${progressPercent}%. ${feedback}`
+            },
+          });
+        } else if (fc.name === 'highlight_canvas_area') {
+          const { reason, duration } = fc.args;
+          
+          console.log(`[useLiveApi] 🎯 Highlighting canvas area`, { reason, duration });
+          
+          // TODO: Implement canvas highlight effect when canvas component is ready
+          // For now, just log it
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Canvas area highlighted: ${reason}`
+            },
+          });
+        } 
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // PILOT TOOLS - New tools for outcome tracking pilot
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        else if (fc.name === 'draw_on_canvas') {
+          const { shapeType, coordinates, strokeWidth, purpose, temporary, animated } = fc.args;
+          
+          console.log(`[useLiveApi] 🎨 PILOT: Drawing on canvas`, { shapeType, purpose, temporary });
+          
+          // Draw on canvas using CanvasManipulationService
+          let shapeId: string | null = null;
+          let success = false;
+          let errorMessage = '';
+
+          if (!canvasManipulationService.isReady()) {
+            errorMessage = 'Canvas not ready yet';
+            console.warn(`[useLiveApi] ${errorMessage}`);
+          } else {
+            try {
+              switch (shapeType) {
+                case 'line':
+                  shapeId = canvasManipulationService.drawLine({
+                    x1: coordinates.x1,
+                    y1: coordinates.y1,
+                    x2: coordinates.x2,
+                    y2: coordinates.y2,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'circle':
+                  shapeId = canvasManipulationService.drawCircle({
+                    cx: coordinates.cx,
+                    cy: coordinates.cy,
+                    radius: coordinates.radius,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'rectangle':
+                  shapeId = canvasManipulationService.drawRectangle({
+                    x: coordinates.x,
+                    y: coordinates.y,
+                    width: coordinates.width,
+                    height: coordinates.height,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'arrow':
+                  shapeId = canvasManipulationService.drawArrow({
+                    x1: coordinates.x1,
+                    y1: coordinates.y1,
+                    x2: coordinates.x2,
+                    y2: coordinates.y2,
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                case 'freehand':
+                  shapeId = canvasManipulationService.drawFreehand({
+                    points: coordinates.points || [],
+                    strokeWidth,
+                    temporary,
+                    animated,
+                  });
+                  break;
+                  
+                default:
+                  errorMessage = `Unknown shape type: ${shapeType}`;
+                  console.warn(`[useLiveApi] ${errorMessage}`);
+              }
+
+              success = shapeId !== null;
+            } catch (error) {
+              errorMessage = `Failed to draw: ${error}`;
+              console.error(`[useLiveApi] ${errorMessage}`, error);
+            }
+          }
+          
+          // Log to teacher panel for tracking
+          useLogStore.getState().addTurn({
+            role: 'system',
+            text: success 
+              ? `🎨 Pi drew ${shapeType}: ${purpose}${temporary ? ' (temporary)' : ''}`
+              : `❌ Failed to draw ${shapeType}: ${errorMessage}`,
+            isFinal: true,
+          });
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: success ? { 
+              success: true,
+              message: `Drawing added to canvas: ${shapeType} for ${purpose}`,
+              shapeId,
+              coordinates,
+            } : {
+              success: false,
+              error: errorMessage,
+            },
+          });
+        } else if (fc.name === 'add_canvas_label') {
+          const { text, position, style, fontSize, temporary, pointsTo } = fc.args;
+          
+          console.log(`[useLiveApi] 🏷️ PILOT: Adding canvas label`, { text, style, temporary });
+          
+          // Add text to canvas using CanvasManipulationService
+          let success = false;
+          let errorMessage = '';
+          let shapeId: string | null = null;
+
+          if (!canvasManipulationService.isReady()) {
+            errorMessage = 'Canvas not ready yet';
+            console.warn(`[useLiveApi] ${errorMessage}`);
+          } else {
+            try {
+              shapeId = canvasManipulationService.addText({
+                text,
+                x: position.x,
+                y: position.y,
+                fontSize,
+                style,
+                temporary,
+                pointsTo,
+              });
+              success = shapeId !== null;
+            } catch (error) {
+              errorMessage = `Failed to add label: ${error}`;
+              console.error(`[useLiveApi] ${errorMessage}`, error);
+            }
+          }
+          
+          // Log to teacher panel for tracking
+          useLogStore.getState().addTurn({
+            role: 'system',
+            text: success
+              ? `🏷️ Pi added label: "${text}" (${style || 'annotation'})${temporary ? ' (temporary)' : ''}`
+              : `❌ Failed to add label: ${errorMessage}`,
+            isFinal: true,
+          });
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: success ? { 
+              success: true,
+              message: `Label "${text}" added to canvas`,
+              shapeId,
+              position,
+            } : {
+              success: false,
+              error: errorMessage,
+            },
+          });
+        } else if (fc.name === 'show_emoji_reaction') {
+          const { emoji, intensity, duration, position, reason } = fc.args;
+          
+          console.log(`[useLiveApi] 😊 PILOT: Showing emoji reaction`, { emoji, intensity, reason });
+          
+          // Show emoji using EmojiReactionStore
+          useEmojiReactionStore.getState().showReaction(
+            emoji as string,
+            (intensity as 'subtle' | 'normal' | 'celebration') || 'normal',
+            (duration as number) || 2,
+            (position as 'avatar' | 'center' | 'canvas') || 'avatar',
+            reason as string
+          );
+          
+          // Show in log as visual feedback
+          useLogStore.getState().addTurn({
+            role: 'pi',
+            text: `${emoji}`,
+            isFinal: true,
+          });
+          
+          // Log to teacher panel for tracking
+          console.log(`[useLiveApi] 😊 Pi showed emoji: ${emoji} - ${reason}`);
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Emoji reaction shown: ${emoji}`,
+              intensity: intensity || 'normal',
+              position: position || 'avatar',
+            },
+          });
+        } else if (fc.name === 'verify_student_work') {
+          const { verificationPrompt, focusArea, highlightCanvas } = fc.args;
+          
+          console.log(`[useLiveApi] ✅ PILOT: Verification prompt`, { focusArea, verificationPrompt });
+          
+          // If highlightCanvas requested, highlight the canvas area
+          if (highlightCanvas && canvasManipulationService.isReady()) {
+            // Highlight full canvas area (adjust coordinates as needed)
+            canvasManipulationService.highlightRegion(50, 50, 400, 300, 3000);
+            console.log(`[useLiveApi] Highlighted canvas for verification`);
+          }
+          
+          // Log verification prompt to teacher panel
+          useLogStore.getState().addTurn({
+            role: 'system',
+            text: `✅ Pi asked for verification (${focusArea}): "${verificationPrompt}"`,
+            isFinal: true,
+          });
+          
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { 
+              success: true,
+              message: `Verification prompt sent to student: ${verificationPrompt}`,
+              focusArea,
+              highlighted: highlightCanvas && canvasManipulationService.isReady(),
+            },
+          });
+        } else if (fc.name === 'analyze_student_canvas') {
+          const { purpose, lookingFor } = fc.args;
+          
+          console.log(`[useLiveApi] 👁️ PILOT: Analyzing canvas`, { purpose, lookingFor });
+          
+          // Get canvas reference from StreamingConsole context
+          // This requires passing canvasRef through context or finding it
+          let analysis = null;
+          let success = false;
+          let errorMessage = '';
+          
+          try {
+            // Try to get canvas snapshot
+            // Note: This is simplified - in practice you'd need canvasRef from component
+            const canvasElement = document.querySelector('[data-canvas-id]') as HTMLCanvasElement;
+            
+            if (!canvasElement) {
+              errorMessage = 'Canvas not found or not ready yet';
+              console.warn(`[useLiveApi] ${errorMessage}`);
+              
+              functionResponses.push({
+                id: fc.id,
+                name: fc.name,
+                response: {
+                  success: false,
+                  error: errorMessage,
+                  description: 'No canvas available to analyze.',
+                  suggestion: 'Canvas may not be initialized yet. Try again.',
+                },
+              });
+            } else {
+              // Get canvas as data URL for analysis
+              const dataUrl = canvasElement.toDataURL('image/png');
+              
+              // TODO: Call actual vision analysis service
+              // For now, provide basic feedback
+              analysis = {
+                description: 'Canvas analysis not yet implemented - using placeholder',
+                interpretation: `Looking for: ${lookingFor}`,
+                confidence: 0.5,
+                hasShapes: true,
+                suggestion: 'Vision analysis service integration pending',
+              };
+              
+              success = true;
+              
+              console.log(`[useLiveApi] ✅ Canvas analysis complete (placeholder)`, { purpose });
+              
+              // Log to teacher panel
+              useLogStore.getState().addTurn({
+                role: 'system',
+                text: `👁️ Pi analyzed canvas: ${purpose} (looking for: ${lookingFor})`,
+                isFinal: true,
+              });
+              
+              functionResponses.push({
+                id: fc.id,
+                name: fc.name,
+                response: {
+                  success: true,
+                  description: analysis.description,
+                  interpretation: analysis.interpretation,
+                  confidence: analysis.confidence,
+                  findings: {
+                    hasShapes: analysis.hasShapes,
+                    lookingFor: lookingFor,
+                  },
+                  suggestion: analysis.suggestion,
+                },
+              });
+            }
+          } catch (error) {
+            errorMessage = `Canvas analysis failed: ${error}`;
+            console.error(`[useLiveApi] ${errorMessage}`, error);
+            
+            functionResponses.push({
+              id: fc.id,
+              name: fc.name,
+              response: {
+                success: false,
+                error: errorMessage,
+                description: 'Could not analyze canvas at this time.',
+              },
+            });
+          }
+        } 
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // END PILOT TOOLS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        else {
           // Default response for other tools
           functionResponses.push({
             id: fc.id,
@@ -192,11 +719,23 @@ export function useLiveApi({
     const promptLength = config.systemInstruction?.parts?.[0]?.text?.length || 0;
     const promptPreview = config.systemInstruction?.parts?.[0]?.text?.substring(0, 100) || '';
     
-    console.log('[useLiveApi] 🔌 Connecting...', { 
+    // ✅ ENHANCED: Log full config details for debugging
+    const toolsArray = config.tools || [];
+    const toolNames = toolsArray.map((t: any) => t.functionDeclarations?.[0]?.name).filter(Boolean);
+    
+    console.log('[useLiveApi] 🔌 Connecting with config:', { 
       hasSystemInstruction: !!config.systemInstruction,
       promptLength,
-      promptPreview: promptPreview + '...'
+      promptPreview: promptPreview + '...',
+      toolsCount: toolsArray.length,
+      toolNames: toolNames,
     });
+    
+    if (toolsArray.length === 0) {
+      console.warn('[useLiveApi] ⚠️ WARNING: Connecting with ZERO tools! Tools may not be registered.');
+    } else {
+      console.log('[useLiveApi] ✅ Tools will be registered:', toolNames.join(', '));
+    }
     
     // Don't disconnect if already connected - just check for pending context
     if (client.status === 'connected') {
@@ -260,6 +799,12 @@ export function useLiveApi({
 
       console.log('[useLiveApi] 📝 Final transcription received:', text);
 
+      // CRITICAL: Pass transcription to pedagogy engine for milestone detection
+      // This must happen FIRST for immediate milestone detection
+      console.log('[useLiveApi] 🔄 Sending transcription to PedagogyEngine for keyword matching...');
+      orchestrator.getPedagogyEngine().processTranscription(text, isFinal);
+      console.log('[useLiveApi] ✅ Transcription processed by PedagogyEngine');
+
       // Get current lesson context
       const currentLesson = orchestrator.getPedagogyEngine().getCurrentLesson();
       if (!currentLesson) {
@@ -268,6 +813,22 @@ export function useLiveApi({
       }
 
       const progress = orchestrator.getPedagogyEngine().getProgress();
+      const currentMilestone = orchestrator.getPedagogyEngine().getCurrentMilestone();
+
+      // ✅ SIMPLIFIED: No upfront prerequisite checks!
+      // Milestone 0 warmup keywords ARE the prerequisite check (instant, no LLM needed)
+      // Keywords like "different", "bigger", "smaller" prove they understand the concepts
+      // This makes lesson start instant instead of waiting 1-4 seconds for LLM calls
+
+      // ⚡ PERFORMANCE FIX: Skip heavy agent analysis for first few turns (greetings/intro)
+      // This significantly speeds up lesson start time
+      const turns = useLogStore.getState().turns;
+      const studentTurns = turns.filter(t => t.role === 'user').length;
+      
+      if (studentTurns < 2) {
+        console.log(`[useLiveApi] ⚡ Skipping agent analysis for early interaction (turn ${studentTurns}/2)`);
+        return;
+      }
 
       try {
         console.log('[useLiveApi] 🔍 Sending to backend for analysis...');
@@ -284,21 +845,39 @@ export function useLiveApi({
           },
         });
 
-        console.log('[useLiveApi] ✅ Backend analysis received:', analysis);
+        console.log('[useLiveApi] ✅ Backend analysis received:', {
+          hasEmotional: !!analysis.emotional,
+          hasMisconception: !!analysis.misconception,
+          emotionalState: analysis.emotional?.state,
+          misconceptionType: analysis.misconception?.type,
+        });
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // Bridge: Forward subagent outputs to teacher panel
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        try {
+          useTeacherPanel.getState().syncAgentInsights(
+            analysis.emotional || undefined,
+            analysis.misconception || undefined,
+            text
+          );
+          console.log('[useLiveApi] 📊 Agent insights synced to teacher panel');
+        } catch (error) {
+          console.error('[useLiveApi] ❌ Failed to sync insights to teacher panel:', error);
+        }
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         // If misconception detected, send feedback to agent
         if (analysis.misconception?.detected && analysis.misconception.confidence && analysis.misconception.confidence > 0.7) {
           console.log('[useLiveApi] ⚠️ Misconception detected:', analysis.misconception.type);
 
           // Format misconception feedback as JSON
-          const feedback = formatMisconceptionFeedback([{
-            misconception: analysis.misconception.type || 'unknown',
-            detected: true,
-            confidence: analysis.misconception.confidence,
+          const feedback = formatMisconceptionFeedback({
+            type: analysis.misconception.type || 'unknown',
             evidence: analysis.misconception.evidence || text,
             intervention: analysis.misconception.intervention || 'Address this misconception gently',
-            correction: analysis.misconception.correctiveConcept || 'Guide toward correct understanding',
-          }]);
+            correctiveConcept: analysis.misconception.correctiveConcept || 'Guide toward correct understanding',
+          });
 
           // Send to agent
           if (client.status === 'connected') {
@@ -353,6 +932,16 @@ export function useLiveApi({
 
       } catch (error) {
         console.error('[useLiveApi] ❌ Backend analysis failed:', error);
+        console.error('[useLiveApi] 💡 Make sure backend server is running:');
+        console.error('[useLiveApi]    cd apps/api-server && npm run dev');
+        
+        // Show user-friendly error in UI
+        useLogStore.getState().addTurn({
+          role: 'system',
+          text: '⚠️ Agent analysis unavailable (backend offline). Teacher panel and adaptive behavior disabled.',
+          isFinal: true,
+        });
+        
         // Don't block the conversation if backend fails - just log
       }
     };
@@ -373,9 +962,94 @@ export function useLiveApi({
       useLessonStore.getState().updateProgress(progress);
     };
     
-    const onMilestoneCompleted = (milestone: any) => {
+    const onMilestoneDetected = (milestone: any, transcription: string) => {
+      // ✅ ENHANCED: More detailed logging for debugging
+      console.log('[useLiveApi] 🎯 MILESTONE DETECTED EVENT:', {
+        milestoneId: milestone.id,
+        milestoneTitle: milestone.title,
+        transcription: transcription.substring(0, 50) + '...',
+        keywordsMatched: milestone.keywords,
+      });
+      
+      // 📊 LOG TO TEACHER PANEL: Student working on milestone
+      const { logMilestoneProgress } = require('../lib/teacher-panel-store').useTeacherPanel.getState();
+      logMilestoneProgress(
+        milestone.id,
+        transcription,
+        milestone.keywords || []
+      );
+      
+      console.log('[useLiveApi] ✅ Teacher panel updated - milestone progress');
+      
+      // Verify it was logged
+      const logs = require('../lib/teacher-panel-store').useTeacherPanel.getState().milestoneLogs;
+      console.log('[useLiveApi] 📊 Total milestone logs in panel:', logs.length);
+    };
+    
+    const onMilestoneCompleted = async (milestone: any) => {
       const celebration = PromptManager.generateCelebration(milestone);
       useLessonStore.getState().celebrate(celebration);
+      
+      // 🧪 PILOT: Collect outcome evidence
+      if (PILOT_MODE.enabled && PILOT_MODE.features.outcomeEvidence) {
+        try {
+          // Get recent transcript (last 30 seconds of student speech)
+          const turns = useLogStore.getState().turns;
+          const recentStudentTurns = turns
+            .filter(t => t.role === 'user' && t.isFinal)
+            .slice(-3)
+            .map(t => t.text)
+            .join(' ');
+          
+          // Get canvas snapshot if available
+          let canvasSnapshot: string | null = null;
+          let canvasShapeCount = 0;
+          try {
+            const canvasRef = (document.querySelector('[data-canvas-ref]') as any)?.getSnapshot;
+            if (canvasRef) {
+              canvasSnapshot = await canvasRef();
+              canvasShapeCount = (document.querySelector('[data-canvas-ref]') as any)?.getShapeCount?.() || 0;
+            }
+          } catch (error) {
+            console.warn('[useLiveApi] Could not get canvas snapshot:', error);
+          }
+          
+          // Get tool calls for this milestone (from logs)
+          const toolCalls = turns
+            .filter(t => t.role === 'system' && t.text.includes('Pi drew') || t.text.includes('Pi added'))
+            .slice(-5)
+            .map(t => ({
+              name: t.text.includes('drew') ? 'draw_on_canvas' : 'add_canvas_label',
+              timestamp: t.timestamp.getTime(),
+              purpose: t.text,
+            }));
+          
+          // Collect evidence
+          const evidence = await OutcomeTrackerService.collectEvidence(milestone, {
+            transcript: recentStudentTurns,
+            canvasSnapshot: canvasSnapshot || undefined,
+            canvasShapeCount,
+            toolCallsUsed: toolCalls,
+            timeSpent: milestone.timeSpent || 60, // Default 60s if not tracked
+            attemptCount: 1,
+          });
+          
+          console.log('[useLiveApi] 🧪 Outcome evidence collected:', evidence);
+          
+          // TODO: Store evidence with milestone log
+          // This would require updating logMilestoneComplete to accept evidence
+        } catch (error) {
+          console.error('[useLiveApi] Failed to collect outcome evidence:', error);
+        }
+      }
+      
+      // 📊 LOG TO TEACHER PANEL: Milestone completed
+      const { logMilestoneComplete } = require('../lib/teacher-panel-store').useTeacherPanel.getState();
+      logMilestoneComplete(
+        milestone.id,
+        `Student mastered: ${milestone.title}`
+      );
+      console.log('[useLiveApi] ✅ Milestone completion logged to teacher panel:', milestone.title);
       
       // Log celebration to conversation
       useLogStore.getState().addTurn({
@@ -391,12 +1065,27 @@ export function useLiveApi({
       if (currentLesson && nextMilestone) {
         const progress = pedagogyEngine.getProgress();
         
+        // ✅ FIX: Log new milestone start to teacher panel
+        useTeacherPanel.getState().logMilestoneStart(
+          nextMilestone.id,
+          nextMilestone.title
+        );
+        console.log('[useLiveApi] 📝 Next milestone logged to teacher panel:', nextMilestone.title);
+        
+        // Extract available images from lesson assets
+        const availableImages = (currentLesson as any).assets?.map((asset: any) => ({
+          id: asset.id,
+          description: asset.description || asset.alt,
+          usage: asset.usage || 'general',
+        })) || [];
+        
         // Send JSON milestone transition to agent
         const transitionMessage = formatMilestoneTransition(
           milestone,
           nextMilestone,
           progress?.currentMilestoneIndex || 0,
-          currentLesson.milestones.length
+          currentLesson.milestones.length,
+          availableImages // ✅ NOW Pi knows which images to use!
         );
         
         console.log('[useLiveApi] 🎯 Moving to milestone', progress?.currentMilestoneIndex || 0, ':', nextMilestone.title);
@@ -426,11 +1115,13 @@ export function useLiveApi({
     };
     
     pedagogyEngine.on('progress_update', onProgressUpdate);
+    pedagogyEngine.on('milestone_detected', onMilestoneDetected);
     pedagogyEngine.on('milestone_completed', onMilestoneCompleted);
     pedagogyEngine.on('lesson_completed', onLessonCompleted);
     
     return () => {
       pedagogyEngine.off('progress_update', onProgressUpdate);
+      pedagogyEngine.off('milestone_detected', onMilestoneDetected);
       pedagogyEngine.off('milestone_completed', onMilestoneCompleted);
       pedagogyEngine.off('lesson_completed', onLessonCompleted);
     };
@@ -448,7 +1139,24 @@ export function useLiveApi({
       
       // Start Teacher Panel session
       useTeacherPanel.getState().startSession(lesson.id, lesson.title);
-      console.log('[useLiveApi] 📊 Teacher Panel session started');
+      
+      // Verify session started
+      const session = useTeacherPanel.getState().currentSession;
+      if (session) {
+        console.log('[useLiveApi] ✅ Teacher Panel session started:', session.id);
+      } else {
+        console.error('[useLiveApi] ❌ Teacher Panel session failed to start!');
+      }
+      
+      // Log first milestone
+      if (lesson.milestones && lesson.milestones.length > 0) {
+        const firstMilestone = lesson.milestones[0];
+        useTeacherPanel.getState().logMilestoneStart(
+          firstMilestone.id,
+          firstMilestone.title || firstMilestone.description || 'First milestone'
+        );
+        console.log('[useLiveApi] 📝 First milestone logged:', firstMilestone.title);
+      }
       
       // Format lesson context as a message (not system prompt)
       const currentMilestone = lesson.milestones[0];

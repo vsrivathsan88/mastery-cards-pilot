@@ -1,16 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import PopUp from '../popup/PopUp';
 import WelcomeScreen from '../welcome-screen/WelcomeScreen';
 import { LessonProgress } from '../../LessonProgress';
-import { LessonCanvas } from '../../LessonCanvas';
+import { LessonCanvas, LessonCanvasRef } from '../../LessonCanvas';
 import { LessonImage } from '../../LessonImage';
 import { CozyWorkspace } from '../../cozy/CozyWorkspace';
 import { CozyCelebration } from '../../cozy/CozyCelebration';
 import { CozyEncouragementParticles } from '../../cozy/CozyEncouragementParticles';
 import { CozyMicroCelebration } from '../../cozy/CozyMicroCelebration';
+import { LoadingState } from '../../cozy/LoadingState';
+import { FirstLessonTutorial } from '../../cozy/FirstLessonTutorial';
+import { EmojiReaction } from '../../pilot/EmojiReaction';
+import { useEmojiReactionStore } from '@/lib/emoji-reaction-store';
+// import { SpeechIndicator } from '../../cozy/SpeechIndicator'; // REMOVED: Too cluttered
 import { LiveConnectConfig, Modality, LiveServerContent } from '@google/genai';
 import { AudioRecorder } from '../../../lib/audio-recorder';
 import { useAgentContext } from '../../../hooks/useAgentContext';
+import { useTeacherPanel } from '../../../lib/teacher-panel-store';
+import { useUser } from '../../../contexts/UserContext';
+import { PromptBuilder } from '../../../services/PromptBuilder';
 
 import { useLiveAPIContext } from '../../../contexts/LiveAPIContext';
 import {
@@ -30,9 +38,43 @@ const formatTimestamp = (date: Date) => {
   return `${hours}:${minutes}:${seconds}.${milliseconds}`;
 };
 
+const filterThinkingContent = (text: string): string => {
+  if (!text) return text;
+  
+  let filtered = text;
+  
+  // Remove explicit thinking tags
+  filtered = filtered.replace(/<think>.*?<\/think>/gis, ' ');
+  filtered = filtered.replace(/:::thinking:::.*?:::/gis, ' ');
+  filtered = filtered.replace(/\[THINKING\].*?\[\/THINKING\]/gis, ' ');
+  
+  // Remove meta-commentary about crafting responses
+  filtered = filtered.replace(/\*\*[^*]+\*\*\s*(?:I've|I'm|The|This|Now|Let me).{0,500}?(?=(?:[.!?]\s+(?:[A-Z]|$))|$)/gis, ' ');
+  
+  // Remove specific thinking patterns
+  filtered = filtered.replace(/(?:^|\.\s+)(?:I've acknowledged|I'm now|I've crafted|The plan is|I can hear you|I should|I need to|I'll|Let me think|First,? I|The strategy|My approach).{0,300}?(?=[.!?](?:\s|$)|$)/gis, ' ');
+  
+  // Remove parenthetical thinking
+  filtered = filtered.replace(/\([^)]*(?:strategy|approach|thinking|reasoning|plan|internally)[^)]*\)/gi, ' ');
+  
+  // Remove "Okay" or "Alright" sentence fragments that are thinking artifacts
+  filtered = filtered.replace(/^(?:Okay|Alright|Right|Got it)[.,!]\s*/i, '');
+  
+  // Clean up whitespace
+  filtered = filtered.replace(/\s+/g, ' ').trim();
+  
+  // If we filtered out everything, return empty
+  if (!filtered || filtered.length < 3) return '';
+  
+  return filtered;
+};
+
 const renderContent = (text: string) => {
+  // Filter out thinking/reasoning content first
+  const filteredText = filterThinkingContent(text);
+  
   // Split by ```json...``` code blocks
-  const parts = text.split(/(`{3}json\n[\s\S]*?\n`{3})/g);
+  const parts = filteredText.split(/(`{3}json\n[\s\S]*?\n`{3})/g);
 
   return parts.map((part, index) => {
     if (part.startsWith('```json')) {
@@ -64,6 +106,7 @@ export default function StreamingConsole() {
   const turns = useLogStore(state => state.turns);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showPopUp, setShowPopUp] = useState(false);
+  const canvasRef = useRef<LessonCanvasRef>(null);
   
   // 🎯 AGENT INTEGRATION - Use our new agent services!
   const {
@@ -76,7 +119,22 @@ export default function StreamingConsole() {
     getShouldUseFiller,    // Check if filler needed
     getFiller,             // Get filler text
     agentStats,            // Debug stats
+    agentService,          // Direct access to service for events
   } = useAgentContext();
+  
+  // 📊 TEACHER PANEL - Sync agent insights with teacher panel
+  const { syncAgentInsights, startSession } = useTeacherPanel();
+  
+  // 👤 USER DATA - Get child's name for personalization
+  const { userData } = useUser();
+  
+  // Set student name for personalized prompts
+  useEffect(() => {
+    if (userData?.name) {
+      PromptBuilder.setStudentName(userData.name);
+      console.log('[StreamingConsole] Student name set for prompts:', userData.name);
+    }
+  }, [userData?.name]);
   
   // Audio controls
   const [audioRecorder] = useState(() => new AudioRecorder());
@@ -96,6 +154,15 @@ export default function StreamingConsole() {
   // Filler state
   const [isWaitingForAgents, setIsWaitingForAgents] = useState(false);
   const agentTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // First-time tutorial state
+  const [showTutorial, setShowTutorial] = useState(false);
+  const hasCheckedTutorial = useRef(false);
+  
+  // Canvas state for vision analysis
+  const [canvasHasContent, setCanvasHasContent] = useState(false);
+  const lastCanvasAnalysisRef = useRef<number>(0);
+  const lastShapeCountRef = useRef<number>(0);
   
   // Get last messages for soundwave display
   const lastPiMessage = turns.filter(t => t.role === 'agent').slice(-1)[0]?.text || '';
@@ -157,13 +224,143 @@ export default function StreamingConsole() {
     useLogStore.getState().clearTurns();
   };
 
+  // 👁️ Canvas change handler - called when student draws
+  const handleCanvasChange = useCallback((hasContent: boolean) => {
+    setCanvasHasContent(hasContent);
+    
+    if (!hasContent) return; // Skip if canvas is empty
+    
+    const currentShapeCount = canvasRef.current?.getShapeCount() || 0;
+    const timeSinceLastAnalysis = Date.now() - lastCanvasAnalysisRef.current;
+    
+    // Only analyze if:
+    // 1. Shape count actually changed (diff detection)
+    // 2. At least 3 seconds passed since last analysis (debounce)
+    if (currentShapeCount !== lastShapeCountRef.current && timeSinceLastAnalysis > 3000) {
+      console.log('[StreamingConsole] 👁️ Canvas changed, scheduling vision analysis...', {
+        oldCount: lastShapeCountRef.current,
+        newCount: currentShapeCount,
+      });
+      
+      lastShapeCountRef.current = currentShapeCount;
+      
+      // Debounce: wait 2 seconds after last draw before analyzing
+      setTimeout(() => {
+        triggerVisionAnalysis('canvas_change');
+      }, 2000);
+    }
+  }, []);
+
+  // 👁️ Trigger vision analysis (with rate limiting and diff detection)
+  const triggerVisionAnalysis = useCallback(async (reason: string) => {
+    if (!canvasRef.current || !canvasHasContent) {
+      console.log('[StreamingConsole] ⏭️ Skipping vision analysis - no canvas content');
+      return;
+    }
+
+    const timeSinceLastAnalysis = Date.now() - lastCanvasAnalysisRef.current;
+    if (timeSinceLastAnalysis < 5000) {
+      console.log('[StreamingConsole] ⏭️ Skipping vision analysis - too soon (rate limited)');
+      return;
+    }
+
+    console.log('[StreamingConsole] 👁️ Triggering vision analysis:', reason);
+    
+    try {
+      const snapshot = await canvasRef.current.getSnapshot();
+      if (!snapshot) {
+        console.log('[StreamingConsole] ⚠️ Failed to get canvas snapshot');
+        return;
+      }
+
+      console.log('[StreamingConsole] ✅ Got canvas snapshot, analyzing...');
+      lastCanvasAnalysisRef.current = Date.now();
+      
+      // Call vision analysis (non-blocking, won't reset tutor state)
+      await analyzeVision(snapshot);
+      
+      console.log('[StreamingConsole] ✅ Vision analysis complete (incremental update)');
+    } catch (error) {
+      console.error('[StreamingConsole] ❌ Vision analysis failed:', error);
+    }
+  }, [canvasHasContent, analyzeVision]);
+
   // 🎯 Initialize agents when lesson loads
   useEffect(() => {
     if (currentLesson) {
       console.log('[StreamingConsole] 🚀 Initializing agents for lesson:', currentLesson.title);
       initializeLesson(currentLesson);
+      
+      // 📊 Initialize teacher panel session
+      console.log('[StreamingConsole] 📊 Starting teacher panel session');
+      startSession(currentLesson.id, currentLesson.title);
     }
-  }, [currentLesson, initializeLesson]);
+  }, [currentLesson, initializeLesson, startSession]);
+
+  // 🔄 DYNAMIC CONTEXT UPDATES - Send agent insights to Gemini mid-conversation
+  useEffect(() => {
+    if (!currentContext || !isConnected) return;
+
+    // Build concise context update
+    const contextUpdate = PromptBuilder.buildContextUpdate(currentContext);
+    
+    // Only send if we have meaningful insights
+    const hasMeaningfulContext = 
+      currentContext.emotional ||
+      (currentContext.misconceptions && currentContext.misconceptions.length > 0) ||
+      (currentContext.vision && currentContext.vision.needsVoiceOver);
+    
+    if (hasMeaningfulContext) {
+      console.log('[StreamingConsole] 🔄 Sending context update to Gemini:', {
+        hasEmotional: !!currentContext.emotional,
+        misconceptions: currentContext.misconceptions?.length || 0,
+        hasVision: !!currentContext.vision,
+      });
+      
+      // Send to Gemini Live as hidden message
+      client.sendContextUpdate(contextUpdate);
+    }
+  }, [currentContext, isConnected, client]);
+
+  // 🎓 Show first-time tutorial when connected
+  useEffect(() => {
+    if (isConnected && !hasCheckedTutorial.current) {
+      // Check if user has seen the tutorial before
+      const hasSeenTutorial = localStorage.getItem('simili_hasSeenFirstLessonTutorial');
+      
+      if (!hasSeenTutorial) {
+        console.log('[StreamingConsole] 🎓 First lesson! Showing tutorial...');
+        // Delay tutorial slightly so UI settles
+        setTimeout(() => {
+          setShowTutorial(true);
+        }, 1500);
+      }
+      
+      hasCheckedTutorial.current = true;
+    }
+  }, [isConnected]);
+
+  // Tutorial completion handler
+  const handleTutorialComplete = useCallback(() => {
+    console.log('[StreamingConsole] ✅ Tutorial completed');
+    setShowTutorial(false);
+    localStorage.setItem('simili_hasSeenFirstLessonTutorial', 'true');
+  }, []);
+
+  // 👁️ Periodic canvas check (every 20 seconds while connected)
+  useEffect(() => {
+    if (!isConnected || isAnalyzing || !canvasHasContent) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      console.log('[StreamingConsole] 👁️ Periodic canvas check...');
+      // Trigger vision analysis if canvas has content
+      triggerVisionAnalysis('periodic_check');
+    }, 20000); // Every 20 seconds
+
+    return () => clearInterval(intervalId);
+  }, [isConnected, isAnalyzing, canvasHasContent, triggerVisionAnalysis]);
 
   // Audio recorder effect
   useEffect(() => {
@@ -202,6 +399,10 @@ export default function StreamingConsole() {
       }
     }
   }, [progress]);
+
+  // Track tool count to detect when tools load
+  const prevToolCountRef = useRef(0);
+  const configUpdateCountRef = useRef(0);
 
   // Set the configuration for the Live API
   // Update when systemPrompt changes (e.g., when lesson loads) but only if not connected
@@ -243,11 +444,52 @@ export default function StreamingConsole() {
     };
 
     console.log('[StreamingConsole] 🔍 SYSTEM PROMPT FROM STATE:', systemPrompt.substring(0, 100) + '...');
-    console.log('[StreamingConsole] 🔍 Setting config with prompt length:', systemPrompt.length);
-    setConfig(config);
-    console.log('[StreamingConsole] ✅ Config set');
+    const currentToolCount = enabledTools.length;
+    const prevToolCount = prevToolCountRef.current;
+    const isConnectedNow = client.status === 'connected';
     
-  }, [setConfig, systemPrompt]); // Update when system prompt changes (lesson load)
+    console.log('%c[StreamingConsole] 🔍 Setting config with:', 'color: #3b82f6; font-weight: bold;', {
+      promptLength: systemPrompt.length,
+      toolCount: currentToolCount,
+      tools: enabledTools.map(t => t.functionDeclarations[0].name),
+      configUpdateCount: configUpdateCountRef.current,
+      isConnected: isConnectedNow,
+      prevToolCount,
+    });
+    
+    setConfig(config);
+    console.log('%c[StreamingConsole] ✅ Config set with', 'color: #22c55e; font-weight: bold;', currentToolCount, 'tools');
+    
+    // Debug check: Verify config has tools
+    if (currentToolCount === 0) {
+      console.error('%c[StreamingConsole] ❌ CRITICAL: No tools in config!', 'color: #ef4444; font-weight: bold;');
+      console.error('[StreamingConsole] This means tool calls will NOT work!');
+    } else if (currentToolCount < 9) {
+      console.warn('%c[StreamingConsole] ⚠️ WARNING: Expected 9 tools, got', 'color: #f59e0b; font-weight: bold;', currentToolCount);
+      console.warn('[StreamingConsole] Pilot mode might not be enabled!');
+    } else {
+      console.log('%c[StreamingConsole] 🎉 Perfect! All 9 tools loaded', 'color: #22c55e; font-weight: bold;');
+    }
+    
+    // ✅ CRITICAL FIX: Force reconnection when tools become available
+    // This handles the case where user connected BEFORE tools loaded
+    if (prevToolCount === 0 && currentToolCount > 0 && isConnectedNow) {
+      console.log('[StreamingConsole] 🔄 CRITICAL: Tools just loaded but already connected!');
+      console.log('[StreamingConsole] 🔄 Forcing reconnection to register tools with Gemini...');
+      
+      // Disconnect and reconnect to send new config with tools
+      disconnect();
+      
+      setTimeout(() => {
+        console.log('[StreamingConsole] 🔌 Reconnecting with', currentToolCount, 'tools...');
+        connect();
+      }, 1000); // 1 second delay to ensure clean disconnect
+    }
+    
+    prevToolCountRef.current = currentToolCount;
+    configUpdateCountRef.current += 1;
+    
+  }, [setConfig, systemPrompt, tools, voice, client.status, disconnect, connect]); // ✅ FIXED: Added tools and voice to dependencies
 
   useEffect(() => {
     const { addTurn, updateLastTurn } = useLogStore.getState();
@@ -256,8 +498,10 @@ export default function StreamingConsole() {
       const turns = useLogStore.getState().turns;
       const last = turns[turns.length - 1];
       if (last && last.role === 'user' && !last.isFinal) {
+        // Accumulate the raw text first
+        const fullText = last.text + text;
         updateLastTurn({
-          text: last.text + text,
+          text: fullText,
           isFinal,
         });
       } else {
@@ -271,6 +515,14 @@ export default function StreamingConsole() {
       if (isFinal && text.trim().length > 0) {
         console.log('[StreamingConsole] 🧠 Student finished speaking, running agents...');
         
+        // 👁️ VISION ANALYSIS - Check if student mentioned their drawing
+        const mentionsDrawing = /\b(draw|drew|sketch|look|show|canvas|workspace|circle|rectangle|shape|line|divided?|cut)\b/i.test(text);
+        if (mentionsDrawing && canvasHasContent) {
+          console.log('[StreamingConsole] 👁️ Student mentioned drawing, triggering vision analysis...');
+          // Trigger vision analysis (non-blocking, won't interrupt conversation)
+          triggerVisionAnalysis('student_mentioned_drawing');
+        }
+        
         // Start agent analysis in background
         analyzeTranscription(text).then(insights => {
           console.log('[StreamingConsole] ✅ Agents complete:', {
@@ -278,6 +530,9 @@ export default function StreamingConsole() {
             hasEmotional: !!insights.emotional,
             hasMisconception: !!insights.misconception,
           });
+          
+          // 📊 TEACHER PANEL: Sync agent insights
+          syncAgentInsights(insights.emotional, insights.misconception, text);
           
           // 🌟 MICRO-CELEBRATION: Trigger subtle encouragement for positive signals
           const showMicroCelebration = (
@@ -324,10 +579,17 @@ export default function StreamingConsole() {
     const handleOutputTranscription = (text: string, isFinal: boolean) => {
       const turns = useLogStore.getState().turns;
       const last = turns[turns.length - 1];
-      if (last && last.role === 'agent' && !last.isFinal) {
+      
+      // Check if we should update the existing turn or create a new one
+      // We update if: last turn exists, is from agent, and is the same ongoing utterance
+      const shouldUpdate = last && last.role === 'agent' && !last.isFinal;
+      
+      if (shouldUpdate) {
+        // Accumulate the raw text first
+        const fullText = last.text + text;
         updateLastTurn({
-          text: last.text + text,
-          isFinal,
+          text: fullText,
+          isFinal, // Use the isFinal from transcription, not from turncomplete
         });
       } else {
         addTurn({ role: 'agent', text, isFinal });
@@ -509,6 +771,13 @@ export default function StreamingConsole() {
     { id: 'help', label: 'Help', icon: '❓', content: helpTab }
   ];
 
+  // Get current milestone name
+  const currentMilestone = currentLesson?.milestones?.[progress?.currentMilestoneIndex || 0];
+  const currentMilestoneName = currentMilestone?.title || '';
+
+  // PILOT: Subscribe to emoji reactions
+  const { currentReaction } = useEmojiReactionStore();
+
   return (
     <div className="transcription-container" style={{ height: '100%' }}>
       {showPopUp && <PopUp onClose={handleClosePopUp} />}
@@ -516,6 +785,9 @@ export default function StreamingConsole() {
       {/* Floating encouragement particles */}
       <CozyEncouragementParticles trigger={particleTrigger} />
       <CozyMicroCelebration trigger={microTrigger} />
+      
+      {/* PILOT: Emoji reactions from Pi */}
+      <EmojiReaction reaction={currentReaction} />
       
       {/* Celebration overlay */}
       {celebrationMessage && (
@@ -527,12 +799,28 @@ export default function StreamingConsole() {
           duration={5000}
         />
       )}
+
+      {/* Speech Indicator - REMOVED: Too cluttered, speaking state shown in bottom avatars */}
+
+      {/* Loading State - Shows when agents are analyzing */}
+      {isAnalyzing && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1000,
+        }}>
+          <LoadingState type="analyzing" message="Pi is thinking about your answer..." />
+        </div>
+      )}
       
       {turns.length === 0 ? (
         <WelcomeScreen />
       ) : (
         <CozyWorkspace
           lessonTitle={currentLesson?.title || 'Learning Session'}
+          currentMilestoneName={currentMilestoneName}
           onBack={() => {
             useLogStore.getState().clearTurns();
           }}
@@ -543,6 +831,11 @@ export default function StreamingConsole() {
           studentLastMessage={lastStudentMessage}
           totalMilestones={currentLesson?.milestones?.length || 0}
           completedMilestones={progress?.completedMilestones || 0}
+          isAnalyzing={isAnalyzing}
+          emotionalState={currentContext?.emotional?.state}
+          hasActiveMisconceptions={
+            currentContext?.misconceptions?.some(m => m.detected && !m.resolved) || false
+          }
           lessonImage={
             <LessonImage 
               lessonId={currentLesson?.id}
@@ -551,8 +844,10 @@ export default function StreamingConsole() {
           }
           canvas={
             <LessonCanvas 
+              ref={canvasRef}
               lessonId={currentLesson?.id}
               milestoneIndex={progress?.currentMilestoneIndex}
+              onCanvasChange={handleCanvasChange}
             />
           }
           onConnect={handleConnect}
@@ -562,6 +857,15 @@ export default function StreamingConsole() {
           onExport={handleExport}
           onReset={handleReset}
           isMuted={muted}
+        />
+      )}
+
+      {/* First-time tutorial overlay */}
+      {showTutorial && (
+        <FirstLessonTutorial
+          onComplete={handleTutorialComplete}
+          isConnected={isConnected}
+          studentName={userData?.name}
         />
       )}
     </div>

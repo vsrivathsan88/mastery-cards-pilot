@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createAvatar } from '@dicebear/core';
-import { avataaars } from '@dicebear/collection';
+import { adventurer } from '@dicebear/collection';
 
 interface AvatarPickerProps {
   onSelect: (avatar: string) => void;
@@ -9,21 +9,22 @@ interface AvatarPickerProps {
 interface AvatarOption {
   id: string;
   seed: string;
-  skinColor: string;
-  gender: 'male' | 'female';
 }
 
+// 12 kid-friendly cartoon avatars using adventurer style (3 rows × 4 columns)
 const AVATAR_OPTIONS: AvatarOption[] = [
-  // Diverse boys
-  { id: 'boy-1', seed: 'Felix', skinColor: 'light', gender: 'male' },
-  { id: 'boy-2', seed: 'Leo', skinColor: 'brown', gender: 'male' },
-  { id: 'boy-3', seed: 'Max', skinColor: 'dark', gender: 'male' },
-  { id: 'boy-4', seed: 'Oliver', skinColor: 'pale', gender: 'male' },
-  // Diverse girls
-  { id: 'girl-1', seed: 'Emma', skinColor: 'light', gender: 'female' },
-  { id: 'girl-2', seed: 'Sophia', skinColor: 'brown', gender: 'female' },
-  { id: 'girl-3', seed: 'Mia', skinColor: 'dark', gender: 'female' },
-  { id: 'girl-4', seed: 'Ava', skinColor: 'pale', gender: 'female' },
+  { id: 'adventurer-1', seed: 'Felix' },
+  { id: 'adventurer-2', seed: 'Luna' },
+  { id: 'adventurer-3', seed: 'Max' },
+  { id: 'adventurer-4', seed: 'Zoe' },
+  { id: 'adventurer-5', seed: 'Leo' },
+  { id: 'adventurer-6', seed: 'Mia' },
+  { id: 'adventurer-7', seed: 'Oliver' },
+  { id: 'adventurer-8', seed: 'Emma' },
+  { id: 'adventurer-9', seed: 'Charlie' },
+  { id: 'adventurer-10', seed: 'Sophia' },
+  { id: 'adventurer-11', seed: 'Noah' },
+  { id: 'adventurer-12', seed: 'Ava' },
 ];
 
 export function AvatarPicker({ onSelect }: AvatarPickerProps) {
@@ -35,10 +36,8 @@ export function AvatarPicker({ onSelect }: AvatarPickerProps) {
   };
 
   const getAvatarSvg = (option: AvatarOption) => {
-    const avatar = createAvatar(avataaars, {
+    const avatar = createAvatar(adventurer, {
       seed: option.seed,
-      skinColor: [option.skinColor],
-      backgroundColor: ['transparent'],
       size: 120,
     });
     return avatar.toDataUri();
@@ -50,12 +49,13 @@ export function AvatarPicker({ onSelect }: AvatarPickerProps) {
         <h1 className="onboarding-title">Choose Your Character 🎭</h1>
         <h2 className="onboarding-subtitle">Who will you be on this adventure?</h2>
 
-        <div className="avatar-grid">
+        <div className="avatar-grid" data-testid="avatar-grid">
           {AVATAR_OPTIONS.map((option) => (
             <button
               key={option.id}
               className={`avatar-option ${selected === option.id ? 'selected' : ''}`}
               onClick={() => handleSelect(option.id)}
+              data-testid={`avatar-option-${option.id}`}
             >
               <div className="avatar-image">
                 <img 

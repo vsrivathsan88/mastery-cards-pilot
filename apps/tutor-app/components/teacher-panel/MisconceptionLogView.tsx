@@ -13,8 +13,10 @@ export function MisconceptionLogView() {
   if (misconceptionLogs.length === 0) {
     return (
       <div className="empty-state success">
-        <p>✅ No misconceptions detected</p>
-        <p className="empty-subtitle">Great! The student is on track</p>
+        <p>✅ Looking good!</p>
+        <p className="empty-subtitle">
+          No learning issues detected yet. If the student encounters difficulty, our AI will identify patterns and suggest supportive interventions.
+        </p>
       </div>
     );
   }
@@ -57,7 +59,12 @@ export function MisconceptionLogView() {
   );
 }
 
-function MisconceptionCard({ log }: { log: MisconceptionLog }) {
+interface MisconceptionCardProps {
+  log: MisconceptionLog;
+  key?: string;
+}
+
+function MisconceptionCard({ log }: MisconceptionCardProps) {
   const getSeverityClass = (severity: MisconceptionLog['severity']) => {
     switch (severity) {
       case 'high': return 'severity-high';
@@ -106,14 +113,21 @@ function MisconceptionCard({ log }: { log: MisconceptionLog }) {
         <div className="quote-text">"{log.studentSaid}"</div>
       </div>
       
+      {/* Trigger context */}
+      {log.trigger && (
+        <div className="evidence-item" style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+          <strong>Detected by:</strong> {log.trigger}
+        </div>
+      )}
+      
       {/* Intervention */}
       {log.interventionUsed && (
         <div className="intervention-section">
-          <div className="intervention-label">Intervention:</div>
+          <div className="intervention-label">💡 Suggested Intervention:</div>
           <div className="intervention-text">{log.interventionUsed}</div>
           {log.piResponse && (
             <div className="pi-response">
-              <em>Pi: "{log.piResponse}"</em>
+              <em>Pi's Response: "{log.piResponse}"</em>
             </div>
           )}
         </div>

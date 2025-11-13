@@ -1,0 +1,780 @@
+{
+  "$schema": "../../schemas/image-pedagogy-mapping-schema.json",
+  "lessonId": "fractions-3-nf-a-1-equal-parts-challenge",
+  "standard": "3.NF.A.1",
+  "description": "Comprehensive mapping of visual assets to mastery goals and misconceptions for formative assessment",
+  "totalImages": 20,
+  "images": [
+    {
+      "id": "prereq-unequal-pieces-obvious",
+      "order": 1,
+      "imagePrompt": "Create an SVG illustration showing two cookie pieces side-by-side on a plain white background. The left cookie piece should be approximately 3 times larger than the right cookie piece, making the size difference VERY obvious and unmistakable. Both pieces should have a warm brown color (#D2691E) with chocolate chip spots (small dark brown circles). The large piece should measure roughly 180px wide × 120px tall, while the small piece should be 60px wide × 40px tall. Use rounded, organic shapes to look like broken cookie pieces. Add a subtle shadow beneath each piece. The visual contrast should be so clear that even a young child can immediately see one is 'big' and one is 'tiny'. Include simple texture details: 3-4 chocolate chips on the large piece, 1-2 on the small piece.",
+      "masteryGoals": ["mg-2-recognize-equal-requirement"],
+      "masteryGoalDescriptions": [
+        "Recognize that fractions require equal parts - this image assesses whether student can identify unequal parts"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "unequal-parts-as-fractions",
+          "description": "Thinking any division creates fractions, even if parts are unequal",
+          "detectionCriteria": [
+            "Student says 'these are halves' when pieces are clearly unequal",
+            "Student doesn't notice size difference",
+            "Student focuses on count (2 pieces) not size"
+          ],
+          "evidenceKeywords": ["half", "equal", "same", "two pieces"],
+          "confidenceThreshold": 0.7
+        }
+      ],
+      "assessmentType": "prerequisite-check",
+      "assessmentQuestion": "Look at these two cookie pieces. Are they the same size? Could we call them halves?",
+      "correctResponse": {
+        "indicators": ["no", "different", "not equal", "one is bigger", "unfair"],
+        "reasoning": "Student recognizes size difference and understands equal parts requirement"
+      },
+      "incorrectResponse": {
+        "indicators": ["yes", "same", "equal", "halves", "both cookies"],
+        "reasoning": "Student may have unequal-parts misconception or not yet understand equal partitioning requirement"
+      },
+      "cognitiveLevel": "evaluate",
+      "difficulty": "foundational",
+      "usedInMilestones": ["milestone-0-warmup"],
+      "scaffolding": {
+        "low": "Look closely - is this cookie piece bigger than this one? Put your hands apart to show me the size of each piece.",
+        "medium": "If we gave these two pieces to two friends, would that be fair? Why or why not?",
+        "high": "Could we call these 'halves'? What would need to be true for them to be halves?"
+      },
+      "agentDrawingPrompts": {
+        "initial": "I'm showing you two cookie pieces on your screen. Can you circle the bigger piece on your canvas? Then tell me what you notice about their sizes.",
+        "encouragement": "Try using your drawing tools! Circle or mark each cookie piece so we can compare them.",
+        "guidance": "That's a start! Now can you show me which one is bigger? Maybe draw an arrow or write 'BIG' and 'SMALL' next to them.",
+        "completion": "Great! Now tell me - are these pieces the same size? Could we call them halves?"
+      },
+      "drawingExpectations": {
+        "expectedElements": [
+          "Marks or circles identifying the two cookie pieces",
+          "Labels or arrows showing size difference",
+          "Visual comparison indicators (arrows, lines, words)"
+        ],
+        "commonErrors": [
+          "No marking or annotation on canvas",
+          "Marking both as equal when they're clearly different",
+          "Only identifying one piece instead of comparing both"
+        ],
+        "successIndicators": [
+          "Clearly identifies the larger piece",
+          "Uses visual markers to show difference",
+          "Verbally explains the size disparity"
+        ]
+      },
+      "whenToPromptDrawing": "Immediately after showing the image, before asking the assessment question"
+    },
+    {
+      "id": "prereq-fairness-kids-faces",
+      "order": 2,
+      "imagePrompt": "Create an SVG illustration showing three diverse children standing side-by-side, each holding a cookie piece of different sizes. Left: Carlos (Latino, short brown hair, green t-shirt) holding a TINY cookie piece (50px wide) with a sad expression (downturned mouth, slightly furrowed brows, perhaps a small tear). Center: Maya (African American, hair in two puffs, yellow t-shirt) holding a MEDIUM cookie piece (90px wide) with a neutral expression (straight mouth, regular eyes). Right: Luna (Asian, long black hair, purple t-shirt) holding a LARGE cookie piece (140px wide) with a guilty/uncomfortable expression (biting lip, eyes looking down/away, slight frown). Place simple cookie pieces in front of each child at chest height. Use warm, friendly art style appropriate for grade 3. Background should be minimal - perhaps a simple party table or plain with subtle confetti dots. Each child should be approximately 250px tall. The emotional expressions should be clear and age-appropriate, conveying the unfairness of the situation. Add small details like party hats to suggest birthday context.",
+      "masteryGoals": ["mg-2-recognize-equal-requirement"],
+      "masteryGoalDescriptions": [
+        "Recognize that fractions require equal parts - assessed through fairness context which connects to equal sharing"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "unequal-parts-as-fractions",
+          "description": "Not recognizing that fairness requires equal-sized parts",
+          "detectionCriteria": [
+            "Student says situation is fair when pieces are unequal",
+            "Student says 'everyone got a piece' without noticing sizes",
+            "Student doesn't connect fairness to equal size"
+          ],
+          "evidenceKeywords": ["fair", "unfair", "equal", "same size", "bigger", "smaller"],
+          "confidenceThreshold": 0.7
+        }
+      ],
+      "assessmentType": "prerequisite-check",
+      "assessmentQuestion": "Look at what each friend got. Is this fair? Why do you think Carlos looks sad and Luna looks guilty?",
+      "correctResponse": {
+        "indicators": ["not fair", "unfair", "pieces different", "Carlos got tiny", "Luna got big", "not equal"],
+        "reasoning": "Student connects emotions to unequal distribution and understands fairness requires equal parts"
+      },
+      "incorrectResponse": {
+        "indicators": ["fair", "everyone got cookie", "same", "all have piece"],
+        "reasoning": "Student may not yet understand that fairness requires equal-sized parts, not just equal count"
+      },
+      "cognitiveLevel": "evaluate",
+      "difficulty": "foundational",
+      "usedInMilestones": ["act-1-curiosity", "milestone-0-warmup"],
+      "scaffolding": {
+        "low": "Point to the cookie pieces. Which one is biggest? Which is smallest? How do you think Carlos feels?",
+        "medium": "If you were Carlos, how would you feel? What would make it fair?",
+        "high": "What's the rule for fair sharing? How could Luna fix this problem?"
+      }
+    },
+    {
+      "id": "milestone0-identify-difference",
+      "order": 3,
+      "imagePrompt": "Create an SVG illustration with three circles arranged horizontally on a white background, evenly spaced (200px apart center-to-center). Each circle should be 150px diameter with a thin black outline (2px stroke). Label them clearly above: 'Circle A', 'Circle B', 'Circle C' in 16px sans-serif font. \n\nCircle A: Divided into 3 EQUAL parts using lines from center to edge, creating three 120° sectors. Lines should be 2px stroke, black color.\n\nCircle B: Divided into 3 UNEQUAL parts with obvious differences. One sector should be approximately 150° (large), one should be 120° (medium), and one should be 90° (small). Use the same 2px black lines but make the inequality very apparent.\n\nCircle C: Divided into 2 EQUAL parts (perfect halves) with one vertical line through the center, creating two 180° semicircles.\n\nBelow all three circles, center-aligned text: 'Which circles show EQUAL parts?' in 18px bold sans-serif. \n\nUse clean, minimal design. All circles same size for direct comparison. The inequality in Circle B should be immediately visible even at a glance.",
+      "masteryGoals": ["mg-1-partition-equal", "mg-2-recognize-equal-requirement"],
+      "masteryGoalDescriptions": [
+        "Partition shapes into equal parts - visual recognition",
+        "Recognize equal vs unequal partitioning requirement"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "unequal-parts-as-fractions",
+          "description": "Accepting unequal parts as valid fractions",
+          "detectionCriteria": [
+            "Student says Circle B shows equal parts",
+            "Student says all three are equal",
+            "Student focuses on number of parts (3) not size"
+          ],
+          "evidenceKeywords": ["all equal", "three parts", "divided", "Circle B"],
+          "confidenceThreshold": 0.8
+        }
+      ],
+      "assessmentType": "warmup-checkpoint",
+      "assessmentQuestion": "Which circles show EQUAL parts? How can you tell?",
+      "correctResponse": {
+        "indicators": ["A and C", "Circle A and Circle C", "not B", "B is unequal", "B has different sizes"],
+        "reasoning": "Student can visually discriminate equal from unequal partitioning"
+      },
+      "incorrectResponse": {
+        "indicators": ["all of them", "A B and C", "Circle B", "all equal", "three parts"],
+        "reasoning": "Student may have unequal-parts misconception or needs to develop visual discrimination"
+      },
+      "cognitiveLevel": "evaluate",
+      "difficulty": "easy",
+      "usedInMilestones": ["milestone-0-warmup"],
+      "scaffolding": {
+        "low": "Look at Circle A. Are all three pieces the same size? Now look at Circle B. Are those pieces the same size?",
+        "medium": "Which circle has parts that are NOT the same size? How can you check?",
+        "high": "What's the difference between Circle A and Circle B? What makes parts 'equal'?"
+      }
+    },
+    {
+      "id": "act2a-circle-template",
+      "order": 4,
+      "imagePrompt": "Create an SVG illustration showing a clean, empty circle template for student drawing practice. The circle should be 200px diameter, centered on a 400px × 400px canvas. Use a medium-weight outline (3px stroke, #333333 color) so it's clearly visible but not overwhelming. In the exact center of the circle, place a small dot (5px diameter, semi-transparent #666666) to serve as a subtle reference point for students drawing lines from center to edge. The background should be pure white (#FFFFFF). Add a very faint grid overlay (optional, 1px stroke, #F0F0F0, only visible on close inspection) to help students with symmetry. At the bottom of the canvas, include instructional text in 14px sans-serif font: 'Draw lines to divide this circle into equal parts.' The design should be minimal, clean, and inviting for a third-grader to draw on. Leave plenty of white space around the circle (100px margin on all sides).",
+      "masteryGoals": ["mg-1-partition-equal"],
+      "masteryGoalDescriptions": [
+        "Partition shapes into equal parts - hands-on practice with circle partitioning"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "asymmetric-partitioning",
+          "description": "Creating unequal parts due to poor line placement",
+          "detectionCriteria": [
+            "Student draws lines that don't go through center",
+            "Student creates obviously unequal sectors",
+            "Student partitions without checking equality"
+          ],
+          "evidenceKeywords": ["unequal", "different sizes", "not through center", "crooked"],
+          "confidenceThreshold": 0.6
+        },
+        {
+          "id": "counting-without-measuring",
+          "description": "Counting parts without verifying equal size",
+          "detectionCriteria": [
+            "Student says 'done' after drawing lines without checking sizes",
+            "Student focuses on number of parts, not sizes",
+            "Student doesn't use center point"
+          ],
+          "evidenceKeywords": ["three parts", "four parts", "divided", "done"],
+          "confidenceThreshold": 0.5
+        }
+      ],
+      "assessmentType": "formative-practice",
+      "assessmentQuestion": "Draw lines to divide this circle into [2/3/4] equal parts. How will you make sure they're equal?",
+      "correctResponse": {
+        "indicators": ["through center", "same size", "symmetrical", "check with folding", "measure"],
+        "reasoning": "Student uses strategic approach (center point, symmetry) to ensure equal partitioning"
+      },
+      "incorrectResponse": {
+        "indicators": ["just draw lines", "I think so", "looks equal"],
+        "reasoning": "Student lacks strategy or doesn't prioritize equality verification"
+      },
+      "cognitiveLevel": "apply",
+      "difficulty": "easy",
+      "usedInMilestones": ["act-2a-circle"],
+      "scaffolding": {
+        "low": "See that dot in the middle? Draw a line from the top, through that dot, to the bottom. That makes 2 equal parts!",
+        "medium": "To make equal parts, all your lines should go from the edge, through the center dot, to the other side. Try it!",
+        "high": "What strategy will you use to make equal parts? Where should your lines start and end?"
+      },
+      "agentDrawingPrompts": {
+        "initial": "Here's a blank circle on your canvas! Your job is to divide it into equal parts. Let's start with halves - can you draw a line to split this circle into 2 equal pieces?",
+        "encouragement": "Go ahead and draw on the circle! Use your pen or drawing tool to make a line that divides it in half. Take your time!",
+        "guidance": "Good try! Remember, to make equal parts in a circle, your line should go through the center point. See that little dot in the middle? Try drawing your line through that.",
+        "completion": "Nice work! Now tell me - did you make 2 equal parts? How do you know they're equal?"
+      },
+      "drawingExpectations": {
+        "expectedElements": [
+          "A line dividing the circle",
+          "Line passes through or near center point",
+          "Two resulting sections of approximately equal size"
+        ],
+        "commonErrors": [
+          "Line doesn't go through center (creates unequal parts)",
+          "Line is curved or wavy instead of straight",
+          "Multiple random lines without clear intention",
+          "No line drawn at all"
+        ],
+        "successIndicators": [
+          "Straight line through center",
+          "Two visibly equal semicircles",
+          "Student can explain why parts are equal",
+          "Student references center point or symmetry"
+        ]
+      },
+      "whenToPromptDrawing": "As soon as the blank circle template is displayed, before any other instruction"
+    },
+    {
+      "id": "act2a-circle-thirds-model",
+      "order": 5,
+      "imagePrompt": "Create an SVG illustration showing a perfect example of a circle divided into three equal thirds (120° sectors each). Circle should be 200px diameter on a 400px × 400px canvas. Use a 3px black outline (#333333) for the circle. Draw three lines from center to edge, creating three equal 'pizza slices'. Lines should be 2px stroke, #666666 color. Each sector should be exactly 120°. \n\nAdd subtle visual cues to emphasize equality: \n1. Small arc markers showing 120° at the center (optional, light gray)\n2. Very subtle shading alternating between sectors (#F8F8F8 and white) to distinguish them\n3. Small labels outside circle: 'Equal part 1', 'Equal part 2', 'Equal part 3' with arrows pointing to each sector\n\nAt the top: 'Model: Three Equal Parts (Thirds)' in 16px bold font. At the bottom: 'Notice: All three pieces are the same size - you could rotate the circle and they'd match perfectly!' in 12px italic font.\n\nInclude a small inset diagram (60px circle) in the top-right corner showing the same circle with rotation arrows, demonstrating rotational symmetry.\n\nDesign should be clean, instructional, and emphasize the concept of equality through visual balance.",
+      "masteryGoals": ["mg-1-partition-equal"],
+      "masteryGoalDescriptions": [
+        "Partition shapes into equal parts - provides worked example and strategy for circular partitioning"
+      ],
+      "misconceptionsToDetect": [],
+      "assessmentType": "worked-example-reference",
+      "assessmentQuestion": "Study this model. What do you notice about the three parts? How do the lines help make them equal?",
+      "correctResponse": {
+        "indicators": ["same size", "through center", "120 degrees", "symmetrical", "equal angles"],
+        "reasoning": "Student recognizes key features: lines through center, equal angles, rotational symmetry"
+      },
+      "incorrectResponse": {
+        "indicators": ["three parts", "lines", "circle"],
+        "reasoning": "Student describes superficial features without understanding equality principle"
+      },
+      "cognitiveLevel": "understand",
+      "difficulty": "easy",
+      "usedInMilestones": ["act-2a-circle"],
+      "scaffolding": {
+        "low": "Count the parts. Are they all the same size? See how the lines go through the center?",
+        "medium": "If you turned the circle, would the parts still look the same? Why?",
+        "high": "What strategy did this model use? How could you apply it to dividing into 4 or 6 parts?"
+      }
+    },
+    {
+      "id": "act2b-rectangle-template",
+      "order": 6,
+      "imagePrompt": "Create an SVG illustration showing a clean, empty rectangle template for student drawing practice. Rectangle should be 320px wide × 180px tall, centered on a 500px × 350px canvas, oriented horizontally. Use a 3px stroke (#333333) for clear visibility. The rectangle should be completely empty inside - no divisions, no guides - so students can practice their partitioning skills. \n\nOptional subtle aids: \n1. Very faint tick marks on the top and bottom edges (4 equally-spaced marks, 1px, #E8E8E8) barely visible, to suggest even spacing if student looks carefully\n2. Center point marked with tiny dot (3px diameter, #CCCCCC)\n\nBackground: pure white (#FFFFFF). \n\nBelow rectangle: 'Draw vertical lines to divide this rectangle into equal parts.' in 14px sans-serif font. \n\nAbove rectangle: Space for student name or label area.\n\nDesign should be minimal, unintimidating, with plenty of white space (50px margins). The template should feel like a blank canvas that invites drawing and experimentation.",
+      "masteryGoals": ["mg-1-partition-equal"],
+      "masteryGoalDescriptions": [
+        "Partition shapes into equal parts - transfer skill from circles to rectangles"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "uneven-spacing",
+          "description": "Creating unequal parts due to uneven line spacing",
+          "detectionCriteria": [
+            "Student draws lines at random intervals",
+            "Parts are visibly different widths",
+            "Student doesn't measure or estimate spacing"
+          ],
+          "evidenceKeywords": ["different sizes", "uneven", "spacing", "not equal"],
+          "confidenceThreshold": 0.6
+        }
+      ],
+      "assessmentType": "formative-practice",
+      "assessmentQuestion": "Draw vertical lines to divide this rectangle into [2/3/4] equal parts. What's your plan?",
+      "correctResponse": {
+        "indicators": ["measure", "equal spacing", "divide width", "same distance apart", "halfway"],
+        "reasoning": "Student plans strategically to ensure equal spacing between lines"
+      },
+      "incorrectResponse": {
+        "indicators": ["just draw", "guess", "eyeball it"],
+        "reasoning": "Student lacks clear strategy for ensuring equal partitioning"
+      },
+      "cognitiveLevel": "apply",
+      "difficulty": "easy",
+      "usedInMilestones": ["act-2b-rectangle"],
+      "scaffolding": {
+        "low": "To make 2 equal parts, where should the line go? Right in the middle! Find the halfway point.",
+        "medium": "If this rectangle is about 12 inches wide, and you want 4 equal parts, how wide should each part be?",
+        "high": "What's different about dividing a rectangle compared to a circle? What strategy works best for rectangles?"
+      },
+      "agentDrawingPrompts": {
+        "initial": "Now you have a rectangle! Can you divide this rectangle into 4 equal parts? Draw vertical lines to split it up. Think about where your lines should go to make all the parts the same width.",
+        "encouragement": "Use your drawing tool to add some vertical lines! Try to space them evenly so each section is the same width.",
+        "guidance": "You're on the right track! To make equal parts in a rectangle, the lines should be evenly spaced. Try measuring with your eyes - is each section the same width?",
+        "completion": "Excellent drawing! Count your sections - how many equal parts did you make? Are they all the same width? How can you check?"
+      },
+      "drawingExpectations": {
+        "expectedElements": [
+          "Vertical lines dividing the rectangle",
+          "Evenly spaced lines creating equal-width sections",
+          "3 lines creating 4 parts, or 1 line creating 2 parts"
+        ],
+        "commonErrors": [
+          "Lines not evenly spaced (unequal parts)",
+          "Horizontal lines instead of vertical",
+          "Diagonal lines creating odd shapes",
+          "Too few or too many lines for intended partitioning"
+        ],
+        "successIndicators": [
+          "Vertical lines with consistent spacing",
+          "Visually equal sections",
+          "Student can count and verify equal parts",
+          "Student explains spacing strategy"
+        ]
+      },
+      "whenToPromptDrawing": "Immediately after showing the blank rectangle template"
+    },
+    {
+      "id": "act2b-rectangle-fourths-model",
+      "order": 7,
+      "imagePrompt": "Create an SVG illustration showing a rectangle perfectly divided into four equal parts (fourths/quarters) using vertical lines. Rectangle should be 320px wide × 180px tall on a 500px × 350px canvas. Use 3px stroke (#333333) for rectangle outline. \n\nDivide with THREE evenly-spaced vertical lines creating FOUR equal sections, each 80px wide. Lines should be 2px stroke, #666666 color. \n\nAdd visual cues for equality:\n1. Subtle alternating fill colors (#F5F5F5 and white) to distinguish sections\n2. Width measurements below each section: '80px' or '1/4 width' in small 10px font\n3. Small bracket annotations showing equal spacing between lines\n4. Optional ruler marks along top edge showing equal divisions\n\nLabel at top: 'Model: Four Equal Parts (Fourths)' in 16px bold font.\n\nLabel at bottom: 'Strategy: Divide the width evenly. Each part is the same width!' in 12px italic font.\n\nInclude small annotations with arrows pointing to lines: 'Lines are evenly spaced'\n\nSmall inset diagram (100px wide) showing the spacing calculation: '320px ÷ 4 = 80px each'\n\nDesign should clearly demonstrate the equal-spacing strategy for rectangular partitioning.",
+      "masteryGoals": ["mg-1-partition-equal"],
+      "masteryGoalDescriptions": [
+        "Partition shapes into equal parts - demonstrates spacing strategy for rectangular shapes"
+      ],
+      "misconceptionsToDetect": [],
+      "assessmentType": "worked-example-reference",
+      "assessmentQuestion": "Look at this model. How can you tell the four parts are equal? What's the strategy?",
+      "correctResponse": {
+        "indicators": ["same width", "evenly spaced", "divide by 4", "measure", "equal spacing"],
+        "reasoning": "Student identifies equal spacing strategy and understands measurement approach"
+      },
+      "incorrectResponse": {
+        "indicators": ["four parts", "lines", "divided"],
+        "reasoning": "Student describes what they see but doesn't articulate the equal-spacing strategy"
+      },
+      "cognitiveLevel": "understand",
+      "difficulty": "easy",
+      "usedInMilestones": ["act-2b-rectangle"],
+      "scaffolding": {
+        "low": "See the four sections? Use your finger to measure - are they all the same width?",
+        "medium": "How far apart are the lines? What happens if you move one line - does it still make equal parts?",
+        "high": "If you wanted to divide into 5 equal parts instead, how would you figure out where to put the lines?"
+      }
+    },
+    {
+      "id": "act2c-bar-sixths-model",
+      "order": 8,
+      "imagePrompt": "Create an SVG illustration showing a long horizontal bar (like a sub sandwich) divided into six equal parts (sixths). Bar should be 480px wide × 100px tall on a 600px × 250px canvas. Use 3px stroke (#8B4513 brown) to give it a sandwich/bread appearance. \n\nDivide with FIVE evenly-spaced vertical lines creating SIX equal sections, each 80px wide. Lines should be 2px stroke, #D2691E (lighter brown), mimicking cut marks.\n\nAdd visual details:\n1. Subtle bread texture pattern inside bar (light brown fill #DEB887 with small dots/texture)\n2. Each section labeled with small text below: '1st', '2nd', '3rd', '4th', '5th', '6th' in 10px font\n3. Width indicator below showing '80px each' or 'Equal widths'\n4. Small ruler or measurement guide along top showing divisions\n5. Alternating very subtle shading between sections for visual distinction\n\nLabel at top: 'Model: Six Equal Parts (Sixths)' in 16px bold font.\n\nLabel at bottom: 'Like cutting a sub sandwich into 6 equal pieces for 6 friends!' in 12px italic font with friendly tone.\n\nSmall calculation shown in corner: '480px ÷ 6 = 80px per piece'\n\nOptional: tiny sub sandwich icon in top-left corner for context.\n\nDesign should emphasize real-world application (sharing food fairly) while demonstrating equal partitioning with larger numbers.",
+      "masteryGoals": ["mg-1-partition-equal"],
+      "masteryGoalDescriptions": [
+        "Partition shapes into equal parts - extends to larger number of divisions (sixths)"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "larger-denominator-means-larger-parts",
+          "description": "Thinking more parts means bigger pieces",
+          "detectionCriteria": [
+            "Student says sixths are bigger than thirds",
+            "Student confuses more divisions with larger size",
+            "Student doesn't understand inverse relationship"
+          ],
+          "evidenceKeywords": ["bigger", "more", "six is more than three"],
+          "confidenceThreshold": 0.7
+        }
+      ],
+      "assessmentType": "worked-example-reference",
+      "assessmentQuestion": "This sub is divided into sixths. Is each piece bigger or smaller than if we divided it into thirds? Why?",
+      "correctResponse": {
+        "indicators": ["smaller", "more pieces means smaller", "thirds would be bigger", "six pieces vs three"],
+        "reasoning": "Student understands inverse relationship: more divisions = smaller parts"
+      },
+      "incorrectResponse": {
+        "indicators": ["bigger", "six is more", "larger number"],
+        "reasoning": "Student may have larger-denominator misconception or doesn't yet grasp the inverse relationship"
+      },
+      "cognitiveLevel": "understand",
+      "difficulty": "medium",
+      "usedInMilestones": ["act-2c-bar"],
+      "scaffolding": {
+        "low": "Count the pieces. If we only cut it into 3 pieces instead of 6, would each piece be bigger or smaller?",
+        "medium": "Imagine eating one-sixth vs eating one-third. Which gives you more sandwich? Why?",
+        "high": "What's the pattern: as the denominator gets bigger (more parts), what happens to the size of each part?"
+      }
+    },
+    {
+      "id": "checkpoint-equal-unequal-comparison",
+      "order": 9,
+      "imagePrompt": "Create an SVG illustration with three shapes arranged horizontally for comparison, each clearly labeled. Canvas: 700px × 300px. Shapes centered vertically with equal spacing (200px apart center-to-center).\n\n**Shape A (Rectangle with 4 EQUAL parts):**\n- Rectangle 160px wide × 120px tall\n- Divided by 3 vertical lines into 4 equal sections (40px each)\n- Light green fill (#E8F5E9) to indicate 'correct'\n- Label above: 'A' in 20px bold font\n- Subtle checkmark icon in top-right corner\n\n**Shape B (Rectangle with 4 UNEQUAL parts):**\n- Rectangle 160px wide × 120px tall\n- Divided by 3 vertical lines at UNEQUAL spacing: 20px, 60px, 50px, 30px (obviously unequal)\n- Light red fill (#FFEBEE) to indicate 'incorrect'\n- Label above: 'B' in 20px bold font\n- Subtle X icon in top-right corner\n\n**Shape C (Circle with 3 EQUAL parts):**\n- Circle 140px diameter\n- Divided into 3 equal sectors (120° each) from center\n- Light green fill (#E8F5E9) to indicate 'correct'\n- Label above: 'C' in 20px bold font\n- Subtle checkmark icon in top-right corner\n\nAll outlines: 3px stroke (#333333). Division lines: 2px stroke (#666666).\n\nTop of canvas: 'Which shapes show EQUAL parts?' in 18px bold font.\n\nBottom of canvas: 'Look carefully at the sizes of each section!' in 12px italic font.\n\nDesign should make the comparison clear and obvious, with Shape B's inequality immediately visible.",
+      "masteryGoals": ["mg-2-recognize-equal-requirement"],
+      "masteryGoalDescriptions": [
+        "Recognize that fractions require equal parts - critical checkpoint assessing discrimination ability"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "unequal-parts-as-fractions",
+          "description": "Accepting Shape B as showing equal parts or valid fractions",
+          "detectionCriteria": [
+            "Student says 'all three' or 'A, B, and C'",
+            "Student includes Shape B in answer",
+            "Student says 'B has 4 parts' without noting inequality"
+          ],
+          "evidenceKeywords": ["Shape B", "all of them", "all three", "B is equal"],
+          "confidenceThreshold": 0.8
+        }
+      ],
+      "assessmentType": "checkpoint-assessment",
+      "assessmentQuestion": "Which shapes show EQUAL parts: A, B, or C? Explain your reasoning.",
+      "correctResponse": {
+        "indicators": ["A and C", "Shape A and Shape C", "not B", "B is unequal", "B has different sizes"],
+        "reasoning": "Student correctly discriminates equal from unequal partitioning"
+      },
+      "incorrectResponse": {
+        "indicators": ["all of them", "A, B, and C", "B", "all three"],
+        "reasoning": "Student has unequal-parts misconception or needs more practice discriminating"
+      },
+      "cognitiveLevel": "evaluate",
+      "difficulty": "medium",
+      "usedInMilestones": ["act-2-checkpoint"],
+      "scaffolding": {
+        "low": "Look at Shape B. Put your finger on each section. Are they all the same width? Compare the first section to the last section.",
+        "medium": "If you measured each section in Shape B with a ruler, would they all be the same? How can you tell just by looking?",
+        "high": "What's the rule for fractions? Does Shape B follow that rule? Why or why not?"
+      },
+      "agentDrawingPrompts": {
+        "initial": "Look at these three shapes - A, B, and C. On your canvas, can you mark the shapes that show EQUAL parts? Maybe put a checkmark next to the correct ones, or circle them.",
+        "encouragement": "Use your canvas to mark your answers! Which shapes have equal parts? You can draw checkmarks, X's, or circle them.",
+        "guidance": "Take a closer look at each shape. In Shape B, are all the sections really the same width? Try comparing the first section to the last section. Mark the ones that ARE equal.",
+        "completion": "Great job marking your answers! Now tell me - which shapes did you mark and why? What makes the parts equal or unequal?"
+      },
+      "drawingExpectations": {
+        "expectedElements": [
+          "Marks on Shapes A and C (correct answers)",
+          "No mark or X on Shape B (incorrect example)",
+          "Visual indicators showing discrimination between equal/unequal"
+        ],
+        "commonErrors": [
+          "Marking Shape B as having equal parts",
+          "Marking all three shapes",
+          "Not marking any shapes",
+          "Unclear or ambiguous markings"
+        ],
+        "successIndicators": [
+          "Correctly identifies A and C as equal",
+          "Rejects or marks B as unequal",
+          "Can verbally explain why B is wrong",
+          "Shows visual discrimination skill"
+        ]
+      },
+      "whenToPromptDrawing": "After showing all three shapes, before asking which have equal parts"
+    },
+    {
+      "id": "act3b-notation-visual",
+      "order": 10,
+      "imagePrompt": "Create an educational SVG illustration connecting fraction notation to visual representation. Canvas: 500px × 400px.\n\n**Main Visual (Left side):**\n- Circle 180px diameter, positioned at (150, 200)\n- Divided into 3 equal parts (120° sectors)\n- ONE sector filled with solid color (#4CAF50 green)\n- Other two sectors white with light gray outline\n- All division lines 2px stroke (#666666)\n- Circle outline 3px stroke (#333333)\n\n**Fraction Notation (Right side):**\n- Large fraction display: '1/3' positioned at (380, 200)\n- '1' should be 48px font, bold, in numerator position\n- Horizontal fraction bar: 60px long, 3px thick, #333333\n- '3' should be 48px font, bold, in denominator position\n- Sans-serif font for clarity\n\n**Connecting Arrows and Labels:**\n- Arrow from '1' (numerator) to shaded sector\n  - Label: 'Parts we have' in 12px font, #4CAF50 green\n  - Or: 'Shaded parts: 1' \n- Arrow from '3' (denominator) to entire circle\n  - Label: 'Total equal parts' in 12px font, #2196F3 blue\n  - Or: 'Circle divided into 3'\n- Arrows should be curved, 2px stroke with clear arrowheads\n\n**Additional annotations:**\n- Top label: 'Connecting Symbol to Visual' in 18px bold font\n- Small text bubble near numerator: 'Top number = how many parts'\n- Small text bubble near denominator: 'Bottom number = total equal parts'\n- Bottom caption: 'One-third means 1 out of 3 equal parts' in 14px italic font\n\nDesign should clearly show the mapping between notation and meaning, making the abstraction concrete.",
+      "masteryGoals": ["mg-4-denominator-meaning", "mg-5-numerator-meaning", "mg-6-symbolic-visual-connection"],
+      "masteryGoalDescriptions": [
+        "Understand denominator as 'total number of equal parts'",
+        "Understand numerator as 'number of parts we have'",
+        "Connect symbolic notation to visual representations"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "numerator-denominator-role-confusion",
+          "description": "Confusing what numerator and denominator represent",
+          "detectionCriteria": [
+            "Student says '3 is how many we have'",
+            "Student reverses the meanings",
+            "Student can't explain what each number represents"
+          ],
+          "evidenceKeywords": ["top number", "bottom number", "numerator", "denominator", "what does"],
+          "confidenceThreshold": 0.8
+        }
+      ],
+      "assessmentType": "concept-teaching",
+      "assessmentQuestion": "In the fraction 1/3, what does the 1 tell us? What does the 3 tell us?",
+      "correctResponse": {
+        "indicators": ["1 is parts we have", "3 is total parts", "1 shaded", "3 equal pieces", "numerator and denominator"],
+        "reasoning": "Student understands the distinct roles of numerator (count of parts) and denominator (total equal parts)"
+      },
+      "incorrectResponse": {
+        "indicators": ["3 is what we have", "1 is the total", "reversed", "I don't know"],
+        "reasoning": "Student has numerator-denominator confusion or hasn't yet learned the notation meaning"
+      },
+      "cognitiveLevel": "understand",
+      "difficulty": "medium",
+      "usedInMilestones": ["act-3b-notation"],
+      "scaffolding": {
+        "low": "See the green part? That's 1 piece. The '1' on top shows that. Count all the pieces - that's 3. The '3' on bottom shows that.",
+        "medium": "Follow the arrows. What does each number connect to in the picture?",
+        "high": "If we shaded 2 pieces instead of 1, what would change in the fraction notation? What would stay the same?"
+      }
+    },
+    {
+      "id": "act3c-false-fraction-unequal",
+      "order": 11,
+      "imagePrompt": "Create a critical thinking SVG illustration showing an INCORRECT fraction representation that students must critique. Canvas: 400px × 350px.\n\n**Main Visual:**\n- Rectangle 280px wide × 160px tall, centered\n- Divided into 4 UNEQUAL sections using 3 vertical lines:\n  - Section 1: 40px wide (small)\n  - Section 2: 100px wide (large)\n  - Section 3: 80px wide (medium)\n  - Section 4: 60px wide (small-medium)\n- Make inequality obvious and visible\n- Rectangle outline: 3px stroke (#333333)\n- Division lines: 2px stroke (#666666)\n- Section 1 filled with light blue (#BBDEFB)\n\n**Incorrect Label:**\n- Large fraction '1/4' positioned next to or above rectangle\n- 36px bold font\n- Perhaps in red color (#F44336) to indicate error\n- Arrow pointing from 1/4 to the shaded section\n\n**Question prompt:**\n- Top of canvas: 'Is this correct?' in 20px bold font\n- Or: 'Someone says this shows 1/4. Are they right?'\n\n**Visual cues for critique:**\n- Small magnifying glass icon near the unequal parts\n- Question marks in corners suggesting doubt\n- Optional: subtle red tint or outline suggesting error\n\n**Bottom prompt:**\n- 'Look carefully! Can we really call this 1/4? Why or why not?' in 14px font\n\nDesign should present a plausible-looking fraction representation that's actually incorrect, prompting critical analysis.",
+      "masteryGoals": ["mg-2-recognize-equal-requirement", "mg-6-symbolic-visual-connection"],
+      "masteryGoalDescriptions": [
+        "Recognize that fractions require equal parts - critical thinking application",
+        "Connect symbolic notation to visual - must evaluate match accuracy"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "unequal-parts-as-fractions",
+          "description": "Accepting this as a valid fraction representation",
+          "detectionCriteria": [
+            "Student says 'yes, this is 1/4'",
+            "Student says 'it's divided into 4 parts so it's fourths'",
+            "Student doesn't notice or comment on unequal sizes"
+          ],
+          "evidenceKeywords": ["yes", "correct", "1/4", "four parts", "divided into 4"],
+          "confidenceThreshold": 0.9
+        },
+        {
+          "id": "counting-without-measuring",
+          "description": "Focusing on count of parts rather than equal sizing",
+          "detectionCriteria": [
+            "Student says '4 parts so 1/4'",
+            "Student doesn't mention size or equality",
+            "Student accepts notation based on count alone"
+          ],
+          "evidenceKeywords": ["4 parts", "four sections", "divided", "1 part out of 4"],
+          "confidenceThreshold": 0.7
+        }
+      ],
+      "assessmentType": "critical-thinking",
+      "assessmentQuestion": "Someone labeled this as 1/4. Are they correct? Why or why not? What would need to be true for it to really be 1/4?",
+      "correctResponse": {
+        "indicators": ["no", "incorrect", "not equal", "different sizes", "can't be 1/4", "parts aren't equal", "need equal parts"],
+        "reasoning": "Student recognizes that unequal parts disqualify this as a valid fraction representation"
+      },
+      "incorrectResponse": {
+        "indicators": ["yes", "correct", "1/4", "four parts", "1 out of 4"],
+        "reasoning": "Student accepts invalid fraction due to unequal-parts misconception or focus on counting over measuring"
+      },
+      "cognitiveLevel": "evaluate",
+      "difficulty": "medium",
+      "usedInMilestones": ["act-3c-retrieval"],
+      "scaffolding": {
+        "low": "Look at the four sections. Use your fingers to measure them. Are they all the same width? What does that tell you about calling this '1/4'?",
+        "medium": "What's the rule for fractions? Does this rectangle follow that rule? Point to evidence.",
+        "high": "If you were teaching a younger student, how would you explain why this can't be called 1/4? What would you tell them to look for?"
+      },
+      "agentDrawingPrompts": {
+        "initial": "Hmm, someone labeled this as '1/4'. On your canvas, can you investigate? Maybe measure or mark each section to check if they're really equal. What do you discover?",
+        "encouragement": "Be a math detective! Use your canvas tools to check the sections. Are they all the same size? Draw lines or marks to help you compare them.",
+        "guidance": "Good investigating! Try this: mark the width of the first section, then compare it to the others. Are they matching? What does that tell us about this being called '1/4'?",
+        "completion": "Excellent analysis! So what's your verdict - is this really 1/4? Show me your evidence on the canvas and explain your reasoning."
+      },
+      "drawingExpectations": {
+        "expectedElements": [
+          "Marks or measurements on each section",
+          "Visual comparison indicators (arrows, brackets, lines)",
+          "Labels showing which sections are different sizes",
+          "Notation indicating 'NOT equal' or similar conclusion"
+        ],
+        "commonErrors": [
+          "Accepting the label without investigation",
+          "Not comparing section sizes",
+          "Focusing on count (4 parts) without checking equality",
+          "Superficial markings without meaningful analysis"
+        ],
+        "successIndicators": [
+          "Systematically compares all four sections",
+          "Identifies specific sections that differ in size",
+          "Concludes this cannot be 1/4 due to inequality",
+          "Provides visual evidence via canvas markings",
+          "Articulates the 'equal parts' requirement"
+        ]
+      },
+      "whenToPromptDrawing": "After showing the labeled image, frame it as a 'detective' or 'critic' task"
+    },
+    {
+      "id": "scaffolding-circle-halves-hint",
+      "order": 12,
+      "imagePrompt": "Create a supportive scaffolding SVG illustration showing how to divide a circle into halves using the folding strategy. Canvas: 350px × 400px.\n\n**Main Visual:**\n- Circle 180px diameter, centered at (175, 180)\n- Circle outline: 3px stroke (#333333)\n- DOTTED vertical line through center (from top to bottom of circle)\n  - Dotted pattern: 8px dash, 4px gap\n  - 2px stroke (#2196F3 blue)\n  - Line should go from (175, 90) to (175, 270)\n\n**Folding Indication:**\n- Small curved arrows on left and right sides of circle suggesting folding motion\n  - Left arrow curves from left side toward center\n  - Right arrow curves from right side toward center\n  - Arrows 2px stroke, #4CAF50 green\n- Small hand icons (optional) at edge suggesting holding and folding\n\n**Text hints:**\n- Top label: 'Hint: Folding Strategy' in 16px bold font, #2196F3 blue\n- Text bubble pointing to dotted line: 'Draw a line here' in 12px font\n- Bottom text: 'Try folding in half! Where does the fold go?' in 14px italic font\n- Or: 'Imagine folding this paper circle. The fold line divides it into equal halves!'\n\n**Visual cues:**\n- Very light shading on left and right semicircles (different tints: #F5F5F5 and white) to show the two resulting halves\n- Small inset diagram (60px circle) showing completed fold with solid line\n- Friendly, encouraging design\n\n**Optional elements:**\n- Small paper fold icon in corner\n- Encouraging text: 'You've got this!' or '💡 This makes it easy!'\n\nDesign should be supportive and strategic, offering a concrete physical strategy (folding) to help struggling students achieve equal partitioning.",
+      "masteryGoals": ["mg-1-partition-equal"],
+      "masteryGoalDescriptions": [
+        "Partition shapes into equal parts - scaffolded support using concrete folding strategy"
+      ],
+      "misconceptionsToDetect": [],
+      "assessmentType": "scaffolding-hint",
+      "assessmentQuestion": "Use this folding hint to divide your circle into equal halves. Where will you draw the line?",
+      "correctResponse": {
+        "indicators": ["through center", "top to bottom", "fold line", "middle", "vertical line"],
+        "reasoning": "Student uses folding strategy to identify center line for equal partitioning"
+      },
+      "incorrectResponse": {
+        "indicators": ["anywhere", "random line", "not sure"],
+        "reasoning": "Student may need additional hands-on folding practice with physical paper"
+      },
+      "cognitiveLevel": "apply",
+      "difficulty": "adaptive-easy",
+      "usedInMilestones": ["act-2a-circle"],
+      "scaffolding": {
+        "low": "Let's practice with real paper. Fold a circle in half. Where's the fold? Draw a line there!",
+        "medium": "Trace the dotted line with your finger. Does it go through the center? That's the key to equal halves!",
+        "high": "This folding strategy works for halves. How could you adapt it to make fourths?"
+      }
+    },
+    {
+      "id": "extension-irregular-shape",
+      "order": 13,
+      "imagePrompt": "Create a challenging extension SVG illustration featuring an irregular hexagon for advanced students. Canvas: 400px × 400px.\n\n**Main Visual:**\n- Regular hexagon 180px point-to-point, centered\n- Hexagon outline: 3px stroke (#333333)\n- Clean, empty interior - no divisions (student must figure out partitioning)\n- Use straight edges, 60° internal angles for mathematical accuracy\n- Subtle vertex dots (small circles at each corner, 4px diameter, #999999)\n\n**Challenge prompt:**\n- Top label: '🌟 Challenge: Advanced Shape' in 18px bold font, #FF6F00 orange\n- Main question: 'Can you divide this hexagon into equal parts?' in 16px font\n- Sub-question: 'How many equal parts can you make? What strategies will work?' in 12px italic font\n\n**Subtle hints (very light, optional):**\n- Faint center point (3px dot, #DDDDDD)\n- Optional: extremely faint lines radiating from center (1px, #F0F0F0, barely visible)\n- Small hint text at bottom: 'Hint: Think about the center point' in 10px font, #999999\n\n**Difficulty indicator:**\n- Small star icons (3 stars) in corner indicating challenge level\n- Text: 'For advanced learners' in small italic font\n\n**Visual context:**\n- Clean, minimal design\n- Plenty of white space\n- Professional, inviting appearance\n\n**Optional reference:**\n- Tiny inset diagram (40px) showing hexagon divided into 6 triangles (very small, as solution preview)\n- Labeled 'One possible solution' in 8px font\n\nDesign should present a genuine mathematical challenge while remaining approachable for confident third-graders.",
+      "masteryGoals": ["mg-7-transfer-generalize"],
+      "masteryGoalDescriptions": [
+        "Transfer and generalize across contexts and shapes - applies equal partitioning to complex, unfamiliar shape"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "equal-parts-only-in-simple-shapes",
+          "description": "Belief that equal partitioning only works with circles/rectangles",
+          "detectionCriteria": [
+            "Student says 'you can't divide a hexagon equally'",
+            "Student gives up quickly",
+            "Student doesn't try to transfer learned strategies"
+          ],
+          "evidenceKeywords": ["can't", "too hard", "impossible", "don't know how"],
+          "confidenceThreshold": 0.6
+        }
+      ],
+      "assessmentType": "extension-challenge",
+      "assessmentQuestion": "Can you divide this hexagon into equal parts? What strategies from circles and rectangles might help?",
+      "correctResponse": {
+        "indicators": ["from center", "six parts", "triangles", "symmetry", "like a pizza", "rotate"],
+        "reasoning": "Student transfers center-point strategy from circles or identifies hexagon symmetry"
+      },
+      "incorrectResponse": {
+        "indicators": ["can't", "impossible", "only circles", "too hard"],
+        "reasoning": "Student hasn't yet generalized equal-partitioning strategies to new shapes"
+      },
+      "cognitiveLevel": "create",
+      "difficulty": "advanced",
+      "usedInMilestones": ["act-4a-transfer"],
+      "scaffolding": {
+        "low": "What worked when dividing a circle? Can you find the center of this hexagon?",
+        "medium": "Try drawing lines from the center to each corner. What do you notice?",
+        "high": "How many different ways can you partition this hexagon into equal parts? Compare strategies."
+      }
+    },
+    {
+      "id": "transfer-student-choice-shapes",
+      "order": 14,
+      "imagePrompt": "Create an SVG illustration presenting multiple shape options for student choice and transfer assessment. Canvas: 700px × 500px.\n\n**Shape Collection (5-6 shapes, all blank/empty):**\nArrange in two rows with equal spacing:\n\n**Top Row:**\n1. Circle (140px diameter) at (120, 140)\n2. Square (130px × 130px) at (300, 140)\n3. Rectangle (180px × 100px) at (520, 140)\n\n**Bottom Row:**\n4. Triangle (equilateral, 150px sides) at (120, 360)\n5. Hexagon (regular, 120px point-to-point) at (300, 360)\n6. Oval (170px × 110px) at (520, 360)\n\nAll shapes: 3px stroke (#333333), no fill, completely empty inside.\n\n**Labels:**\n- Each shape labeled below: 'Circle', 'Square', 'Rectangle', etc. in 12px font\n- Small icons or thumbnails above each shape\n\n**Main Instructions:**\n- Top of canvas: '✨ Your Choice!' in 24px bold font, #7B1FA2 purple\n- Below title: 'Pick any shape and divide it into equal parts!' in 16px font\n- Sub-instruction: 'Choose how many parts: 2, 3, 4, or 6' in 14px italic font\n\n**Interactive prompt:**\n- Text bubble: 'Which shape will YOU choose? 🤔' in 14px font\n- Bottom text: 'Show your strategy and explain your thinking!' in 12px italic font\n\n**Design elements:**\n- Friendly, colorful header area\n- Clean, organized layout\n- Equal-sized shapes for fair comparison\n- Inviting, student-centered language\n- Small pencil or drawing tool icon suggesting drawing activity\n\n**Optional:**\n- Small checkboxes or selection indicators near each shape\n- Decorative elements (stars, sparkles) to make it feel special and empowering\n\nDesign should emphasize student agency and choice while assessing transfer of equal-partitioning skills across diverse shapes.",
+      "masteryGoals": ["mg-7-transfer-generalize"],
+      "masteryGoalDescriptions": [
+        "Transfer and generalize across contexts and shapes - student demonstrates mastery by applying to self-chosen context"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "shape-specific-understanding",
+          "description": "Only able to partition specific practiced shapes",
+          "detectionCriteria": [
+            "Student only chooses circle or rectangle (practiced shapes)",
+            "Student avoids triangle, hexagon, oval",
+            "Student struggles with unpracticed shapes"
+          ],
+          "evidenceKeywords": ["just circle", "only rectangle", "easiest one", "scared of"],
+          "confidenceThreshold": 0.5
+        }
+      ],
+      "assessmentType": "transfer-activity",
+      "assessmentQuestion": "Pick any shape you want. Divide it into [student chooses number] equal parts. Explain your strategy!",
+      "correctResponse": {
+        "indicators": ["I'll try hexagon", "triangle looks interesting", "different shape", "adapt strategy", "center point"],
+        "reasoning": "Student shows confidence and willingness to transfer skills to new/challenging shapes"
+      },
+      "incorrectResponse": {
+        "indicators": ["circle because easy", "only know how to do rectangle", "afraid of triangle"],
+        "reasoning": "Student may not yet feel confident generalizing to unpracticed shapes"
+      },
+      "cognitiveLevel": "create",
+      "difficulty": "medium-to-advanced",
+      "usedInMilestones": ["act-4a-transfer"],
+      "scaffolding": {
+        "low": "Start with the shape you feel most comfortable with. Show me what you can do!",
+        "medium": "Which shape looks like a fun challenge? What strategy from circle or rectangle might help?",
+        "high": "Try a shape you haven't practiced yet. How will you adapt your strategies to make it work?"
+      },
+      "agentDrawingPrompts": {
+        "initial": "Your turn to choose! Pick ANY shape from these options and divide it into equal parts. You decide how many parts - 2, 3, 4, or even 6! Draw right on your canvas to show your work.",
+        "encouragement": "Go for it! Pick a shape that looks interesting to you. Then use your drawing tools to divide it into equal parts. Show me your thinking!",
+        "guidance": "Nice choice! Now think about what you learned from circles and rectangles. What strategies can you use for this shape? Where should your lines go to make equal parts?",
+        "completion": "Fantastic work! Tell me about your drawing - which shape did you pick? How many parts did you make? How do you know they're equal?"
+      },
+      "drawingExpectations": {
+        "expectedElements": [
+          "Clear selection of one shape (marked or isolated)",
+          "Dividing lines appropriate for chosen shape",
+          "Equal partitioning strategy applied",
+          "Demonstration of transfer from practiced shapes"
+        ],
+        "commonErrors": [
+          "Not selecting a shape (trying multiple at once)",
+          "Using wrong partitioning strategy for shape type",
+          "Creating unequal parts",
+          "Incomplete or abandoned attempt"
+        ],
+        "successIndicators": [
+          "Confidently selects a shape",
+          "Applies appropriate partitioning strategy",
+          "Creates visibly equal parts",
+          "Can articulate strategy and verify equality",
+          "Shows transfer of learning to new context",
+          "Demonstrates agency and choice"
+        ]
+      },
+      "whenToPromptDrawing": "Immediately, emphasizing student choice and autonomy"
+    },
+    {
+      "id": "reflection-student-teaches-back",
+      "order": 15,
+      "imagePrompt": "Create an SVG illustration for the final reflection/teaching-back activity. Canvas: 600px × 500px.\n\n**Main Visual:**\n- Central area with large thought bubble or speech bubble (400px wide)\n- Inside bubble: Blank white space with faint guidelines (like lined paper)\n- Bubble outline: 3px stroke (#333333), friendly rounded corners\n\n**Prompt area (top):**\n- Title: '🎓 Teach What You Learned!' in 24px bold font, #1976D2 blue\n- Main instruction: 'Explain to a friend: What are fractions? What's the MOST important rule?' in 16px font\n- Sub-prompt: 'Draw and write your explanation!' in 14px italic font\n\n**Visual scaffolding cues:**\n- Small icon/illustration in bottom-left: simple circle divided in thirds (60px) as example\n- Small icon/illustration in bottom-right: rectangle divided in fourths (60px) as example\n- Faint text at bottom of bubble: 'Use pictures and words to teach!' in 10px font, #999999\n\n**Reflection prompts (side margin):**\nSmall text boxes with guiding questions:\n- 'What does equal parts mean?'\n- 'What do numerator and denominator tell us?'\n- 'Why can't we use unequal parts?'\n- 'What strategies help make equal parts?'\n\nEach in small 11px font, #666666\n\n**Design elements:**\n- Graduation cap icon or teaching icon\n- Warm, encouraging color palette\n- Space for student drawing and writing\n- Professional but kid-friendly design\n\n**Optional:**\n- Small avatar of a younger student listening (suggesting audience)\n- Speech bubble tail pointing toward small listener figure\n- Text: 'How would you explain this to a 2nd grader?' in 12px italic font\n\nDesign should facilitate metacognition and synthesis, encouraging students to articulate their complete understanding in their own words and visuals.",
+      "masteryGoals": ["mg-7-transfer-generalize", "mg-2-recognize-equal-requirement", "mg-6-symbolic-visual-connection"],
+      "masteryGoalDescriptions": [
+        "Transfer and generalize - articulate invariant principles",
+        "Recognize equal parts requirement - core concept to teach",
+        "Connect symbolic and visual - demonstrate complete understanding"
+      ],
+      "misconceptionsToDetect": [
+        {
+          "id": "incomplete-understanding",
+          "description": "Cannot articulate core principles or teach back concept",
+          "detectionCriteria": [
+            "Student struggles to explain",
+            "Student omits 'equal parts' requirement",
+            "Student can't connect notation to meaning",
+            "Explanation is incoherent or incomplete"
+          ],
+          "evidenceKeywords": ["I don't know how to explain", "just divide it", "numbers"],
+          "confidenceThreshold": 0.6
+        }
+      ],
+      "assessmentType": "reflection-synthesis",
+      "assessmentQuestion": "Teach me everything you learned about fractions. What's the most important rule? Use pictures and words!",
+      "correctResponse": {
+        "indicators": ["equal parts", "numerator and denominator", "fair sharing", "same size", "visual examples", "explains clearly"],
+        "reasoning": "Student demonstrates comprehensive understanding by teaching core concepts with clarity and examples"
+      },
+      "incorrectResponse": {
+        "indicators": ["just numbers", "divide", "I forgot", "unclear explanation"],
+        "reasoning": "Student may have partial mastery but not yet able to synthesize and articulate complete understanding"
+      },
+      "cognitiveLevel": "create",
+      "difficulty": "advanced",
+      "usedInMilestones": ["act-4b-reflection"],
+      "scaffolding": {
+        "low": "Start with this: What does 'equal parts' mean? Show me with a picture.",
+        "medium": "Pretend I'm your younger sibling who's never heard of fractions. How would you explain it?",
+        "high": "What are the 3 most important things someone MUST understand about fractions? Teach each one."
+      }
+    }
+  ],
+  "usageGuidelines": {
+    "assessmentFlow": "Start with prerequisite images (order 1-2) if gaps detected. Progress through formative practice images (order 4-8), use checkpoint (order 9) to verify mastery, advance to notation and critical thinking (order 10-11), offer extension challenges (order 13-14) for advanced learners, conclude with reflection (order 15).",
+    "adaptivePathways": {
+      "strugglingLearner": "Use scaffolding images (order 12), provide more time with models (order 5, 7, 8), offer additional prerequisite practice (order 1-2).",
+      "onTrackLearner": "Follow standard progression (order 1-11), include checkpoint (order 9), complete with reflection (order 15).",
+      "advancedLearner": "Accelerate through prerequisites, focus on critical thinking (order 11), provide extension challenges (order 13-14), emphasize transfer and generalization."
+    },
+    "misconceptionDetection": "Each image with misconceptions listed should be analyzed using VisionService + student verbal explanation. Look for evidence keywords in transcription. Confidence threshold indicates minimum confidence for flagging.",
+    "formativeAssessment": "Every image is an assessment opportunity. Compare student's canvas drawing to expected response indicators. Use incorrect response indicators to detect misconceptions early."
+  },
+  "metadata": {
+    "createdAt": "2025-11-03",
+    "author": "Simili Pedagogy Team",
+    "version": "1.0",
+    "totalImages": 15,
+    "totalMasteryGoals": 7,
+    "totalMisconceptions": 8,
+    "notes": "Comprehensive image-to-pedagogy mapping with detailed prompts for SVG creation, mastery goal alignment, and misconception detection criteria. Each image serves dual purpose: instruction and formative assessment."
+  }
+}

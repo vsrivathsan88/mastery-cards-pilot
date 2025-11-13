@@ -1,5 +1,7 @@
 import { useLessonStore } from '@/lib/state';
 import { LessonAsset } from '@simili/shared';
+import { useMemo } from 'react';
+import { ImageDescriptionCard, useImageDescription } from './ImageDescriptionCard';
 
 interface LessonImageProps {
   lessonId?: string;
@@ -7,18 +9,23 @@ interface LessonImageProps {
 }
 
 export function LessonImage({ lessonId, milestoneIndex }: LessonImageProps) {
-  const { currentLesson, currentImage } = useLessonStore();  // Add currentImage
+  const { currentLesson, currentImage } = useLessonStore();
   
-  // Get the appropriate image with priority system
-  const getCurrentImage = (): { url: string; alt: string; caption: string } | null => {
+  // Check if current image is a description card
+  const { description: descriptionCard } = useImageDescription(currentImage);
+  
+  // Memoize image calculation to prevent infinite re-renders
+  const image = useMemo(() => {
     if (!currentLesson?.assets) return null;
     
     // PRIORITY 1: If Pi explicitly set an image via show_image tool, show that
     if (currentImage) {
       const explicitAsset = currentLesson.assets.find((asset: any) => asset.id === currentImage);
       if (explicitAsset) {
-        console.log('[LessonImage] 🎬 Showing tool-selected image:', currentImage);
+        // Only log once on image change, not on every render
+        // console.log('[LessonImage] 🎬 Showing tool-selected image:', currentImage);
         return {
+          id: currentImage,
           url: explicitAsset.url,
           alt: explicitAsset.alt || 'Lesson visual',
           caption: explicitAsset.description || explicitAsset.alt || ''
@@ -29,7 +36,7 @@ export function LessonImage({ lessonId, milestoneIndex }: LessonImageProps) {
     // PRIORITY 2: Cover image (if lesson just started and no milestone yet)
     if (milestoneIndex === 0 && (currentLesson as any).coverImage) {
       const coverImage = (currentLesson as any).coverImage;
-      console.log('[LessonImage] 🖼️ Showing cover image');
+      // Removed spam log (was causing infinite console spam)
       return {
         url: coverImage.url,
         alt: coverImage.alt || 'Lesson cover',
@@ -66,11 +73,36 @@ export function LessonImage({ lessonId, milestoneIndex }: LessonImageProps) {
     }
     
     return null;
-  };
-
-  const image = getCurrentImage();
+  }, [currentLesson, currentImage, milestoneIndex]); // Memoize based on dependencies
   
   // If no image available, don't render anything
+  if (!image && !descriptionCard) {
+    return null;
+  }
+
+  // If this is a description card, render that instead of an image
+  if (descriptionCard) {
+    console.log('[LessonImage] 📝 Showing description card:', descriptionCard.id);
+    return (
+      <div style={{ 
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '20px 0'
+      }}>
+        <ImageDescriptionCard
+          title={descriptionCard.title}
+          description={descriptionCard.description}
+          mathQuestion={descriptionCard.math_question}
+          type={descriptionCard.type}
+        />
+      </div>
+    );
+  }
+
+  // Otherwise render the actual image
   if (!image) {
     return null;
   }

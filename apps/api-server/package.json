@@ -9,6 +9,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@simili/agents": "workspace:*",
     "@simili/lessons": "workspace:*",
     "@simili/shared": "workspace:*",

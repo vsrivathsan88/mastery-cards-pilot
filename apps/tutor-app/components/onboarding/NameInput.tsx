@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, ReactNode, KeyboardEvent } from 'react';
 
 interface NameInputProps {
   onSubmit: (name: string) => void;
@@ -13,7 +13,7 @@ export function NameInput({ onSubmit }: NameInputProps) {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSubmit();
     }
@@ -34,6 +34,7 @@ export function NameInput({ onSubmit }: NameInputProps) {
             onChange={(e) => setName(e.target.value.slice(0, 20))}
             onKeyPress={handleKeyPress}
             autoFocus
+            data-testid="name-input"
           />
           <div className="name-length-indicator">
             {name.length}/20
@@ -44,6 +45,7 @@ export function NameInput({ onSubmit }: NameInputProps) {
           className="cozy-button cozy-button-primary onboarding-button-large"
           onClick={handleSubmit}
           disabled={!name.trim()}
+          data-testid="name-submit-button"
         >
           That's Me! 🎉
         </button>

@@ -33,6 +33,13 @@ export interface VisionResult {
   needsVoiceOver: boolean;
 }
 
+export interface PrerequisiteResult {
+  checked: boolean;
+  results: any[];
+  criticalGaps: number;
+  recommendedAction: string;
+}
+
 /**
  * LangGraph State Annotation
  * Defines the shape of state that flows through the graph
@@ -54,6 +61,7 @@ export const AgentState = Annotation.Root({
   misconception: Annotation<MisconceptionResult | null>,
   emotional: Annotation<EmotionalResult | null>,
   vision: Annotation<VisionResult | null>,
+  prerequisite: Annotation<PrerequisiteResult | null>,
   
   // History (for context)
   transcriptionHistory: Annotation<string[]>,
