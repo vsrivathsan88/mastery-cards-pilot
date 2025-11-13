@@ -1,14 +1,12 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { LiveAPIProvider } from './contexts/LiveAPIContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
-console.log('🎴 Mastery Cards App v1.0.0');
-
-const API_KEY = (import.meta.env.VITE_GEMINI_API_KEY || 'test-api-key-for-testing') as string;
+console.log('🎴 Mastery Cards App v1.0.0 (Gemini Live)');
 
 createRoot(document.getElementById('root')!).render(
-  <LiveAPIProvider apiKey={API_KEY}>
+  <ErrorBoundary>
     <App />
-  </LiveAPIProvider>,
+  </ErrorBoundary>
 )

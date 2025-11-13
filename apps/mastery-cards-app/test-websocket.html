@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Realtime WebSocket Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #log {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>OpenAI Realtime API - WebSocket Connection Test</h1>
+    <p>Enter your API key below and click Connect to test the WebSocket connection.</p>
+    
+    <input type="text" id="apiKeyInput" placeholder="Enter your OpenAI API key (sk-...)" />
+    <button id="connectBtn">Connect to Realtime API</button>
+    <button id="clearBtn">Clear Log</button>
+    
+    <h2>Connection Log:</h2>
+    <div id="log"></div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const connectBtn = document.getElementById('connectBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        let ws = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString().split('T')[1].substring(0, 12);
+            const colors = {
+                info: '#0f0',
+                error: '#f00',
+                warning: '#ff0',
+                success: '#0ff'
+            };
+            const color = colors[type] || colors.info;
+            
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.textContent = `[${timestamp}] ${message}`;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        clearBtn.addEventListener('click', () => {
+            logEl.innerHTML = '';
+        });
+        
+        connectBtn.addEventListener('click', () => {
+            const apiKey = apiKeyInput.value.trim();
+            
+            if (!apiKey) {
+                log('ERROR: Please enter an API key', 'error');
+                return;
+            }
+            
+            if (ws) {
+                log('Closing existing connection...', 'warning');
+                ws.close();
+                ws = null;
+            }
+            
+            log('='.repeat(80), 'info');
+            log('Starting OpenAI Realtime API connection test', 'info');
+            log('API Key: ' + apiKey.substring(0, 20) + '...', 'info');
+            
+            if (apiKey.startsWith('sk-proj-')) {
+                log('WARNING: Using project-scoped key (sk-proj-)', 'warning');
+                log('Realtime API may require a standard key (sk-...)', 'warning');
+            } else if (apiKey.startsWith('sk-')) {
+                log('✓ Using standard API key format', 'success');
+            } else {
+                log('WARNING: Unusual API key format', 'warning');
+            }
+            
+            const model = 'gpt-4o-realtime-preview-2024-10-01';
+            const url = `wss://api.openai.com/v1/realtime?model=${model}`;
+            
+            log('WebSocket URL: ' + url, 'info');
+            log('Creating WebSocket connection...', 'info');
+            
+            try {
+                ws = new WebSocket(url, [
+                    'realtime',
+                    `openai-insecure-api-key.${apiKey}`,
+                    'openai-beta.realtime-v1'
+                ]);
+                
+                log('✓ WebSocket object created', 'success');
+                log('ReadyState: ' + ws.readyState + ' (CONNECTING)', 'info');
+                
+                // Timeout
+                const timeout = setTimeout(() => {
+                    if (ws && ws.readyState === WebSocket.CONNECTING) {
+                        log('❌ CONNECTION TIMEOUT after 10 seconds', 'error');
+                        log('Possible causes:', 'error');
+                        log('  1. API key is invalid or lacks permissions', 'error');
+                        log('  2. API key doesn\'t have Realtime API access', 'error');
+                        log('  3. Network/firewall blocking WebSocket', 'error');
+                        log('  4. CORS or browser security policy', 'error');
+                        ws.close();
+                    }
+                }, 10000);
+                
+                ws.addEventListener('open', (event) => {
+                    clearTimeout(timeout);
+                    log('='.repeat(80), 'success');
+                    log('✓✓✓ CONNECTION SUCCESSFUL ✓✓✓', 'success');
+                    log('='.repeat(80), 'success');
+                    log('WebSocket is now OPEN', 'success');
+                    log('ReadyState: ' + ws.readyState + ' (OPEN)', 'success');
+                    log('', 'info');
+                    log('Your API key works! You can now use the Realtime API.', 'success');
+                });
+                
+                ws.addEventListener('message', (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        log('◄ Received: ' + data.type, 'info');
+                        log(JSON.stringify(data, null, 2), 'info');
+                    } catch (e) {
+                        log('◄ Received (non-JSON): ' + event.data, 'info');
+                    }
+                });
+                
+                ws.addEventListener('error', (event) => {
+                    clearTimeout(timeout);
+                    log('='.repeat(80), 'error');
+                    log('❌ WEBSOCKET ERROR', 'error');
+                    log('='.repeat(80), 'error');
+                    log('Error event fired', 'error');
+                    log('This usually means:', 'error');
+                    log('  • API key is rejected by server (401)', 'error');
+                    log('  • API key lacks Realtime API permissions (403)', 'error');
+                    log('  • Network error or firewall blocking connection', 'error');
+                    log('', 'error');
+                    log('Check the browser DevTools Network tab for more details', 'error');
+                });
+                
+                ws.addEventListener('close', (event) => {
+                    clearTimeout(timeout);
+                    log('='.repeat(80), 'warning');
+                    log('CONNECTION CLOSED', 'warning');
+                    log('Code: ' + event.code, 'warning');
+                    log('Reason: ' + (event.reason || 'No reason provided'), 'warning');
+                    log('Was clean: ' + event.wasClean, 'warning');
+                    log('='.repeat(80), 'warning');
+                    
+                    if (event.code === 1002 || event.code === 1008) {
+                        log('Common cause: Invalid API key or lacking permissions', 'error');
+                    }
+                });
+                
+            } catch (error) {
+                log('❌ EXCEPTION while creating WebSocket:', 'error');
+                log(error.toString(), 'error');
+            }
+        });
+        
+        log('Ready to test! Enter your API key and click Connect.', 'info');
+        log('', 'info');
+        log('How to get an API key:', 'info');
+        log('1. Go to https://platform.openai.com/api-keys', 'info');
+        log('2. Create a NEW standard API key (NOT project-scoped)', 'info');
+        log('3. Make sure you have Tier 1+ API access', 'info');
+        log('4. Paste it above and click Connect', 'info');
+    </script>
+</body>
+</html>

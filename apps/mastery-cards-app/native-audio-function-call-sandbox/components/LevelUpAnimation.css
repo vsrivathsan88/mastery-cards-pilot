@@ -1,0 +1,183 @@
+/**
+ * Level Up Animation Styles
+ * Celebratory toast notification (non-blocking)
+ */
+
+.level-up-overlay {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  pointer-events: none; /* Allow clicking through */
+  animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.level-up-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.4);
+  pointer-events: auto; /* Allow interaction with the toast itself */
+}
+
+.level-up-image {
+  width: 80px;
+  height: auto;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.level-up-content {
+  text-align: left;
+  color: white;
+}
+
+.level-up-title {
+  font-family: 'Bangers', 'Comic Sans MS', cursive;
+  font-size: 1.8rem;
+  margin: 0;
+  color: #FFD700;
+  text-shadow:
+    2px 2px 0 rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 215, 0, 0.5);
+  animation: none; /* Remove bounce for toast */
+}
+
+.level-up-new-level {
+  font-family: 'Bangers', 'Comic Sans MS', cursive;
+  font-size: 1.4rem;
+  margin: 4px 0;
+  color: #FFD700;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.level-up-points {
+  font-family: 'Bangers', 'Comic Sans MS', cursive;
+  font-size: 1rem;
+  margin: 2px 0;
+  color: #FFF;
+  opacity: 0.9;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Animations */
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-150%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .level-up-container {
+    padding: 15px 20px;
+    gap: 15px;
+  }
+
+  .level-up-image {
+    width: 60px;
+  }
+
+  .level-up-title {
+    font-size: 1.5rem;
+  }
+
+  .level-up-new-level {
+    font-size: 1.2rem;
+  }
+
+  .level-up-points {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .level-up-overlay {
+    left: 10px;
+    right: 10px;
+    transform: none;
+  }
+
+  .level-up-container {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .level-up-image {
+    width: 50px;
+  }
+
+  .level-up-title {
+    font-size: 1.3rem;
+  }
+
+  .level-up-new-level {
+    font-size: 1rem;
+  }
+
+  .level-up-points {
+    font-size: 0.85rem;
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-150%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
