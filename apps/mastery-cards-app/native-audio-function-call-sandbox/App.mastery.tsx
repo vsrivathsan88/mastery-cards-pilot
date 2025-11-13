@@ -108,9 +108,13 @@ function AppContent() {
       console.log('[App] 🔧 Initializing orchestration manager...');
 
       // Create orchestrator with both server and client support
+      // Use environment variable for server URL, default to localhost for development
+      const wsServerUrl = import.meta.env.VITE_WS_SERVER_URL || 'ws://localhost:3001/orchestrate';
+      console.log('[App] 🔗 WebSocket server URL:', wsServerUrl);
+
       orchestrator.current = createOrchestrationManager(sessionId, {
         claudeApiKey: CLAUDE_KEY,
-        serverUrl: 'ws://localhost:3001/orchestrate',
+        serverUrl: wsServerUrl,
         mode: 'hybrid', // Try server first, fall back to client
         enablePersistence: true,
       });
