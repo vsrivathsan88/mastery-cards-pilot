@@ -1,18 +1,18 @@
 run = "bash start-replit.sh"
-entrypoint = "apps/tutor-app/index.html"
+entrypoint = "apps/mastery-cards-app/server/src/index.js"
 modules = ["nodejs-20"]
 
-hidden = [".config", "tsconfig.json", "tsconfig.node.json", "vite.config.ts", ".gitignore"]
+hidden = [".config", "tsconfig.json", "tsconfig.node.json", ".gitignore"]
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "pnpm install && pnpm --filter tutor-app build && pnpm --filter tutor-app preview"]
+run = ["sh", "-c", "cd apps/mastery-cards-app/server && npm install && node src/index.js"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
-localPort = 5173
+localPort = 3001
 externalPort = 80
 
 [env]

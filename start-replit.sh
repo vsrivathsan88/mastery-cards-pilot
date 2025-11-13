@@ -1,24 +1,30 @@
 #!/bin/bash
 
-# Simili startup script for Replit
+# Mastery Cards Backend Server startup script for Replit
 
-echo "🚀 Starting Simili on Replit..."
+echo "🚀 Starting Mastery Cards Backend Server on Replit..."
 
-# Check if pnpm is available
-if ! command -v pnpm &> /dev/null; then
-    echo "📦 Installing pnpm..."
-    npm install -g pnpm@9.15.0
-fi
+# Navigate to server directory
+cd apps/mastery-cards-app/server || exit 1
 
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies (this may take 2-3 minutes)..."
-    pnpm install
+    echo "📦 Installing server dependencies..."
+    npm install
 else
     echo "✅ Dependencies already installed"
 fi
 
-# Check if GEMINI_API_KEY is set
+# Check if required API keys are set
+if [ -z "$CLAUDE_API_KEY" ]; then
+    echo "⚠️  WARNING: CLAUDE_API_KEY not found!"
+    echo "Please add your Claude API key to Replit Secrets:"
+    echo "1. Click the 'Secrets' tab (lock icon)"
+    echo "2. Add key: CLAUDE_API_KEY"
+    echo "3. Add value: Your API key from https://console.anthropic.com/"
+    echo ""
+fi
+
 if [ -z "$GEMINI_API_KEY" ]; then
     echo "⚠️  WARNING: GEMINI_API_KEY not found!"
     echo "Please add your Gemini API key to Replit Secrets:"
@@ -26,19 +32,16 @@ if [ -z "$GEMINI_API_KEY" ]; then
     echo "2. Add key: GEMINI_API_KEY"
     echo "3. Add value: Your API key from https://aistudio.google.com/app/apikey"
     echo ""
-    echo "Continuing anyway for setup purposes..."
 fi
 
-# Build workspace packages
-echo "🔨 Building workspace packages..."
-pnpm --filter @simili/shared build || echo "Warning: shared build failed"
-pnpm --filter @simili/agents build || echo "Warning: agents build failed"
-pnpm --filter @simili/core-engine build || echo "Warning: core-engine build failed"
-pnpm --filter @simili/lessons build || echo "Warning: lessons build failed"
+# Set PORT if not already set
+export PORT=${PORT:-3001}
 
-# Start the dev server
-echo "🎓 Starting Simili tutor app..."
-echo "📍 App will be available at your Replit URL"
+echo "🎓 Starting Mastery Cards orchestration server..."
+echo "📍 Server will be available at your Replit URL on port $PORT"
+echo "🔗 WebSocket endpoint: /orchestrate"
+echo "🔗 Health check: /health"
 echo ""
 
-cd apps/tutor-app && pnpm dev
+# Start the server
+node src/index.js
