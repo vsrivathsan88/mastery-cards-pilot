@@ -19,12 +19,12 @@ export function LevelUpAnimation({ show, newLevel, totalPoints, onComplete }: Le
   useEffect(() => {
     if (show) {
       setVisible(true);
-      
-      // Auto-dismiss after 3 seconds
+
+      // Auto-dismiss after 2 seconds (reduced for better flow)
       const timer = setTimeout(() => {
         setVisible(false);
-        setTimeout(onComplete, 500); // Wait for fade out
-      }, 3000);
+        setTimeout(onComplete, 300); // Wait for fade out
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
