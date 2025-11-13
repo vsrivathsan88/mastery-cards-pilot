@@ -1,0 +1,10 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd apps/mastery-cards-app/server && npm install"
+  },
+  "deploy": {
+    "startCommand": "cd apps/mastery-cards-app/server && npm start",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
