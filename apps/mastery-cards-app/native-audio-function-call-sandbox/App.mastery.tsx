@@ -27,7 +27,6 @@ import './App.mastery.css';
 import './components/WelcomeScreen.css';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
-const CLAUDE_KEY = import.meta.env.VITE_CLAUDE_API_KEY as string;
 
 if (!API_KEY) {
   throw new Error('Missing VITE_GEMINI_API_KEY environment variable');
@@ -109,8 +108,8 @@ function AppContent() {
       console.log('[App] 🔧 Initializing orchestration manager (client-side mode)...');
 
       // Create orchestrator in client-only mode (no backend server needed)
+      // Note: claudeApiKey not needed - evaluation uses serverless function at /api/claude-evaluate
       orchestrator.current = createOrchestrationManager(sessionId, {
-        claudeApiKey: CLAUDE_KEY,
         mode: 'client', // Client-side only for Vercel deployment
         enablePersistence: true,
       });
