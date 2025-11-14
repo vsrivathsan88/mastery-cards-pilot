@@ -58,12 +58,10 @@ export async function evaluateMastery(
   const prompt = buildJudgePrompt(card, conversationHistory, exchangeCount);
 
   try {
-    // Call backend proxy instead of Claude directly (fixes CORS + security)
-    // Use environment variable for backend URL, with fallback for local development
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-    const evaluateEndpoint = `${backendUrl}/api/claude/evaluate`;
-
-    const response = await fetch(evaluateEndpoint, {
+    // Call Vercel serverless function (same domain, no CORS issues)
+    // In production: /api/claude-evaluate
+    // In dev: Vercel CLI will proxy to serverless function
+    const response = await fetch('/api/claude-evaluate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

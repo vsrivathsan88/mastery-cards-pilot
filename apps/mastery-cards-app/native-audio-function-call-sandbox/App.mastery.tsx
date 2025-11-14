@@ -87,9 +87,10 @@ function AppContent() {
   // Track if config has been set using useRef (persists across renders)
   const configSetRef = useRef(false);
 
-  // Initialize orchestrator manager with server support
+  // Initialize orchestrator manager in client-only mode for Vercel deployment
   const orchestrator = useRef<OrchestrationManager | null>(null);
-  const [orchestrationMode, setOrchestrationMode] = useState<'server' | 'client'>('client');
+  // Force client-side mode - no backend server needed
+  const orchestrationMode: 'client' = 'client';
 
   // Start session after name is set
   useEffect(() => {
@@ -102,28 +103,19 @@ function AppContent() {
     }
   }, [studentName, sessionId, startSession, setTemplate]);
 
-  // Initialize orchestrator manager when session starts
+  // Initialize orchestrator manager when session starts (client-side only)
   useEffect(() => {
     if (sessionId && !orchestrator.current) {
-      console.log('[App] 🔧 Initializing orchestration manager...');
+      console.log('[App] 🔧 Initializing orchestration manager (client-side mode)...');
 
-      // Create orchestrator with both server and client support
-      // Use environment variable for server URL, default to localhost for development
-      const wsServerUrl = import.meta.env.VITE_WS_SERVER_URL || 'ws://localhost:3001/orchestrate';
-      console.log('[App] 🔗 WebSocket server URL:', wsServerUrl);
-
+      // Create orchestrator in client-only mode (no backend server needed)
       orchestrator.current = createOrchestrationManager(sessionId, {
         claudeApiKey: CLAUDE_KEY,
-        serverUrl: wsServerUrl,
-        mode: 'hybrid', // Try server first, fall back to client
+        mode: 'client', // Client-side only for Vercel deployment
         enablePersistence: true,
       });
 
-      // Set connection change callback to track mode
-      orchestrator.current.setConnectionChangeCallback((connected, mode) => {
-        console.log(`[App] 📡 Orchestration mode: ${mode}, Server: ${connected ? 'Connected' : 'Disconnected'}`);
-        setOrchestrationMode(mode as 'server' | 'client');
-      });
+      console.log('[App] 📡 Orchestration mode: client-side (no backend server)');
 
       // Initialize with student name
       if (studentName && currentCard) {
