@@ -11,6 +11,9 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Copy production environment file
+COPY .env.production .env.local
+
 # Build frontend (creates dist/ folder)
 RUN npm run build
 
@@ -30,7 +33,7 @@ RUN npm install express google-auth-library
 COPY --from=frontend-builder /app/dist ./dist
 
 # Copy server code
-COPY server.js ./
+COPY server.cjs ./
 
 # Cloud Run uses PORT env var
 ENV PORT=8080
@@ -38,9 +41,5 @@ ENV NODE_ENV=production
 
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
 # Start server
-CMD ["node", "server.js"]
+CMD ["node", "server.cjs"]
