@@ -63,7 +63,7 @@ export const MVP_CARDS: MasteryCard[] = [
     context: 'Snack time at school',
     imageUrl: '/images/Cookie-1.png',
     imageDescription: 'Four round chocolate chip cookies arranged in a row. All cookies are the same size and appear identical.',
-    learningGoal: 'Recognize equal groups and one-to-one correspondence',
+    learningGoal: 'Recognize equal groups, total number (4) and one-to-one correspondence',
     piStartingQuestion: 'What do you notice about these cookies?',
     milestones: {
       basic: {
@@ -129,7 +129,7 @@ export const MVP_CARDS: MasteryCard[] = [
     piStartingQuestion: 'Three friends are sharing this pancake. What does the "1/3" label tell us?',
     milestones: {
       basic: {
-        description: 'Student explains 1/3 means one of those parts',
+        description: 'Student explains 1/3 means one of those parts or each friend person gets one of three equal pieces',
         points: 40,
         evidenceKeywords: ['one of three', 'third', 'one piece', 'three pieces', 'three parts'],
       },
