@@ -48,10 +48,9 @@ export function MasteryCard({ card, isCurrent, style }: MasteryCardProps) {
         </div>
       )}
       
-      {/* Card content */}
+      {/* Card content - title only, no context text */}
       <div className="card-content">
         <h2 className="card-title">{card.title}</h2>
-        <p className="card-context">{card.context}</p>
         
         {/* Welcome card indicator */}
         {isWelcomeCard && (

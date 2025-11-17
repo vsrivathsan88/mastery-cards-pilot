@@ -28,7 +28,7 @@ export function ComicOnboarding({ studentName, onReady, onStart, isReady, isConn
   const slides: ComicSlide[] = [
     {
       id: 1,
-      imagePlaceholder: '🛸',
+      imageUrl: '/pi.png',
       text: `Hi ${studentName}, I'm Pi!`,
       smallText: 'Your friendly alien guide'
     },

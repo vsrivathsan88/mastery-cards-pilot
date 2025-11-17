@@ -18,9 +18,11 @@ import { useSessionStore } from './lib/state/session-store';
 import { useSettings, useTools } from './lib/state';
 import { useLiveAPIContext } from './contexts/LiveAPIContext';
 import { LiveAPIProvider } from './contexts/LiveAPIContext';
-import { evaluateMastery, type ConversationTurn as ClaudeConversationTurn } from './lib/evaluator/claude-judge';
-import { createOrchestrationManager, type OrchestrationManager } from './lib/orchestration/orchestration-manager';
-import type { TranscriptEntry } from './lib/orchestration/conversation-orchestrator';
+// Claude judge and orchestrator removed - assessment now done via Gemini tool calls
+// import { evaluateMastery, type ConversationTurn as ClaudeConversationTurn } from './lib/evaluator/claude-judge';
+// import { createOrchestrationManager, type OrchestrationManager } from './lib/orchestration/orchestration-manager';
+// import type { TranscriptEntry } from './lib/orchestration/conversation-orchestrator';
+import { assessmentTools, ASSESSMENT_SYSTEM_PROMPT } from './lib/tools/assessment-tools';
 import type { LiveServerToolCall } from '@google/genai';
 import { Modality } from '@google/genai';
 import './App.mastery.css';
@@ -69,11 +71,14 @@ function AppContent() {
   const [setupComplete, setSetupComplete] = useState(false);
   const [currentError, setCurrentError] = useState<ErrorInfo | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Conversation tracking for Claude
-  const conversationHistory = useRef<ClaudeConversationTurn[]>([]);
+  // Conversation tracking removed - assessment now done via Gemini tool calls
+  // const conversationHistory = useRef<ClaudeConversationTurn[]>([]);
   const exchangeCount = useRef<number>(0);
   const evaluationInProgress = useRef(false);
+  const sessionHandleRef = useRef<string | null>(null); // For session resumption
   const pendingEvaluation = useRef<any>(null);
 
   // Initialize name prompt
@@ -102,69 +107,34 @@ function AppContent() {
     }
   }, [studentName, sessionId, startSession, setTemplate]);
 
-  // Initialize orchestrator manager when session starts (client-side only)
-  useEffect(() => {
-    if (sessionId && !orchestrator.current) {
-      console.log('[App] 🔧 Initializing orchestration manager (client-side mode)...');
+  // Orchestrator removed - assessment now done via Gemini tool calls
+  // (orchestrator ref declared above but no longer initialized)
 
-      // Create orchestrator in client-only mode (no backend server needed)
-      // Note: claudeApiKey not needed - evaluation uses serverless function at /api/claude-evaluate
-      orchestrator.current = createOrchestrationManager(sessionId, {
-        mode: 'client', // Client-side only for Vercel deployment
-        enablePersistence: true,
-      });
-
-      console.log('[App] 📡 Orchestration mode: client-side (no backend server)');
-
-      // Initialize with student name
-      if (studentName && currentCard) {
-        orchestrator.current.initialize(studentName, currentCard).then(() => {
-          console.log('[App] ✅ Orchestration manager initialized');
-        });
-      }
-    }
-  }, [sessionId, studentName, currentCard]);
-
-  // Set up Gemini config ONCE when session starts - SIMPLIFIED (no function tools)
+  // Set up Gemini config ONCE when session starts - WITH ASSESSMENT TOOLS
   useEffect(() => {
     // Only configure once per session when we have a student name and haven't configured yet
     if (!studentName || configSetRef.current) return;
 
-    console.log('[App] 🎯 Configuring Gemini Live API - SIMPLIFIED ARCHITECTURE');
-    console.log('[App] Mode: Pure conversational audio (no function calling)');
+    console.log('[App] 🎯 Configuring Gemini Live API with Assessment Tools');
+    console.log('[App] Mode: Audio conversation + tool-based evaluation');
 
     // Capture current values at time of configuration
     const currentVoice = useSettings.getState().voice;
 
-    // Build system prompt with student name (card context sent as messages)
-    const systemPrompt = `You are Pi, a curious alien from Planet Geometrica visiting Earth to learn about human thinking!
+    // Build card context string for system prompt (will be updated per card)
+    const cardContextPlaceholder = "(Card context will be sent as messages)";
+    
+    // Build system prompt with student name using new assessment prompt
+    const systemPrompt = ASSESSMENT_SYSTEM_PROMPT(studentName, cardContextPlaceholder);
 
-# YOUR ROLE
-You're genuinely fascinated by how ${studentName} thinks about fractions and math. You're NOT a teacher - you're an eager learner who happens to help ${studentName} discover their own understanding through conversation.
-
-# PERSONALITY
-- **Curious & Playful**: Ask questions like "Wait, how did you figure that out?" or "Ooh, that's interesting! Why do you think that?"
-- **Encouraging**: Celebrate effort and thinking, not just correct answers
-- **Conversational**: Talk like a friend, not a tutor. Use contractions, show excitement!
-- **Persistent**: Gently explore deeper - don't just accept surface answers
-- **Socratic**: Use the Socratic method to help ${studentName} think through problems
-
-# CONVERSATION GUIDELINES
-- Keep responses SHORT (1-2 sentences max per turn)
-- Ask follow-up questions to understand their thinking
-- Build on their ideas: "Oh! So you're saying [their idea]... what if [extension]?"
-- Let silence be okay - ${studentName} needs time to think
-- Show genuine curiosity about their thinking process
-
-# IMPORTANT
-- You'll receive card context as messages - use them to guide conversation
-- Focus on understanding HOW ${studentName} thinks, not just getting right answers
-- Never give lectures or explanations unprompted
-- Trust that mistakes are learning opportunities
-
-Remember: You're Pi - curious, playful, and here to explore how ${studentName} thinks! 🛸`;
-
-    setConfig({
+    // Transform tools to Gemini API format (remove isEnabled and scheduling fields)
+    const geminiTools = assessmentTools.map(tool => ({
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters
+    }));
+    
+    const fullConfig = {
       responseModalities: [Modality.AUDIO],
       speechConfig: {
         voiceConfig: {
@@ -178,12 +148,24 @@ Remember: You're Pi - curious, playful, and here to explore how ${studentName} t
       systemInstruction: {
         parts: [{ text: systemPrompt }],
       },
-      // NO TOOLS! Pure conversational AI only
-    });
+      tools: [{ functionDeclarations: geminiTools }], // Wrap tools in correct format
+      // Session management for longer conversations
+      contextWindowCompression: {
+        slidingWindow: {} // Enable compression with default params
+      },
+      sessionResumption: {
+        handle: null // Start new session (will store handle for reconnection)
+      }
+    };
+    
+    console.log('[App] 🔧 Tools being sent:', geminiTools.map(t => t.name));
+    console.log('[App] 🔧 First tool structure:', JSON.stringify(geminiTools[0], null, 2));
+    
+    setConfig(fullConfig);
 
     configSetRef.current = true; // Mark config as set using ref
-    console.log('[App] ✅ Configuration complete - Pure audio conversation mode');
-    console.log('[App] 📝 Orchestration will be handled client-side for now');
+    console.log('[App] ✅ Configuration complete - Audio + Assessment Tools');
+    console.log('[App] 🔧 Tools registered:', assessmentTools.length);
   }, [studentName, setConfig]); // Only depend on studentName and setConfig (stable)
 
   // Handle WebSocket errors and close events
@@ -227,91 +209,8 @@ Remember: You're Pi - curious, playful, and here to explore how ${studentName} t
     };
   }, [client]);
 
-  // Update orchestrator when card changes and set up evaluation callbacks
-  useEffect(() => {
-    if (currentCard && orchestrator.current) {
-      orchestrator.current.setCurrentCard(currentCard);
-      console.log('[App] 🎯 Orchestrator updated with new card:', currentCard.title);
-
-      // Register evaluation callbacks (only once)
-      const evaluationCallback = (evaluation: any) => {
-        console.log('[App] 📊 Received evaluation from orchestrator:', evaluation);
-
-        // Set evaluation state for UI feedback
-        setIsEvaluating(false);
-
-        // Handle the evaluation result
-        if (evaluation.suggestedAction === 'award_and_next') {
-          console.log('[App] 🎉 Advancing to next card with points!');
-
-          // Show success celebration
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 2000); // Hide after 2 seconds
-
-          // Award points immediately for visual feedback
-          if (evaluation.points) {
-            const previousPoints = points;
-            awardPoints(evaluation.points);
-
-            // Check for level up (every 100 points)
-            const newPoints = previousPoints + evaluation.points;
-            if (Math.floor(newPoints / 100) > Math.floor(previousPoints / 100)) {
-              const level = Math.floor(newPoints / 100);
-              setLevelUpData({
-                level: `Level ${level}`,
-                points: newPoints
-              });
-              setShowLevelUp(true);
-
-              // Auto-dismiss level up after 2 seconds
-              setTimeout(() => {
-                setShowLevelUp(false);
-              }, 2000);
-            }
-          }
-
-          // Mark card as mastered
-          masteredCard(currentCard.cardNumber.toString());
-
-          // Send transition message to Pi, then advance after a brief celebration
-          if (genaiLiveClientRef.current?.isConnected()) {
-            const transitionMessage = `🎉 Awesome job! You totally got that! You earned ${evaluation.points || 30} points! Now let's check out something new...`;
-            genaiLiveClientRef.current.send({ text: transitionMessage });
-            console.log('[App] 📤 Sent transition message to Pi');
-          }
-
-          // Delay card advancement to let Pi transition naturally
-          setTimeout(() => {
-            // Advance to next card
-            nextCard();
-
-            // Reset conversation history
-            conversationHistory.current = [];
-            exchangeCount.current = 0;
-          }, 2500); // 2.5 second delay for celebration and transition
-
-        } else if (evaluation.suggestedAction === 'next_without_points') {
-          console.log('[App] ➡️ Moving to next card without points');
-          nextCard();
-          conversationHistory.current = [];
-          exchangeCount.current = 0;
-
-        } else {
-          console.log('[App] 💭 Continue conversation, confidence:', evaluation.confidence);
-          // Continue conversation - maybe show confidence indicator
-        }
-      };
-
-      const startCallback = () => {
-        console.log('[App] 🧠 Evaluation starting...');
-        setIsEvaluating(true);
-      };
-
-      // Register callbacks with orchestration manager
-      orchestrator.current.setEvaluationCallbacks(evaluationCallback, startCallback);
-      console.log('[App] ✅ Evaluation callbacks registered with orchestrator');
-    }
-  }, [currentCard, awardPoints, nextCard, masteredCard, points]);
+  // Orchestrator callbacks removed - tool calls handle everything now
+  // Assessment logic moved to Gemini tool calls (assess_progress, swipe_right, award_points)
 
   // Track conversation and feed to orchestrator
   useEffect(() => {
@@ -323,21 +222,6 @@ Remember: You're Pi - curious, playful, and here to explore how ${studentName} t
       // Now that genai-live-client properly emits isFinal based on turnComplete,
       // we can simply trust it without debouncing
       if (isFinal && text.trim().length > 0) {
-        if (orchestrator.current) {
-          orchestrator.current.addTranscriptEntry({
-            role: 'student',
-            text,
-            timestamp: Date.now(),
-            isFinal: true
-          });
-        }
-
-        const turn: ClaudeConversationTurn = {
-          role: 'student',
-          text,
-          timestamp: Date.now(),
-        };
-        conversationHistory.current.push(turn);
         exchangeCount.current++;
       }
     };
@@ -348,23 +232,7 @@ Remember: You're Pi - curious, playful, and here to explore how ${studentName} t
 
       // Now that genai-live-client properly emits isFinal based on turnComplete,
       // we can simply trust it without debouncing
-      if (isFinal && text.trim().length > 0) {
-        if (orchestrator.current) {
-          orchestrator.current.addTranscriptEntry({
-            role: 'pi',
-            text,
-            timestamp: Date.now(),
-            isFinal: true
-          });
-        }
-
-        const turn: ClaudeConversationTurn = {
-          role: 'pi',
-          text,
-          timestamp: Date.now(),
-        };
-        conversationHistory.current.push(turn);
-      }
+      // No more conversation history tracking - assessment via tools
     };
 
     client.on('inputTranscription', handleUserTranscript);
@@ -376,9 +244,150 @@ Remember: You're Pi - curious, playful, and here to explore how ${studentName} t
     };
   }, [client, currentCard]);
 
-  // SIMPLIFIED ARCHITECTURE: No function calls, orchestrator handles evaluation
-  // The orchestrator observes the conversation and decides when to evaluate
-  // Evaluation results are handled via the callback registered above
+  // Handle tool calls from Gemini (NEW - replaces Claude judge)
+  useEffect(() => {
+    if (!client) return;
+
+    const handleToolCall = async (toolCall: LiveServerToolCall) => {
+      console.log('[App] 🔧🔧🔧 TOOL CALL RECEIVED! 🔧🔧🔧');
+      console.log('[App] 🔧 Full toolCall object:', JSON.stringify(toolCall, null, 2));
+      console.log('[App] 🔧 Tool called:', toolCall.functionCalls?.[0]?.name);
+      console.log('[App] 📊 Tool args:', JSON.stringify(toolCall.functionCalls?.[0]?.args, null, 2));
+
+      const functionCall = toolCall.functionCalls?.[0];
+      if (!functionCall) return;
+
+      switch (functionCall.name) {
+        case 'advance_card':
+          // Single tool to handle everything - mastery, points, and transition
+          const mastery = functionCall.args.mastery_achieved;
+          
+          if (!mastery) {
+            console.log('[App] ⚠️  advance_card called with mastery_achieved=false, ignoring');
+            client.sendToolResponse({
+              functionResponses: [{
+                id: functionCall.id,
+                name: functionCall.name,
+                response: { success: false, message: "Mastery not achieved yet" }
+              }]
+            });
+            break;
+          }
+          
+          // Award points and advance card with celebration
+          const pointsToAward = functionCall.args.points || 50;
+          const reason = functionCall.args.reason || "Great work!";
+          const concepts = functionCall.args.concepts_demonstrated || [];
+          
+          console.log('[App] 🎉 MASTERY ACHIEVED!');
+          console.log('[App] ⭐ Points:', pointsToAward);
+          console.log('[App] 📝 Reason:', reason);
+          console.log('[App] 💡 Concepts:', concepts);
+          console.log('[App] 🎊 Starting celebration transition...');
+          
+          // Mark card as mastered
+          masteredCard(currentCard.cardNumber.toString());
+          
+          const previousPoints = points;
+          awardPoints(pointsToAward);
+          
+          // Check for level up
+          const newPoints = previousPoints + pointsToAward;
+          if (Math.floor(newPoints / 100) > Math.floor(previousPoints / 100)) {
+            const level = Math.floor(newPoints / 100);
+            setLevelUpData({
+              level: `Level ${level}`,
+              points: newPoints
+            });
+            setShowLevelUp(true);
+            setTimeout(() => setShowLevelUp(false), 2000);
+          }
+          
+          // Show celebration
+          setShowCelebration(true);
+          setIsTransitioning(true);
+          
+          // Send response
+          client.sendToolResponse({
+            functionResponses: [{
+              id: functionCall.id,
+              name: functionCall.name,
+              response: { 
+                success: true,
+                pointsAwarded: pointsToAward,
+                totalPoints: newPoints
+              }
+            }]
+          });
+          
+          // Advance to next card after 2-second celebration
+          setTimeout(() => {
+            console.log('[App] 🎯 Celebration complete - advancing to next card');
+            setShowCelebration(false);
+            nextCard();
+            exchangeCount.current = 0;
+            
+            // Brief delay before allowing new card context
+            setTimeout(() => {
+              setIsTransitioning(false);
+            }, 500);
+          }, 2000);
+          break;
+
+        case 'give_hint':
+          console.log('[App] 💡 Hint given:', functionCall.args.focusing_question);
+          client.sendToolResponse({
+            functionResponses: [{
+              id: functionCall.id,
+              name: functionCall.name,
+              response: { success: true }
+            }]
+          });
+          break;
+
+        case 'celebrate_breakthrough':
+          console.log('[App] 🎊 Breakthrough!', functionCall.args.breakthrough_type);
+          client.sendToolResponse({
+            functionResponses: [{
+              id: functionCall.id,
+              name: functionCall.name,
+              response: { success: true }
+            }]
+          });
+          break;
+
+        default:
+          console.warn('[App] ⚠️  Unknown tool:', functionCall.name);
+      }
+    };
+
+    // Handle session resumption updates
+    const handleSessionResumption = (update: any) => {
+      if (update.resumable && update.newHandle) {
+        console.log('[App] 💾 Received new session handle for resumption');
+        sessionHandleRef.current = update.newHandle;
+      }
+    };
+
+    // Handle GoAway warnings (connection about to close)
+    const handleGoAway = (goAway: any) => {
+      if (goAway.timeLeft) {
+        console.warn('[App] ⏰ Connection closing soon! Time left:', goAway.timeLeft);
+        // Could implement reconnection logic here if needed
+      }
+    };
+
+    client.on('toolcall', handleToolCall);
+    // Note: These events may need to be added to genai-live-client if not already available
+    // client.on('sessionResumptionUpdate', handleSessionResumption);
+    // client.on('goAway', handleGoAway);
+
+    return () => {
+      client.off('toolcall', handleToolCall);
+      // client.off('sessionResumptionUpdate', handleSessionResumption);
+      // client.off('goAway', handleGoAway);
+    };
+  }, [client, currentCard, awardPoints, nextCard, masteredCard, points]);
 
   // Helper: Format comprehensive card context for all components
   const formatCardContext = (card: typeof currentCard) => {
@@ -422,7 +431,27 @@ This is a special card where Pi has a misconception!
 Pi should begin by saying: "${card.piStartingQuestion}"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Remember: Be curious about ${studentName}'s thinking!`;
+
+⚠️ CRITICAL CONVERSATION RULES:
+
+1. **IMAGE DESCRIPTION = YOUR PRIVATE KNOWLEDGE**
+   - The image description above is FOR YOUR ASSESSMENT ONLY
+   - DO NOT tell ${studentName} what you see in the image
+   - DO NOT say things like "they are all the same size" or "there are four cookies"
+   - Let ${studentName} tell YOU what they see
+
+2. **AFTER ASKING A QUESTION = STOP AND WAIT**
+   - When you ask "${studentName}" a question, STOP talking
+   - DO NOT continue speaking
+   - DO NOT answer your own question
+   - WAIT for ${studentName} to respond
+
+3. **ONLY RESPOND TO WHAT ${studentName} ACTUALLY SAID**
+   - If ${studentName} says "four cookies", respond to that
+   - DO NOT add information they didn't say (like "and they're all equal")
+   - Only acknowledge what they explicitly stated
+
+Remember: Be curious, ask questions, then **WAIT** for ${studentName} to answer!`;
 
     return message;
   };
@@ -431,6 +460,12 @@ Remember: Be curious about ${studentName}'s thinking!`;
   // This sends card info as a MESSAGE, not configuration (to avoid error 1011)
   useEffect(() => {
     if (!client || !currentCard || !connected || !setupComplete || showWelcomeScreen) return;
+    
+    // CRITICAL: Don't send new card context during celebration transition
+    if (isTransitioning) {
+      console.log('[App] ⏸️  Card context send blocked - celebration in progress');
+      return;
+    }
 
     console.log(`[App] 📸 Preparing to send card to Gemini: ${currentCard.title}`);
 
@@ -452,7 +487,7 @@ Remember: Be curious about ${studentName}'s thinking!`;
     client.send([{ text: cardContext }], true);
 
     console.log('[App] ✅ Card context sent - waiting for Pi to start conversation');
-  }, [currentCard, connected, setupComplete, client, showWelcomeScreen]);
+  }, [currentCard, connected, setupComplete, client, showWelcomeScreen, isTransitioning]);
 
   // Handle start learning
   const handleStartLearning = useCallback(async () => {
@@ -489,15 +524,8 @@ Remember: Be curious about ${studentName}'s thinking!`;
     setShowNamePrompt(false);
   };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (orchestrator.current) {
-        console.log('[App] 🔌 Cleaning up orchestrator...');
-        orchestrator.current.disconnect();
-      }
-    };
-  }, []);
+  // Cleanup on unmount (orchestrator removed - nothing to clean up)
+  // Assessment is now stateless via tool calls
 
   // Show name prompt
   if (showNamePrompt) {
@@ -542,12 +570,9 @@ Remember: Be curious about ${studentName}'s thinking!`;
           onRetry={() => {
             console.log('[App] Retrying after error...');
             setCurrentError(null);
-
-            // Retry based on error type
-            if (currentError.type === 'connection' && orchestrator.current) {
-              orchestrator.current.reconnect();
-            } else if (currentError.type === 'evaluation' && orchestrator.current) {
-              orchestrator.current.forceEvaluation();
+            // Orchestrator removed - errors handled by reconnecting client
+            if (currentError.type === 'connection') {
+              connect();
             }
           }}
           onDismiss={() => setCurrentError(null)}
@@ -591,63 +616,46 @@ Remember: Be curious about ${studentName}'s thinking!`;
             />
           )}
 
+          {/* Celebration overlay during card transition */}
+          {showCelebration && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              animation: 'fadeIn 0.3s ease-in'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                color: 'white',
+                fontSize: '48px',
+                fontWeight: 'bold',
+                animation: 'bounceIn 0.6s ease-out'
+              }}>
+                🎉 Great Job! 🎉
+                <div style={{
+                  fontSize: '24px',
+                  marginTop: '20px',
+                  opacity: 0.9
+                }}>
+                  Loading next challenge...
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Thinking indicator */}
           {isEvaluating && <EvaluationIndicator />}
         </>
       )}
 
-      {/* Debug info */}
-      {import.meta.env.DEV && currentCard && (
-        <div className="debug-info">
-          <p><strong>Card {currentCard.cardNumber}:</strong> {currentCard.title}</p>
-          <p><strong>Exchanges:</strong> {exchangeCount.current}</p>
-          <p><strong>Gemini:</strong> {connected ? '✓ Connected' : '✗ Disconnected'}</p>
-          <p><strong>Speaking:</strong> {isSpeaking ? '✓ Yes' : '✗ No'}</p>
-          <p><strong>Evaluating:</strong> {isEvaluating ? '✓ Yes' : '✗ No'}</p>
-          <p><strong>Orchestration:</strong> {orchestrationMode === 'server' ? '🌐 Server' : '💻 Client'}</p>
-          <button
-            onClick={async () => {
-              if (orchestrator.current) {
-                console.log('[App] 🔧 DEBUG: Forcing evaluation...');
-                const result = await orchestrator.current.forceEvaluation();
-                console.log('[App] 🔧 DEBUG: Force evaluation result:', result);
-              }
-            }}
-            style={{
-              marginTop: '10px',
-              padding: '5px 10px',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Force Evaluation (Debug)
-          </button>
-          {orchestrationMode === 'client' && (
-            <button
-              onClick={async () => {
-                if (orchestrator.current) {
-                  console.log('[App] 🔄 Attempting server reconnect...');
-                  await orchestrator.current.reconnect();
-                }
-              }}
-              style={{
-                marginTop: '5px',
-                padding: '5px 10px',
-                backgroundColor: '#2196F3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Reconnect to Server
-            </button>
-          )}
-        </div>
-      )}
+      {/* Debug info removed - use browser console for debugging */}
     </div>
   );
 }
