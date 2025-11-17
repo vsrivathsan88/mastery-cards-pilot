@@ -28,11 +28,8 @@ import { Modality } from '@google/genai';
 import './App.mastery.css';
 import './components/WelcomeScreen.css';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
-
-if (!API_KEY) {
-  throw new Error('Missing VITE_GEMINI_API_KEY environment variable');
-}
+// API key is optional in production (Cloud Run uses service account)
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string || '';
 
 function AppContent() {
   // Session state
@@ -661,14 +658,7 @@ Remember: Be curious, ask questions, then **WAIT** for ${studentName} to answer!
 }
 
 export default function App() {
-  if (!API_KEY) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h1>Missing API Key</h1>
-        <p>Please set VITE_GEMINI_API_KEY in your environment variables</p>
-      </div>
-    );
-  }
+  // API key check removed - Cloud Run uses service account authentication
 
   return (
     <AppErrorBoundary
