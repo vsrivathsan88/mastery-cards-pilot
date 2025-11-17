@@ -96,8 +96,15 @@ If you don't have a dedicated work config:
 # Switch back to default
 gcloud config configurations activate default
 
-# Rename it to "work"
-gcloud config configurations rename default work
+# Copy the default config to a new config called "work"
+gcloud config configurations create work
+
+# (Optional) Set the same project/account/etc. in "work" as in "default", if needed.
+
+# (Optional) If you don't want to keep "default", you can delete it:
+# gcloud config configurations delete default
+```
+_Note: The `gcloud config configurations rename` command is not supported. Instead, you need to create a new configuration with the desired name and copy any necessary settings._
 ```
 
 ### Step 4: Verify Configurations
@@ -144,7 +151,28 @@ This will:
 
 ```bash
 # Create project (choose a unique ID)
+# 1. Create your new project (remember the ID must be globally unique)
 gcloud projects create mastery-cards-prod --name="Mastery Cards Personal"
+
+# 2. Wait until the project creation completes above (watch terminal for "done.")
+
+# 3. Enable necessary APIs (required for most features, including Cloud Run):
+gcloud services enable cloudapis.googleapis.com
+
+# 4. (Recommended) Add an environment tag for best practices.
+#    You can set 'Production', 'Development', etc.
+gcloud resource-manager tags bindings create \
+  --tag-value=environment/Production \
+  --parent=projects/mastery-cards-prod
+
+# 5. Set the new project as active for this config:
+gcloud config set project mastery-cards-prod
+
+# 6. Verify your current project:
+gcloud config get-value project
+
+# Output should be:
+# mastery-cards-prod
 
 # Set as active project
 gcloud config set project mastery-cards-prod

@@ -53,8 +53,13 @@ echo "🔨 Building and deploying container..."
 echo "⏱️  This will take ~3-5 minutes..."
 echo ""
 
-# Build and deploy using Cloud Build
-gcloud builds submit --config cloudbuild.yaml
+# Generate a timestamp-based tag
+TAG=$(date +%Y%m%d-%H%M%S)
+echo "🏷️  Using tag: $TAG"
+echo ""
+
+# Build and deploy using Cloud Build with substitutions
+gcloud builds submit --config cloudbuild.yaml --substitutions=COMMIT_SHA=$TAG
 
 echo ""
 echo "╔════════════════════════════════════════╗"
