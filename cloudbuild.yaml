@@ -42,4 +42,9 @@ images:
   - 'gcr.io/$PROJECT_ID/mastery-cards:$COMMIT_SHA'
   - 'gcr.io/$PROJECT_ID/mastery-cards:latest'
 
+# Explicitly declare substitution variables
+substitutions:
+  _SERVICE_NAME: mastery-cards
+  _REGION: us-central1
+
 timeout: '1200s'
